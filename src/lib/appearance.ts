@@ -11,6 +11,8 @@ export type HairStyle =
   | "bald";
 
 export type HatStyle = "none" | "cap" | "beanie" | "headphones" | "fedora" | "flower";
+export type FaceStyle = "smile" | "happy" | "wink" | "cool" | "cat";
+export type GlassesStyle = "none" | "round" | "sun" | "star";
 
 export interface Appearance {
   skin: string;
@@ -19,6 +21,8 @@ export interface Appearance {
   outfit: string; // 상의 색
   pants: string; // 하의 색
   hat: HatStyle;
+  face: FaceStyle;
+  glasses: GlassesStyle;
 }
 
 export const SKIN_TONES = ["#FBE2C8", "#F2C9A0", "#E0A878", "#C68642", "#8D5524"];
@@ -78,6 +82,23 @@ export const HAT_LABEL: Record<HatStyle, string> = {
   flower: "🌸 꽃",
 };
 
+export const FACES: FaceStyle[] = ["smile", "happy", "wink", "cool", "cat"];
+export const GLASSES: GlassesStyle[] = ["none", "round", "sun", "star"];
+
+export const FACE_LABEL: Record<FaceStyle, string> = {
+  smile: "😊 미소",
+  happy: "😄 활짝",
+  wink: "😉 윙크",
+  cool: "😎 시크",
+  cat: "😺 냥",
+};
+export const GLASSES_LABEL: Record<GlassesStyle, string> = {
+  none: "없음",
+  round: "🤓 동글",
+  sun: "🕶️ 선글",
+  star: "⭐ 별",
+};
+
 export const HAIR_LABEL: Record<HairStyle, string> = {
   short: "숏",
   bob: "단발",
@@ -97,6 +118,8 @@ export function defaultAppearance(): Appearance {
     outfit: OUTFIT_COLORS[0],
     pants: PANTS_COLORS[0],
     hat: "none",
+    face: "smile",
+    glasses: "none",
   };
 }
 
@@ -112,5 +135,7 @@ export function appearanceFromSeed(seed: string): Appearance {
     outfit: pick(OUTFIT_COLORS, 5),
     pants: pick(PANTS_COLORS, 7),
     hat: pick(HATS, 11),
+    face: pick(FACES, 13),
+    glasses: pick([...GLASSES, "none", "none"], 17) as GlassesStyle,
   };
 }

@@ -1,161 +1,160 @@
 import type { GenreId } from "./genres";
 
-// 월드 좌표계 (RoomMap과 동일하게 유지)
-export const WORLD_W = 1100;
-export const WORLD_H = 820;
+// 월드 좌표계 (RoomMap과 동일하게 유지) — 넓은 공간
+export const WORLD_W = 1400;
+export const WORLD_H = 1000;
+
+export type FloorType = "wood" | "grass" | "tile" | "neon" | "dark";
 
 export interface Decor {
   x: number;
   y: number;
   emoji: string;
   size: number;
-  /** true면 바닥 스티커(깊이 정렬 제외, 항상 뒤) */
-  flat?: boolean;
 }
 
 export interface Scene {
-  /** 바닥 그라데이션 */
   floor: [string, string];
-  /** 상단 벽/배경 띠 색 */
   wall: string;
-  /** 무대(스피커 존이 놓이는) 색 */
   stage: string;
+  floorType: FloorType;
   decor: Decor[];
 }
 
-// 장소 컨셉에 맞춘 소품 배치.
-const SCENES: Record<GenreId, Scene> = {
-  // Late Night Jazz — 자정의 재즈 바, 세피아 무드
+// 소품 배치 좌표 템플릿 (월드 전반에 흩뿌림, 중앙 스폰/무대는 비움)
+const POS: [number, number, number][] = [
+  [210, 250, 58],
+  [430, 210, 50],
+  [980, 210, 50],
+  [1190, 250, 58],
+  [160, 560, 46],
+  [1250, 560, 46],
+  [250, 860, 52],
+  [540, 905, 40],
+  [880, 905, 40],
+  [1170, 860, 52],
+  [700, 300, 48],
+  [700, 660, 44],
+];
+
+interface Cfg {
+  floor: [string, string];
+  wall: string;
+  stage: string;
+  floorType: FloorType;
+  emojis: string[];
+}
+
+const CFG: Record<GenreId, Cfg> = {
   jazz: {
     floor: ["#2a2018", "#3f3024"],
     wall: "#1c1610",
     stage: "#4a3826",
-    decor: [
-      { x: 200, y: 220, emoji: "🎹", size: 56 },
-      { x: 540, y: 180, emoji: "🎷", size: 50 },
-      { x: 880, y: 230, emoji: "🎺", size: 46 },
-      { x: 150, y: 470, emoji: "🪑", size: 40 },
-      { x: 980, y: 470, emoji: "🍸", size: 40 },
-      { x: 360, y: 720, emoji: "🥃", size: 38 },
-      { x: 720, y: 720, emoji: "🕯️", size: 36 },
-      { x: 920, y: 680, emoji: "🎶", size: 34 },
-      { x: 120, y: 690, emoji: "🛋️", size: 48 },
-    ],
+    floorType: "wood",
+    emojis: ["🎹", "🎷", "🎺", "🍸", "🥃", "🪑", "🕯️", "🛋️", "🎶", "🎙️", "🌙", "🎵"],
   },
-  // City Pop Train — 네온 도시를 달리는 야간 열차
   citypop: {
     floor: ["#241a40", "#3d2a63"],
     wall: "#160f2b",
     stage: "#5a2f7a",
-    decor: [
-      { x: 150, y: 150, emoji: "🌃", size: 54 },
-      { x: 950, y: 150, emoji: "🗼", size: 54 },
-      { x: 540, y: 170, emoji: "🚆", size: 60 },
-      { x: 120, y: 440, emoji: "🌴", size: 50 },
-      { x: 990, y: 440, emoji: "🕶️", size: 38 },
-      { x: 220, y: 700, emoji: "🍹", size: 38 },
-      { x: 540, y: 730, emoji: "🛵", size: 44 },
-      { x: 860, y: 700, emoji: "💿", size: 36 },
-      { x: 700, y: 250, emoji: "🌙", size: 40 },
-    ],
+    floorType: "neon",
+    emojis: ["🌃", "🗼", "🚆", "🌴", "🍹", "🛵", "💿", "🕶️", "🌆", "🎐", "🌙", "🎵"],
   },
-  // Rainy Lo-fi Room — 빗소리 공부방
   lofi: {
     floor: ["#22304d", "#33456b"],
     wall: "#18233a",
     stage: "#3a4f7a",
-    decor: [
-      { x: 180, y: 200, emoji: "🪟", size: 56 },
-      { x: 540, y: 170, emoji: "☔", size: 44 },
-      { x: 900, y: 210, emoji: "🪴", size: 50 },
-      { x: 140, y: 470, emoji: "📚", size: 44 },
-      { x: 990, y: 470, emoji: "☕", size: 38 },
-      { x: 230, y: 700, emoji: "🛋️", size: 52 },
-      { x: 560, y: 730, emoji: "🐱", size: 38 },
-      { x: 840, y: 700, emoji: "🧸", size: 38 },
-      { x: 720, y: 250, emoji: "🎧", size: 38 },
-    ],
+    floorType: "wood",
+    emojis: ["🪟", "☔", "🪴", "📚", "☕", "🛋️", "🐱", "🧸", "🕯️", "🎧", "🌙", "🎵"],
   },
-  // Disco Rooftop — 루프탑 하우스 파티
   house: {
     floor: ["#0f2a33", "#15414a"],
     wall: "#0a1c22",
     stage: "#1f6f68",
-    decor: [
-      { x: 540, y: 120, emoji: "🪩", size: 66 },
-      { x: 180, y: 220, emoji: "🔊", size: 50 },
-      { x: 900, y: 220, emoji: "🔊", size: 50 },
-      { x: 140, y: 470, emoji: "🍸", size: 38 },
-      { x: 980, y: 470, emoji: "🎛️", size: 44 },
-      { x: 260, y: 700, emoji: "🕺", size: 46 },
-      { x: 800, y: 700, emoji: "💃", size: 46 },
-      { x: 540, y: 730, emoji: "✨", size: 40 },
-    ],
+    floorType: "neon",
+    emojis: ["🪩", "🔊", "🔊", "🍸", "🎛️", "🕺", "💃", "✨", "🌈", "💿", "🔆", "🎵"],
   },
-  // K-Pop Stage — 아이돌 무대 백스테이지
   kpop: {
     floor: ["#3a1838", "#5e2752"],
     wall: "#260f24",
     stage: "#8e3a78",
-    decor: [
-      { x: 540, y: 130, emoji: "🎤", size: 58 },
-      { x: 200, y: 200, emoji: "💡", size: 44 },
-      { x: 880, y: 200, emoji: "💡", size: 44 },
-      { x: 130, y: 470, emoji: "🎀", size: 40 },
-      { x: 990, y: 470, emoji: "📣", size: 40 },
-      { x: 260, y: 710, emoji: "💖", size: 42 },
-      { x: 800, y: 710, emoji: "🌟", size: 42 },
-      { x: 540, y: 730, emoji: "🪅", size: 40 },
-    ],
+    floorType: "tile",
+    emojis: ["🎤", "💡", "💡", "🎀", "📣", "💖", "🌟", "🪅", "🩷", "💫", "🎶", "🎵"],
   },
-  // Antique Hall — 금빛 클래식 연주회장
   classical: {
     floor: ["#2b2620", "#473d2c"],
     wall: "#1e1a14",
     stage: "#6e5a36",
-    decor: [
-      { x: 200, y: 200, emoji: "🏛️", size: 56 },
-      { x: 880, y: 200, emoji: "🏛️", size: 56 },
-      { x: 540, y: 160, emoji: "🎻", size: 50 },
-      { x: 150, y: 470, emoji: "🕯️", size: 40 },
-      { x: 980, y: 470, emoji: "🌹", size: 38 },
-      { x: 300, y: 720, emoji: "🎼", size: 40 },
-      { x: 760, y: 720, emoji: "🎹", size: 46 },
-      { x: 540, y: 730, emoji: "👑", size: 38 },
-    ],
+    floorType: "tile",
+    emojis: ["🏛️", "🏛️", "🎻", "🎼", "🕯️", "🌹", "🎹", "👑", "🕰️", "📜", "🎶", "🎵"],
   },
-  // Metal — 어두운 라이브 하우스
   metal: {
     floor: ["#161620", "#28283a"],
     wall: "#0e0e16",
     stage: "#3a3a52",
-    decor: [
-      { x: 540, y: 140, emoji: "🤘", size: 56 },
-      { x: 180, y: 210, emoji: "🎸", size: 50 },
-      { x: 900, y: 210, emoji: "🥁", size: 48 },
-      { x: 150, y: 470, emoji: "⚡", size: 40 },
-      { x: 990, y: 470, emoji: "🔥", size: 40 },
-      { x: 300, y: 720, emoji: "💀", size: 40 },
-      { x: 760, y: 720, emoji: "⛓️", size: 38 },
-    ],
+    floorType: "dark",
+    emojis: ["🤘", "🎸", "🥁", "⚡", "🔥", "💀", "⛓️", "🖤", "🦂", "🪨", "🎶", "🎵"],
   },
-  // R&B — 보랏빛 라운지
   rnb: {
     floor: ["#2d1b3d", "#492c63"],
     wall: "#1d1129",
     stage: "#6b4a82",
-    decor: [
-      { x: 540, y: 160, emoji: "🎙️", size: 50 },
-      { x: 200, y: 210, emoji: "🍷", size: 42 },
-      { x: 900, y: 210, emoji: "🪞", size: 44 },
-      { x: 150, y: 470, emoji: "🕯️", size: 38 },
-      { x: 980, y: 470, emoji: "🥂", size: 38 },
-      { x: 280, y: 710, emoji: "🛋️", size: 50 },
-      { x: 800, y: 710, emoji: "🌙", size: 40 },
-    ],
+    floorType: "tile",
+    emojis: ["🎙️", "🍷", "🪞", "🕯️", "🥂", "🛋️", "🌙", "💜", "✨", "🌃", "🎶", "🎵"],
   },
 };
 
 export function sceneFor(genre: GenreId): Scene {
-  return SCENES[genre] ?? SCENES.lofi;
+  const c = CFG[genre] ?? CFG.lofi;
+  return {
+    floor: c.floor,
+    wall: c.wall,
+    stage: c.stage,
+    floorType: c.floorType,
+    decor: POS.map(([x, y, size], i) => ({
+      x,
+      y,
+      size,
+      emoji: c.emojis[i % c.emojis.length],
+    })),
+  };
+}
+
+// 바닥 타입별 CSS 패턴 (RoomMap에서 사용)
+export function floorPattern(type: FloorType): {
+  backgroundImage: string;
+  backgroundSize: string;
+} {
+  switch (type) {
+    case "wood":
+      return {
+        backgroundImage:
+          "repeating-linear-gradient(90deg, rgba(255,255,255,0.05) 0 2px, transparent 2px 96px), repeating-linear-gradient(0deg, rgba(0,0,0,0.10) 0 1px, transparent 1px 40px)",
+        backgroundSize: "96px 40px",
+      };
+    case "grass":
+      return {
+        backgroundImage:
+          "repeating-conic-gradient(rgba(255,255,255,0.05) 0% 25%, transparent 0% 50%)",
+        backgroundSize: "80px 80px",
+      };
+    case "tile":
+      return {
+        backgroundImage:
+          "linear-gradient(45deg, rgba(255,255,255,0.06) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.06) 75%), linear-gradient(45deg, rgba(255,255,255,0.06) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.06) 75%)",
+        backgroundSize: "90px 90px",
+      };
+    case "neon":
+      return {
+        backgroundImage:
+          "linear-gradient(rgba(255,255,255,0.10) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.10) 1px, transparent 1px)",
+        backgroundSize: "70px 70px",
+      };
+    default:
+      return {
+        backgroundImage:
+          "radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px)",
+        backgroundSize: "30px 30px",
+      };
+  }
 }

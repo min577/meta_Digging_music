@@ -11,6 +11,7 @@ import type {
   Track,
   CharacterState,
   Room,
+  PlacedItem,
 } from "@/lib/types";
 import type { GenreId } from "@/lib/genres";
 import { defaultQuests, defaultBadges, DEMO_FRIENDS } from "@/lib/mock";
@@ -36,9 +37,13 @@ interface AppState {
   listenEvents: ListenEvent[];
   visitedRooms: string[];
   customRooms: Room[];
+  roomDecor: Record<string, PlacedItem[]>;
 
   // ---- 룸 ----
   addRoom: (room: Room) => void;
+  placeDecor: (roomId: string, item: PlacedItem) => void;
+  removeDecor: (roomId: string, itemId: string) => void;
+  moveDecor: (roomId: string, itemId: string, x: number, y: number) => void;
 
   // ---- 온보딩 ----
   completeOnboarding: (p: {
@@ -107,8 +112,35 @@ export const useAppStore = create<AppState>()(
       listenEvents: [],
       visitedRooms: [],
       customRooms: [],
+      roomDecor: {},
 
       addRoom: (room) => set((s) => ({ customRooms: [room, ...s.customRooms] })),
+
+      placeDecor: (roomId, item) =>
+        set((s) => ({
+          roomDecor: {
+            ...s.roomDecor,
+            [roomId]: [...(s.roomDecor[roomId] ?? []), item],
+          },
+        })),
+
+      removeDecor: (roomId, itemId) =>
+        set((s) => ({
+          roomDecor: {
+            ...s.roomDecor,
+            [roomId]: (s.roomDecor[roomId] ?? []).filter((i) => i.id !== itemId),
+          },
+        })),
+
+      moveDecor: (roomId, itemId, x, y) =>
+        set((s) => ({
+          roomDecor: {
+            ...s.roomDecor,
+            [roomId]: (s.roomDecor[roomId] ?? []).map((i) =>
+              i.id === itemId ? { ...i, x, y } : i
+            ),
+          },
+        })),
 
       completeOnboarding: ({ handle, appearance, situations, seedTracks }) =>
         set({
@@ -269,6 +301,7 @@ export const useAppStore = create<AppState>()(
         listenEvents: s.listenEvents,
         visitedRooms: s.visitedRooms,
         customRooms: s.customRooms,
+        roomDecor: s.roomDecor,
       }),
     }
   )

@@ -144,6 +144,14 @@ export interface ShopItem {
   discountPct?: number;
 }
 
+/** 룸에 배치한 가구/소품 (공간 꾸미기) */
+export interface PlacedItem {
+  id: string;
+  emoji: string;
+  x: number;
+  y: number;
+}
+
 export interface Friend {
   userId: string;
   handle: string;

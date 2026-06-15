@@ -1,6 +1,12 @@
 "use client";
 
-import type { Appearance, HairStyle, HatStyle } from "@/lib/appearance";
+import type {
+  Appearance,
+  HairStyle,
+  HatStyle,
+  FaceStyle,
+  GlassesStyle,
+} from "@/lib/appearance";
 
 export type Dir = "down" | "up" | "left" | "right";
 
@@ -45,14 +51,16 @@ export default function Avatar({
             <stop offset="0%" stopColor={lighten(a.outfit, 24)} />
             <stop offset="100%" stopColor={a.outfit} />
           </radialGradient>
-          <radialGradient id={`head-${sid}`} cx="38%" cy="30%" r="85%">
-            <stop offset="0%" stopColor={lighten(a.skin, 14)} />
-            <stop offset="100%" stopColor={a.skin} />
+          <radialGradient id={`head-${sid}`} cx="38%" cy="28%" r="88%">
+            <stop offset="0%" stopColor={lighten(a.skin, 20)} />
+            <stop offset="70%" stopColor={a.skin} />
+            <stop offset="100%" stopColor={shade(a.skin, -14)} />
           </radialGradient>
         </defs>
 
-        {/* 그림자 */}
-        <ellipse cx="50" cy="115" rx="24" ry="5" fill="rgba(0,0,0,0.16)" />
+        {/* 그림자 (부드럽게) */}
+        <ellipse cx="50" cy="114" rx="22" ry="5.5" fill="rgba(0,0,0,0.18)" />
+        <ellipse cx="50" cy="114" rx="15" ry="3.5" fill="rgba(0,0,0,0.12)" />
 
         {/* 다리 (걷기 시 교차) */}
         <g>
@@ -95,18 +103,15 @@ export default function Avatar({
 
         {/* 머리 */}
         <circle cx="50" cy="40" r="26" fill={`url(#head-${sid})`} />
+        {/* 림 라이트 (둥근 입체감) */}
+        <ellipse cx="43" cy="30" rx="11" ry="8" fill="#fff" opacity="0.18" />
 
         {/* 얼굴 (정면/측면만) */}
         {!back && (
-          <g>
-            <circle cx="40" cy="42" r="3.2" fill="#2A251D" />
-            <circle cx="60" cy="42" r="3.2" fill="#2A251D" />
-            <circle cx="40.8" cy="41" r="1" fill="#fff" />
-            <circle cx="60.8" cy="41" r="1" fill="#fff" />
-            <path d="M44 50 Q50 55 56 50" stroke="#2A251D" strokeWidth="2" fill="none" strokeLinecap="round" />
-            <circle cx="33" cy="48" r="3.5" fill="#ff9bb0" opacity="0.6" />
-            <circle cx="67" cy="48" r="3.5" fill="#ff9bb0" opacity="0.6" />
-          </g>
+          <>
+            <Face style={a.face} />
+            <Glasses style={a.glasses} />
+          </>
         )}
 
         {/* 앞머리 + 헤어 */}
@@ -117,6 +122,98 @@ export default function Avatar({
       </svg>
     </div>
   );
+}
+
+function Face({ style }: { style: FaceStyle }) {
+  const blush = (
+    <>
+      <circle cx="33" cy="48" r="3.6" fill="#ff9bb0" opacity="0.6" />
+      <circle cx="67" cy="48" r="3.6" fill="#ff9bb0" opacity="0.6" />
+    </>
+  );
+  switch (style) {
+    case "happy":
+      return (
+        <g>
+          {/* ^ ^ 눈 */}
+          <path d="M36 42 Q40 38 44 42" stroke="#2A251D" strokeWidth="2.4" fill="none" strokeLinecap="round" />
+          <path d="M56 42 Q60 38 64 42" stroke="#2A251D" strokeWidth="2.4" fill="none" strokeLinecap="round" />
+          <path d="M43 50 Q50 57 57 50" stroke="#2A251D" strokeWidth="2.4" fill="none" strokeLinecap="round" />
+          {blush}
+        </g>
+      );
+    case "wink":
+      return (
+        <g>
+          <circle cx="40" cy="42" r="3.2" fill="#2A251D" />
+          <path d="M56 42 Q60 39 64 42" stroke="#2A251D" strokeWidth="2.4" fill="none" strokeLinecap="round" />
+          <circle cx="40.8" cy="41" r="1" fill="#fff" />
+          <path d="M45 51 Q50 54 55 50" stroke="#2A251D" strokeWidth="2" fill="none" strokeLinecap="round" />
+          {blush}
+        </g>
+      );
+    case "cool":
+      return (
+        <g>
+          <rect x="36" y="40" width="8" height="3" rx="1.5" fill="#2A251D" />
+          <rect x="56" y="40" width="8" height="3" rx="1.5" fill="#2A251D" />
+          <path d="M44 52 L56 52" stroke="#2A251D" strokeWidth="2" strokeLinecap="round" />
+        </g>
+      );
+    case "cat":
+      return (
+        <g>
+          <circle cx="40" cy="42" r="3" fill="#2A251D" />
+          <circle cx="60" cy="42" r="3" fill="#2A251D" />
+          <path d="M46 51 Q50 54 50 51 Q50 54 54 51" stroke="#2A251D" strokeWidth="1.8" fill="none" strokeLinecap="round" />
+          {/* 수염 */}
+          <path d="M30 50 L38 49 M30 53 L38 52" stroke="#2A251D" strokeWidth="1" />
+          <path d="M70 50 L62 49 M70 53 L62 52" stroke="#2A251D" strokeWidth="1" />
+          {blush}
+        </g>
+      );
+    default: // smile
+      return (
+        <g>
+          <circle cx="40" cy="42" r="3.2" fill="#2A251D" />
+          <circle cx="60" cy="42" r="3.2" fill="#2A251D" />
+          <circle cx="40.8" cy="41" r="1" fill="#fff" />
+          <circle cx="60.8" cy="41" r="1" fill="#fff" />
+          <path d="M44 50 Q50 55 56 50" stroke="#2A251D" strokeWidth="2" fill="none" strokeLinecap="round" />
+          {blush}
+        </g>
+      );
+  }
+}
+
+function Glasses({ style }: { style: GlassesStyle }) {
+  switch (style) {
+    case "round":
+      return (
+        <g fill="none" stroke="#3a2d20" strokeWidth="2">
+          <circle cx="40" cy="42" r="6" />
+          <circle cx="60" cy="42" r="6" />
+          <path d="M46 42 L54 42" />
+        </g>
+      );
+    case "sun":
+      return (
+        <g>
+          <rect x="33" y="38" width="14" height="9" rx="3" fill="#1a1a2e" />
+          <rect x="53" y="38" width="14" height="9" rx="3" fill="#1a1a2e" />
+          <rect x="46" y="40" width="8" height="2" fill="#1a1a2e" />
+        </g>
+      );
+    case "star":
+      return (
+        <g>
+          <text x="34" y="46" fontSize="11">⭐</text>
+          <text x="55" y="46" fontSize="11">⭐</text>
+        </g>
+      );
+    default:
+      return null;
+  }
 }
 
 function BackHair({ style, color }: { style: HairStyle; color: string }) {

@@ -15,14 +15,20 @@ import { appearanceFromSeed, defaultAppearance } from "@/lib/appearance";
 import type { Track } from "@/lib/types";
 
 const REACTIONS = ["❤️", "🔥", "🎶", "😭", "🕺", "👏"];
-// 음악 존 배치 (월드 1100x820 기준)
+// 음악 존 배치 (월드 1400x1000 기준)
 const SPOTS = [
-  { x: 300, y: 250 },
-  { x: 800, y: 250 },
-  { x: 300, y: 620 },
-  { x: 800, y: 620 },
+  { x: 380, y: 350 },
+  { x: 1020, y: 350 },
+  { x: 380, y: 740 },
+  { x: 1020, y: 740 },
 ];
 type SpeakerT = Speaker & { track: Track };
+
+// 꾸미기 가구 팔레트
+const FURNITURE = [
+  "🪴", "🛋️", "🪑", "🛏️", "🌳", "🌸", "🪩", "🎹", "📺", "🕯️",
+  "🧸", "🖼️", "⛲", "🪵", "☕", "🎮", "🪟", "🎸", "🏮", "🛼",
+];
 
 export default function RoomPage() {
   const { id } = useParams<{ id: string }>();
@@ -34,6 +40,9 @@ export default function RoomPage() {
   const logListen = useAppStore((s) => s.logListen);
   const enterRoom = useAppStore((s) => s.enterRoom);
   const progressQuest = useAppStore((s) => s.progressQuest);
+  const roomDecorMap = useAppStore((s) => s.roomDecor);
+  const placeDecorStore = useAppStore((s) => s.placeDecor);
+  const removeDecorStore = useAppStore((s) => s.removeDecor);
 
   const session = useRoomSession(
     id,
@@ -53,6 +62,8 @@ export default function RoomPage() {
   const [speakers, setSpeakers] = useState<SpeakerT[]>([]);
   const [vols, setVols] = useState<{ id: string; volume: number }[]>([]);
   const [myTrack, setMyTrack] = useState<Track | null>(null);
+  const [editMode, setEditMode] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(FURNITURE[0]);
   const listenAccum = useRef(0);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
@@ -111,8 +122,8 @@ export default function RoomPage() {
       id: m.userId,
       handle: m.handle,
       appearance: appearanceFromSeed(m.handle),
-      x: 220 + (i % 4) * 230,
-      y: 360 + Math.floor(i / 4) * 200,
+      x: 300 + (i % 4) * 300,
+      y: 450 + Math.floor(i / 4) * 240,
     }));
   }, [room]);
 
@@ -154,6 +165,23 @@ export default function RoomPage() {
   const stopMyMusic = () => {
     setMyTrack(null);
     session.setMyTrack(null);
+  };
+
+  // 꾸미기: 배치 / 삭제 (store 저장 + Realtime 동기화)
+  const myDecor = roomDecorMap[id] ?? [];
+  const placeAt = (x: number, y: number) => {
+    const item = {
+      id: `d_${Date.now()}_${Math.floor(Math.random() * 1e4)}`,
+      emoji: selectedItem,
+      x,
+      y,
+    };
+    placeDecorStore(id, item);
+    session.broadcastDecor([...myDecor, item]);
+  };
+  const removePlaced = (itemId: string) => {
+    removeDecorStore(id, itemId);
+    session.broadcastDecor(myDecor.filter((d) => d.id !== itemId));
   };
 
   const handleProgress = (cur: number, dur: number) => {
@@ -317,6 +345,38 @@ export default function RoomPage() {
           );
         })}
 
+      {/* 맵 툴바 */}
+      <div className="px-4 mt-2 flex items-center justify-between">
+        <span className="text-[11px] text-white/70">
+          {editMode ? "🔨 꾸미기 중 — 맵을 탭해 배치, 소품을 탭해 삭제" : ""}
+        </span>
+        <button
+          onClick={() => setEditMode((e) => !e)}
+          className={`chip py-1.5 px-3 font-bold ${
+            editMode ? "bg-live text-white" : "bg-black/30 text-white"
+          }`}
+        >
+          {editMode ? "완료" : "🔨 꾸미기"}
+        </button>
+      </div>
+
+      {/* 가구 팔레트 (꾸미기 모드) */}
+      {editMode && (
+        <div className="px-4 mt-1 flex gap-1.5 overflow-x-auto no-scrollbar">
+          {FURNITURE.map((f) => (
+            <button
+              key={f}
+              onClick={() => setSelectedItem(f)}
+              className={`shrink-0 w-10 h-10 rounded-xl grid place-items-center text-xl ${
+                selectedItem === f ? "bg-brand/30 ring-2 ring-brand" : "bg-black/25"
+              }`}
+            >
+              {f}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* 맵 */}
       <div className="px-4 mt-2 h-[46vh]">
         <RoomMap
@@ -327,8 +387,12 @@ export default function RoomPage() {
           npcs={npcs}
           remote={session.remotePlayers}
           speakers={mode === "free" ? speakers : []}
+          placed={[...myDecor, ...session.othersDecor]}
+          editMode={editMode}
           onMove={session.broadcastMove}
           onAudio={(v) => setVols(v)}
+          onPlaceAt={placeAt}
+          onRemovePlaced={removePlaced}
         />
       </div>
 

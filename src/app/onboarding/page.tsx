@@ -17,8 +17,12 @@ import {
   OUTFIT_COLORS,
   PANTS_COLORS,
   HATS,
+  FACES,
+  GLASSES,
   HAIR_LABEL,
   HAT_LABEL,
+  FACE_LABEL,
+  GLASSES_LABEL,
   type Appearance,
 } from "@/lib/appearance";
 
@@ -33,11 +37,13 @@ const SITUATIONS = [
   "파티",
 ];
 
-type Part = "hair" | "hairColor" | "skin" | "outfit" | "pants" | "hat";
+type Part = "hair" | "hairColor" | "skin" | "face" | "glasses" | "outfit" | "pants" | "hat";
 const PARTS: { id: Part; label: string }[] = [
   { id: "hair", label: "헤어" },
   { id: "hairColor", label: "머리색" },
   { id: "skin", label: "피부" },
+  { id: "face", label: "표정" },
+  { id: "glasses", label: "안경" },
   { id: "outfit", label: "상의" },
   { id: "pants", label: "하의" },
   { id: "hat", label: "모자" },
@@ -234,6 +240,38 @@ export default function OnboardingPage() {
                     value={look.pants}
                     onPick={(c) => set({ pants: c })}
                   />
+                )}
+                {part === "face" && (
+                  <div className="grid grid-cols-3 gap-2">
+                    {FACES.map((f) => (
+                      <button
+                        key={f}
+                        onClick={() => set({ face: f })}
+                        className={`rounded-xl p-1 flex flex-col items-center ${
+                          look.face === f ? "ring-2 ring-brand bg-brand/5" : ""
+                        }`}
+                      >
+                        <Avatar appearance={{ ...look, face: f }} size={48} bob={false} />
+                        <span className="text-[10px] text-ink-700/60">{FACE_LABEL[f]}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {part === "glasses" && (
+                  <div className="grid grid-cols-3 gap-2">
+                    {GLASSES.map((gl) => (
+                      <button
+                        key={gl}
+                        onClick={() => set({ glasses: gl })}
+                        className={`rounded-xl p-1 flex flex-col items-center ${
+                          look.glasses === gl ? "ring-2 ring-brand bg-brand/5" : ""
+                        }`}
+                      >
+                        <Avatar appearance={{ ...look, glasses: gl }} size={48} bob={false} />
+                        <span className="text-[10px] text-ink-700/60">{GLASSES_LABEL[gl]}</span>
+                      </button>
+                    ))}
+                  </div>
                 )}
               </div>
             </div>

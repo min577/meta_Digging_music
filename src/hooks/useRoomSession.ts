@@ -13,6 +13,7 @@ import type {
   ChatMessage,
   ReactionEvent,
   RoomMemberLite,
+  PlacedItem,
 } from "@/lib/types";
 import type { MapAvatar } from "@/components/RoomMap";
 import { defaultAppearance, type Appearance } from "@/lib/appearance";
@@ -32,6 +33,7 @@ export interface RoomSession {
   online: number;
   connected: "realtime" | "local";
   remotePlayers: MapAvatar[];
+  othersDecor: PlacedItem[];
   // actions
   suggest: (t: Track) => void;
   like: (queueId: string) => void;
@@ -40,6 +42,7 @@ export interface RoomSession {
   react: (emoji: string) => void;
   broadcastMove: (x: number, y: number, dir: MapAvatar["dir"]) => void;
   setMyTrack: (t: Track | null) => void;
+  broadcastDecor: (items: PlacedItem[]) => void;
 }
 
 // 클라이언트마다 고유 id (멀티플레이어 구분)
@@ -72,6 +75,7 @@ export function useRoomSession(
   const [online, setOnline] = useState<number>(base?.members.length ?? 1);
   const [connected, setConnected] = useState<"realtime" | "local">("local");
   const [remote, setRemote] = useState<Record<string, MapAvatar>>({});
+  const [othersDecorMap, setOthersDecorMap] = useState<Record<string, PlacedItem[]>>({});
 
   const channelRef = useRef<any>(null);
   const meRef = useRef<
@@ -89,8 +93,8 @@ export function useRoomSession(
     baseType: myBase,
     topGenre: myGenre,
     appearance: myAppearance ?? defaultAppearance(),
-    x: 300,
-    y: 235,
+    x: 700,
+    y: 560,
   });
 
   // 초기 재생곡 + 큐 시드 — iTunes에서 룸 장르의 실제 곡(30초 미리듣기)을 가져온다.
@@ -164,6 +168,10 @@ export function useRoomSession(
             ...payload,
           },
         }));
+      })
+      .on("broadcast", { event: "decor" }, ({ payload }: any) => {
+        if (payload.id === meRef.current.id) return;
+        setOthersDecorMap((o) => ({ ...o, [payload.id]: payload.items }));
       })
       .on("presence", { event: "leave" }, ({ leftPresences }: any) => {
         setRemote((r) => {
@@ -327,6 +335,13 @@ export function useRoomSession(
     [broadcast]
   );
 
+  const broadcastDecor = useCallback(
+    (items: PlacedItem[]) => {
+      broadcast("decor", { id: meRef.current.id, items });
+    },
+    [broadcast]
+  );
+
   // 내가 송출하는 곡 설정 (자유모드 per-player 오디오)
   const setMyTrack = useCallback(
     (t: Track | null) => {
@@ -353,6 +368,7 @@ export function useRoomSession(
     online,
     connected,
     remotePlayers: Object.values(remote),
+    othersDecor: Object.values(othersDecorMap).flat(),
     suggest,
     like,
     skip,
@@ -360,6 +376,7 @@ export function useRoomSession(
     react,
     broadcastMove,
     setMyTrack,
+    broadcastDecor,
   };
 }
 

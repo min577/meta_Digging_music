@@ -5,8 +5,8 @@ import Avatar, { type Dir } from "./Avatar";
 import type { Appearance } from "@/lib/appearance";
 import type { GenreId } from "@/lib/genres";
 import { GENRES } from "@/lib/genres";
-import type { Track } from "@/lib/types";
-import { sceneFor, WORLD_W, WORLD_H } from "@/lib/scenes";
+import type { Track, PlacedItem } from "@/lib/types";
+import { sceneFor, floorPattern, WORLD_W, WORLD_H } from "@/lib/scenes";
 
 const PAD = 54;
 const SPEED = 235; // units/sec
@@ -54,8 +54,12 @@ export default function RoomMap({
   npcs,
   remote = [],
   speakers = [],
+  placed = [],
+  editMode = false,
   onMove,
   onAudio,
+  onPlaceAt,
+  onRemovePlaced,
 }: {
   meAppearance: Appearance;
   meHandle: string;
@@ -64,8 +68,12 @@ export default function RoomMap({
   npcs: MapAvatar[];
   remote?: MapAvatar[];
   speakers?: Speaker[];
+  placed?: PlacedItem[];
+  editMode?: boolean;
   onMove?: (x: number, y: number, dir: Dir) => void;
   onAudio?: (vols: AudioVol[]) => void;
+  onPlaceAt?: (x: number, y: number) => void;
+  onRemovePlaced?: (id: string) => void;
 }) {
   const me = useRef({ x: WORLD_W / 2, y: WORLD_H * 0.6, dir: "down" as Dir, walking: false });
   const keys = useRef<Set<string>>(new Set());
@@ -76,6 +84,7 @@ export default function RoomMap({
   const [, force] = useReducer((c) => c + 1, 0);
 
   const viewRef = useRef<HTMLDivElement>(null);
+  const camRef = useRef({ x: 0, y: 0 });
   const [view, setView] = useState({ w: 360, h: 360 });
 
   const remoteRef = useRef(remote);
@@ -224,6 +233,20 @@ export default function RoomMap({
   // 카메라 (플레이어 중심, 월드 경계 clamp)
   const camX = clamp(me.current.x - view.w / 2, 0, Math.max(0, WORLD_W - view.w));
   const camY = clamp(me.current.y - view.h / 2, 0, Math.max(0, WORLD_H - view.h));
+  camRef.current = { x: camX, y: camY };
+
+  // 꾸미기 모드: 맵 클릭 → 월드 좌표로 변환해 배치
+  const handlePlaceClick = (e: React.MouseEvent) => {
+    if (!editMode || !onPlaceAt) return;
+    const rect = viewRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const wx = e.clientX - rect.left + camRef.current.x;
+    const wy = e.clientY - rect.top + camRef.current.y;
+    onPlaceAt(
+      clamp(Math.round(wx), PAD, WORLD_W - PAD),
+      clamp(Math.round(wy), PAD, WORLD_H - PAD)
+    );
+  };
 
   // 깊이 정렬 대상 (소품 + 아바타)
   const avatars: (MapAvatar & { me?: boolean; dir: Dir; walking: boolean })[] = [
@@ -238,7 +261,10 @@ export default function RoomMap({
   return (
     <div
       ref={viewRef}
-      className="relative w-full h-full overflow-hidden rounded-2xl shadow-soft select-none"
+      onClick={handlePlaceClick}
+      className={`relative w-full h-full overflow-hidden rounded-2xl shadow-soft select-none ${
+        editMode ? "cursor-crosshair ring-2 ring-brand" : ""
+      }`}
       style={{ background: `linear-gradient(180deg, ${scene.wall}, ${scene.floor[0]})` }}
     >
       {/* 월드 (카메라 이동) */}
@@ -254,29 +280,22 @@ export default function RoomMap({
         {/* 상단 벽 띠 */}
         <div
           className="absolute top-0 left-0 w-full"
-          style={{ height: 110, background: scene.wall, opacity: 0.85 }}
+          style={{ height: 150, background: scene.wall, opacity: 0.88 }}
         />
         {/* 무대 러그 */}
         <div
           className="absolute rounded-[50%] -translate-x-1/2"
           style={{
             left: WORLD_W / 2,
-            top: 120,
-            width: 560,
-            height: 240,
+            top: 170,
+            width: 720,
+            height: 300,
             background: scene.stage,
-            opacity: 0.35,
+            opacity: 0.32,
           }}
         />
-        {/* 바닥 격자 */}
-        <div
-          className="absolute inset-0 opacity-[0.08]"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(255,255,255,.7) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.7) 1px,transparent 1px)",
-            backgroundSize: "64px 64px",
-          }}
-        />
+        {/* 바닥 패턴 (잔디/마루/타일/네온) */}
+        <div className="absolute inset-0" style={floorPattern(scene.floorType)} />
 
         {/* 소품 (깊이 정렬) */}
         {scene.decor.map((d, i) => (
@@ -292,6 +311,36 @@ export default function RoomMap({
             }}
           >
             {d.emoji}
+          </div>
+        ))}
+
+        {/* 배치한 가구/소품 (꾸미기) */}
+        {placed.map((p) => (
+          <div
+            key={p.id}
+            onClick={(e) => {
+              if (!editMode) return;
+              e.stopPropagation();
+              onRemovePlaced?.(p.id);
+            }}
+            className={`absolute -translate-x-1/2 -translate-y-full ${
+              editMode ? "cursor-pointer" : ""
+            }`}
+            style={{
+              left: p.x,
+              top: p.y,
+              fontSize: 46,
+              zIndex: Math.floor(p.y),
+              filter: "drop-shadow(0 4px 4px rgba(0,0,0,0.35))",
+            }}
+            title={editMode ? "클릭해서 삭제" : undefined}
+          >
+            {p.emoji}
+            {editMode && (
+              <span className="absolute -top-1 -right-1 text-[10px] bg-live text-white rounded-full w-4 h-4 grid place-items-center">
+                ×
+              </span>
+            )}
           </div>
         ))}
 
