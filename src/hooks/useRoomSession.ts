@@ -14,6 +14,8 @@ import type {
   ReactionEvent,
   RoomMemberLite,
 } from "@/lib/types";
+import type { MapAvatar } from "@/components/RoomMap";
+import { defaultAppearance, type Appearance } from "@/lib/appearance";
 
 interface PlayState {
   track: Track;
@@ -29,26 +31,27 @@ export interface RoomSession {
   members: RoomMemberLite[];
   online: number;
   connected: "realtime" | "local";
+  remotePlayers: MapAvatar[];
   // actions
   suggest: (t: Track) => void;
   like: (queueId: string) => void;
   skip: () => void;
   sendChat: (text: string) => void;
   react: (emoji: string) => void;
+  broadcastMove: (x: number, y: number, dir: MapAvatar["dir"]) => void;
 }
 
-const me: RoomMemberLite = {
-  userId: "me",
-  handle: "나",
-  baseType: "hood",
-  topGenre: "lofi",
-};
+// 클라이언트마다 고유 id (멀티플레이어 구분)
+function makeId() {
+  return `me_${Math.random().toString(36).slice(2, 9)}`;
+}
 
 export function useRoomSession(
   roomId: string,
   myHandle: string,
   myBase: string,
-  myGenre: any
+  myGenre: any,
+  myAppearance?: Appearance
 ): RoomSession {
   const customRooms = useAppStore((s) => s.customRooms);
   const base =
@@ -67,13 +70,16 @@ export function useRoomSession(
   const [members, setMembers] = useState<RoomMemberLite[]>(base?.members ?? []);
   const [online, setOnline] = useState<number>(base?.members.length ?? 1);
   const [connected, setConnected] = useState<"realtime" | "local">("local");
+  const [remote, setRemote] = useState<Record<string, MapAvatar>>({});
 
   const channelRef = useRef<any>(null);
-  const meRef = useRef<RoomMemberLite>({
-    ...me,
+  const meRef = useRef<RoomMemberLite & { id: string; appearance: Appearance }>({
+    userId: "me",
+    id: makeId(),
     handle: myHandle,
     baseType: myBase,
     topGenre: myGenre,
+    appearance: myAppearance ?? defaultAppearance(),
   });
 
   // 초기 재생곡 + 큐 시드 — iTunes에서 룸 장르의 실제 곡(30초 미리듣기)을 가져온다.
@@ -117,7 +123,7 @@ export function useRoomSession(
     if (!supabase || !room) return;
 
     const channel = supabase.channel(`room:${room.id}`, {
-      config: { presence: { key: meRef.current.userId } },
+      config: { presence: { key: meRef.current.id } },
     });
     channelRef.current = channel;
 
@@ -133,6 +139,17 @@ export function useRoomSession(
       })
       .on("broadcast", { event: "reaction" }, ({ payload }: any) => {
         pushReaction(payload);
+      })
+      .on("broadcast", { event: "move" }, ({ payload }: any) => {
+        if (payload.id === meRef.current.id) return;
+        setRemote((r) => ({ ...r, [payload.id]: payload }));
+      })
+      .on("presence", { event: "leave" }, ({ leftPresences }: any) => {
+        setRemote((r) => {
+          const next = { ...r };
+          for (const p of leftPresences ?? []) delete next[p.id ?? p.key];
+          return next;
+        });
       })
       .on("presence", { event: "sync" }, () => {
         const state = channel.presenceState();
@@ -271,6 +288,21 @@ export function useRoomSession(
     [broadcast]
   );
 
+  const broadcastMove = useCallback(
+    (x: number, y: number, dir: MapAvatar["dir"]) => {
+      broadcast("move", {
+        id: meRef.current.id,
+        handle: meRef.current.handle,
+        appearance: meRef.current.appearance,
+        x,
+        y,
+        dir,
+        walking: true,
+      });
+    },
+    [broadcast]
+  );
+
   return {
     room,
     play,
@@ -280,11 +312,13 @@ export function useRoomSession(
     members,
     online,
     connected,
+    remotePlayers: Object.values(remote),
     suggest,
     like,
     skip,
     sendChat,
     react,
+    broadcastMove,
   };
 }
 

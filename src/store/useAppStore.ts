@@ -15,6 +15,7 @@ import type {
 import type { GenreId } from "@/lib/genres";
 import { defaultQuests, defaultBadges, DEMO_FRIENDS } from "@/lib/mock";
 import { updateVector, vectorFromTracks, topGenre } from "@/lib/taste";
+import { defaultAppearance, type Appearance } from "@/lib/appearance";
 
 interface ListenEvent {
   genre: GenreId;
@@ -42,7 +43,7 @@ interface AppState {
   // ---- 온보딩 ----
   completeOnboarding: (p: {
     handle: string;
-    baseType: string;
+    appearance: Appearance;
     situations: string[];
     seedTracks: Track[];
   }) => void;
@@ -50,6 +51,7 @@ interface AppState {
 
   // ---- 캐릭터 ----
   setCharacter: (c: Partial<CharacterState>) => void;
+  setAppearance: (a: Appearance) => void;
   evolve: () => void;
 
   // ---- 디깅함 ----
@@ -73,7 +75,12 @@ interface AppState {
   addFriend: (f: Friend) => void;
 }
 
-function freshUser(handle: string, baseType: string, situations: string[], seedTracks: Track[]): UserProfile {
+function freshUser(
+  handle: string,
+  appearance: Appearance,
+  situations: string[],
+  seedTracks: Track[]
+): UserProfile {
   return {
     id: "local-user",
     handle: handle || "디깅러",
@@ -83,7 +90,7 @@ function freshUser(handle: string, baseType: string, situations: string[], seedT
     diggPoints: 0,
     level: 1,
     situations,
-    character: { baseType, equipped: {}, evolutionStage: 0 },
+    character: { baseType: "custom", appearance, equipped: {}, evolutionStage: 0 },
     createdAt: new Date().toISOString(),
   };
 }
@@ -103,10 +110,10 @@ export const useAppStore = create<AppState>()(
 
       addRoom: (room) => set((s) => ({ customRooms: [room, ...s.customRooms] })),
 
-      completeOnboarding: ({ handle, baseType, situations, seedTracks }) =>
+      completeOnboarding: ({ handle, appearance, situations, seedTracks }) =>
         set({
           onboarded: true,
-          user: freshUser(handle, baseType, situations, seedTracks),
+          user: freshUser(handle, appearance, situations, seedTracks),
         }),
 
       resetAll: () =>
@@ -126,6 +133,13 @@ export const useAppStore = create<AppState>()(
         set((s) =>
           s.user
             ? { user: { ...s.user, character: { ...s.user.character, ...c } } }
+            : {}
+        ),
+
+      setAppearance: (a) =>
+        set((s) =>
+          s.user
+            ? { user: { ...s.user, character: { ...s.user.character, appearance: a } } }
             : {}
         ),
 

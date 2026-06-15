@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import TopBar from "@/components/TopBar";
-import Character from "@/components/Character";
+import Avatar from "@/components/Avatar";
 import { useAppStore, useMyTopGenre } from "@/store/useAppStore";
 import { GENRES, GENRE_LIST } from "@/lib/genres";
 import { sortedGenres } from "@/lib/taste";
@@ -75,7 +75,7 @@ export default function ProfilePage() {
             className="rounded-3xl p-2"
             style={{ background: `${GENRES[myGenre].color}18` }}
           >
-            <Character genre={myGenre} baseType={user.character.baseType} size={88} />
+            <Avatar appearance={user.character.appearance} size={88} />
           </div>
           <div className="flex-1 min-w-0">
             <p className="font-extrabold text-lg text-ink-900">{user.handle}</p>

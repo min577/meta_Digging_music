@@ -3,22 +3,24 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import Character from "@/components/Character";
+import Avatar from "@/components/Avatar";
 import TrackSearch from "@/components/TrackSearch";
-import { GENRE_LIST, type GenreId } from "@/lib/genres";
 import type { Track } from "@/lib/types";
 import { useAppStore } from "@/store/useAppStore";
 import { vectorFromTracks, sortedGenres } from "@/lib/taste";
 import { GENRES } from "@/lib/genres";
-
-const BASES: { id: string; genre: GenreId; label: string }[] = [
-  { id: "hood", genre: "lofi", label: "차분한 후디" },
-  { id: "shades", genre: "citypop", label: "네온 시티" },
-  { id: "fedora", genre: "jazz", label: "올드 재즈" },
-  { id: "glow", genre: "house", label: "디스코 글로우" },
-  { id: "glitter", genre: "kpop", label: "글리터 팝" },
-  { id: "antique", genre: "classical", label: "앤틱 클래식" },
-];
+import {
+  defaultAppearance,
+  SKIN_TONES,
+  HAIR_COLORS,
+  HAIR_STYLES,
+  OUTFIT_COLORS,
+  PANTS_COLORS,
+  HATS,
+  HAIR_LABEL,
+  HAT_LABEL,
+  type Appearance,
+} from "@/lib/appearance";
 
 const SITUATIONS = [
   "공부할 때",
@@ -31,15 +33,28 @@ const SITUATIONS = [
   "파티",
 ];
 
+type Part = "hair" | "hairColor" | "skin" | "outfit" | "pants" | "hat";
+const PARTS: { id: Part; label: string }[] = [
+  { id: "hair", label: "헤어" },
+  { id: "hairColor", label: "머리색" },
+  { id: "skin", label: "피부" },
+  { id: "outfit", label: "상의" },
+  { id: "pants", label: "하의" },
+  { id: "hat", label: "모자" },
+];
+
 export default function OnboardingPage() {
   const router = useRouter();
   const complete = useAppStore((s) => s.completeOnboarding);
 
   const [step, setStep] = useState(0);
   const [handle, setHandle] = useState("");
-  const [base, setBase] = useState(BASES[0]);
+  const [look, setLook] = useState<Appearance>(defaultAppearance());
+  const [part, setPart] = useState<Part>("hair");
   const [situations, setSituations] = useState<string[]>([]);
   const [seeds, setSeeds] = useState<Track[]>([]);
+
+  const set = (patch: Partial<Appearance>) => setLook((l) => ({ ...l, ...patch }));
 
   const toggleSituation = (s: string) =>
     setSituations((prev) =>
@@ -48,11 +63,8 @@ export default function OnboardingPage() {
 
   const pickSeed = (t: Track) =>
     setSeeds((prev) =>
-      prev.some((x) => x.id === t.id) || prev.length >= 3
-        ? prev
-        : [...prev, t]
+      prev.some((x) => x.id === t.id) || prev.length >= 3 ? prev : [...prev, t]
     );
-
   const removeSeed = (id: string) =>
     setSeeds((prev) => prev.filter((x) => x.id !== id));
 
@@ -61,7 +73,7 @@ export default function OnboardingPage() {
   const finish = () => {
     complete({
       handle: handle.trim() || "디깅러",
-      baseType: base.id,
+      appearance: look,
       situations,
       seedTracks: seeds,
     });
@@ -72,7 +84,6 @@ export default function OnboardingPage() {
 
   return (
     <div className="phone-shell min-h-[100dvh] flex flex-col px-5 pt-10 pb-6 bg-gradient-to-b from-cream-100 to-cream-200">
-      {/* 진행 점 */}
       <div className="flex gap-2 justify-center mb-6">
         {[0, 1, 2, 3].map((i) => (
           <div
@@ -91,7 +102,7 @@ export default function OnboardingPage() {
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -24 }}
           transition={{ duration: 0.25 }}
-          className="flex-1 flex flex-col"
+          className="flex-1 flex flex-col min-h-0"
         >
           {step === 0 && (
             <div className="flex-1 flex flex-col">
@@ -122,38 +133,108 @@ export default function OnboardingPage() {
           )}
 
           {step === 1 && (
-            <div className="flex-1 flex flex-col">
+            <div className="flex-1 flex flex-col min-h-0">
               <h2 className="text-xl font-extrabold text-ink-900">
-                캐릭터를 골라주세요
+                나만의 캐릭터 만들기
               </h2>
               <p className="text-ink-700/60 text-sm mt-1">
-                취향에 따라 외형이 계속 변해요.
+                헤어부터 옷까지 자유롭게 꾸며보세요.
               </p>
-              <div className="mt-5 flex justify-center">
-                <Character genre={base.genre} baseType={base.id} size={120} />
+
+              {/* 미리보기 */}
+              <div className="mt-4 flex justify-center">
+                <div className="rounded-3xl bg-cream-50 border border-cream-200 px-8 py-4 shadow-card">
+                  <Avatar appearance={look} size={120} />
+                </div>
               </div>
-              <div className="grid grid-cols-3 gap-3 mt-5">
-                {BASES.map((b) => (
+
+              {/* 파트 탭 */}
+              <div className="mt-4 flex gap-2 overflow-x-auto no-scrollbar">
+                {PARTS.map((p) => (
                   <button
-                    key={b.id}
-                    onClick={() => setBase(b)}
-                    className={`card p-2 flex flex-col items-center gap-1 transition ${
-                      base.id === b.id
-                        ? "ring-2 ring-brand"
-                        : "opacity-80"
+                    key={p.id}
+                    onClick={() => setPart(p.id)}
+                    className={`chip py-1.5 px-3 shrink-0 ${
+                      part === p.id
+                        ? "bg-brand text-white"
+                        : "bg-cream-50 text-ink-700 border border-cream-200"
                     }`}
                   >
-                    <Character
-                      genre={b.genre}
-                      baseType={b.id}
-                      size={52}
-                      animate={false}
-                    />
-                    <span className="text-[11px] font-semibold text-ink-700">
-                      {b.label}
-                    </span>
+                    {p.label}
                   </button>
                 ))}
+              </div>
+
+              {/* 옵션 그리드 */}
+              <div className="mt-3 card p-3 flex-1 min-h-0 overflow-y-auto no-scrollbar">
+                {part === "hair" && (
+                  <div className="grid grid-cols-4 gap-2">
+                    {HAIR_STYLES.map((h) => (
+                      <button
+                        key={h}
+                        onClick={() => set({ hair: h })}
+                        className={`rounded-xl p-1 flex flex-col items-center ${
+                          look.hair === h ? "ring-2 ring-brand bg-brand/5" : ""
+                        }`}
+                      >
+                        <Avatar
+                          appearance={{ ...look, hair: h }}
+                          size={44}
+                          bob={false}
+                        />
+                        <span className="text-[10px] text-ink-700/60">
+                          {HAIR_LABEL[h]}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {part === "hat" && (
+                  <div className="grid grid-cols-3 gap-2">
+                    {HATS.map((h) => (
+                      <button
+                        key={h}
+                        onClick={() => set({ hat: h })}
+                        className={`rounded-xl p-1 flex flex-col items-center ${
+                          look.hat === h ? "ring-2 ring-brand bg-brand/5" : ""
+                        }`}
+                      >
+                        <Avatar appearance={{ ...look, hat: h }} size={48} bob={false} />
+                        <span className="text-[10px] text-ink-700/60">
+                          {HAT_LABEL[h]}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {part === "hairColor" && (
+                  <Swatches
+                    colors={HAIR_COLORS}
+                    value={look.hairColor}
+                    onPick={(c) => set({ hairColor: c })}
+                  />
+                )}
+                {part === "skin" && (
+                  <Swatches
+                    colors={SKIN_TONES}
+                    value={look.skin}
+                    onPick={(c) => set({ skin: c })}
+                  />
+                )}
+                {part === "outfit" && (
+                  <Swatches
+                    colors={OUTFIT_COLORS}
+                    value={look.outfit}
+                    onPick={(c) => set({ outfit: c })}
+                  />
+                )}
+                {part === "pants" && (
+                  <Swatches
+                    colors={PANTS_COLORS}
+                    value={look.pants}
+                    onPick={(c) => set({ pants: c })}
+                  />
+                )}
               </div>
             </div>
           )}
@@ -204,10 +285,7 @@ export default function OnboardingPage() {
                       className="chip bg-brand/10 text-brand-dark py-1.5 flex items-center gap-1"
                     >
                       {GENRES[t.genre].emoji} {t.title.slice(0, 14)}
-                      <button
-                        onClick={() => removeSeed(t.id)}
-                        className="ml-1 font-bold"
-                      >
+                      <button onClick={() => removeSeed(t.id)} className="ml-1 font-bold">
                         ×
                       </button>
                     </span>
@@ -216,10 +294,7 @@ export default function OnboardingPage() {
               )}
 
               <div className="mt-3 flex-1 min-h-0">
-                <TrackSearch
-                  onPick={pickSeed}
-                  pickedIds={seeds.map((s) => s.id)}
-                />
+                <TrackSearch onPick={pickSeed} pickedIds={seeds.map((s) => s.id)} />
               </div>
 
               {seeds.length === 3 && (
@@ -236,10 +311,7 @@ export default function OnboardingPage() {
                         <div className="flex-1 h-2 rounded-full bg-cream-200 overflow-hidden">
                           <div
                             className="h-full rounded-full"
-                            style={{
-                              width: `${v * 100}%`,
-                              background: GENRES[g].color,
-                            }}
+                            style={{ width: `${v * 100}%`, background: GENRES[g].color }}
                           />
                         </div>
                         <span className="text-xs text-ink-700/60 w-9 text-right">
@@ -270,15 +342,36 @@ export default function OnboardingPage() {
             다음
           </button>
         ) : (
-          <button
-            onClick={finish}
-            disabled={!canNext}
-            className="btn-primary flex-1"
-          >
+          <button onClick={finish} disabled={!canNext} className="btn-primary flex-1">
             디깅 시작하기 →
           </button>
         )}
       </div>
+    </div>
+  );
+}
+
+function Swatches({
+  colors,
+  value,
+  onPick,
+}: {
+  colors: string[];
+  value: string;
+  onPick: (c: string) => void;
+}) {
+  return (
+    <div className="grid grid-cols-5 gap-3 py-1">
+      {colors.map((c) => (
+        <button
+          key={c}
+          onClick={() => onPick(c)}
+          className={`aspect-square rounded-2xl transition active:scale-95 ${
+            value === c ? "ring-2 ring-brand ring-offset-2 ring-offset-cream-50" : ""
+          }`}
+          style={{ background: c }}
+        />
+      ))}
     </div>
   );
 }

@@ -9,6 +9,7 @@ import type {
 } from "./types";
 import { CATALOG } from "./catalog";
 import { vectorFromTracks } from "./taste";
+import { defaultAppearance } from "./appearance";
 
 // 무드 공간(장소) — 기획서 3장 홈 캐러셀. Focustown의 National Library / Focus Plane / Stockholm Cafe 대응.
 export const LOCATIONS: Location[] = [
@@ -82,6 +83,7 @@ function room(
     title,
     visibility: "public",
     queueMode: "collab",
+    roomMode: "party",
     tasteVector: vectorFromTracks(tracks.length ? tracks : CATALOG),
     currentTrack: tracks[0]
       ? { track: tracks[0], startedAt: Date.now() - 30_000 }
@@ -106,16 +108,17 @@ export const ROOMS: Room[] = [
     { handle: "noir", base: "fedora", genre: "jazz" },
     { handle: "lune", base: "hood", genre: "lofi" },
   ]),
-  room("room_citypop_1", "loc_citypop", "citypop", "네온 시티팝 야간열차 🚆", "yuki", [
+  room("room_citypop_1", "loc_citypop", "citypop", "네온 시티팝 거리 🌃 (자유모드)", "yuki", [
     { handle: "yuki", base: "shades", genre: "citypop" },
     { handle: "rina", base: "shades", genre: "citypop" },
     { handle: "kenji", base: "shades", genre: "citypop" },
     { handle: "aoi", base: "hood", genre: "lofi" },
-  ]),
-  room("room_lofi_1", "loc_lofi", "lofi", "비 오는 날 공부방 ☔", "rain", [
+  ], { roomMode: "free" }),
+  room("room_lofi_1", "loc_lofi", "lofi", "자유로운 로파이 라운지 🎐 (자유모드)", "rain", [
     { handle: "rain", base: "hood", genre: "lofi" },
     { handle: "cozy", base: "hood", genre: "lofi" },
-  ], { capacity: 8 }),
+    { handle: "mellow", base: "hood", genre: "lofi" },
+  ], { capacity: 12, roomMode: "free" }),
   room("room_house_1", "loc_house", "house", "루프탑 하우스 파티 🪩", "dj_max", [
     { handle: "dj_max", base: "glow", genre: "house" },
     { handle: "neon", base: "glow", genre: "house" },
@@ -180,7 +183,7 @@ export function demoUser(): UserProfile {
     diggPoints: 340,
     level: 3,
     situations: ["공부할 때", "자기 전"],
-    character: { baseType: "hood", equipped: {}, evolutionStage: 1 },
+    character: { baseType: "custom", appearance: defaultAppearance(), equipped: {}, evolutionStage: 1 },
     createdAt: new Date().toISOString(),
   };
 }

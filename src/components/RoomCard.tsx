@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import Character from "./Character";
+import Avatar from "./Avatar";
+import { appearanceFromSeed } from "@/lib/appearance";
 import { GENRES } from "@/lib/genres";
 import { topGenre } from "@/lib/taste";
 import type { Room } from "@/lib/types";
@@ -44,12 +45,7 @@ export default function RoomCard({
           <div className="flex -space-x-3">
             {shown.map((m) => (
               <div key={m.userId} className="drop-shadow">
-                <Character
-                  genre={m.topGenre}
-                  baseType={m.baseType}
-                  size={44}
-                  animate={false}
-                />
+                <Avatar appearance={appearanceFromSeed(m.handle)} size={44} bob={false} />
               </div>
             ))}
             {extra > 0 && (

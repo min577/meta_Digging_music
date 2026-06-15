@@ -9,12 +9,16 @@ export default function AudioPlayer({
   previewUrl,
   startedAt,
   muted,
+  volume = 1,
+  loop = false,
   onProgress,
   onEnded,
 }: {
   previewUrl: string;
   startedAt: number;
   muted: boolean;
+  volume?: number; // 0~1 (자유모드 근접 볼륨)
+  loop?: boolean; // 자유모드 스피커는 반복 재생
   onProgress?: (sec: number, duration: number) => void;
   onEnded?: () => void;
 }) {
@@ -38,13 +42,14 @@ export default function AudioPlayer({
     return () => a.removeEventListener("loadedmetadata", seekToLive);
   }, [previewUrl, startedAt]);
 
-  // 음소거 토글
+  // 음소거 / 볼륨 (근접 오디오)
   useEffect(() => {
     const a = audioRef.current;
     if (!a) return;
     a.muted = muted;
+    a.volume = Math.max(0, Math.min(1, volume));
     if (!muted) a.play().catch(() => {});
-  }, [muted]);
+  }, [muted, volume]);
 
   // 진행률 추적 + drift 보정
   useEffect(() => {
@@ -68,6 +73,7 @@ export default function AudioPlayer({
       ref={audioRef}
       src={previewUrl}
       preload="auto"
+      loop={loop}
       onEnded={() => onEnded?.()}
     />
   );

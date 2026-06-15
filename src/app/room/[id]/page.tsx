@@ -4,15 +4,24 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import AudioPlayer from "@/components/AudioPlayer";
-import Character from "@/components/Character";
+import RoomMap, { type MapAvatar, type Speaker } from "@/components/RoomMap";
 import TrackSearch from "@/components/TrackSearch";
 import { useRoomSession } from "@/hooks/useRoomSession";
 import { useAppStore, useMyTopGenre } from "@/store/useAppStore";
-import { GENRES } from "@/lib/genres";
+import { GENRES, GENRE_LIST } from "@/lib/genres";
 import { topGenre } from "@/lib/taste";
+import { tracksByGenre } from "@/lib/music";
+import { appearanceFromSeed, defaultAppearance } from "@/lib/appearance";
 import type { Track } from "@/lib/types";
 
 const REACTIONS = ["❤️", "🔥", "🎶", "😭", "🕺", "👏"];
+const SPOTS = [
+  { x: 150, y: 120 },
+  { x: 450, y: 120 },
+  { x: 150, y: 300 },
+  { x: 450, y: 300 },
+];
+type SpeakerT = Speaker & { track: Track };
 
 export default function RoomPage() {
   const { id } = useParams<{ id: string }>();
@@ -28,33 +37,86 @@ export default function RoomPage() {
   const session = useRoomSession(
     id,
     user?.handle ?? "나",
-    user?.character.baseType ?? "hood",
-    myGenre
+    user?.character.baseType ?? "custom",
+    myGenre,
+    user?.character.appearance
   );
 
   const [muted, setMuted] = useState(true);
   const [progress, setProgress] = useState({ cur: 0, dur: 0 });
-  const [tab, setTab] = useState<"queue" | "chat">("queue");
+  const [tab, setTab] = useState<"queue" | "chat">("chat");
   const [showSuggest, setShowSuggest] = useState(false);
   const [chatInput, setChatInput] = useState("");
   const [savedToast, setSavedToast] = useState(false);
+  const [speakers, setSpeakers] = useState<SpeakerT[]>([]);
+  const [nearest, setNearest] = useState<{ id: string | null; vol: number }>({
+    id: null,
+    vol: 0,
+  });
   const listenAccum = useRef(0);
   const chatEndRef = useRef<HTMLDivElement>(null);
+
+  const room = session.room;
+  const mode = room?.roomMode ?? "party";
 
   useEffect(() => {
     enterRoom(id);
   }, [id, enterRoom]);
-
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [session.chat.length]);
-
-  // 30초 이상 청취 시 취향 벡터에 반영
   useEffect(() => {
     listenAccum.current = 0;
   }, [session.play?.track.id]);
+  useEffect(() => {
+    setTab(mode === "party" && room?.queueMode === "collab" ? "queue" : "chat");
+  }, [mode, room?.queueMode]);
 
-  if (!session.room) {
+  const roomGenre = room ? topGenre(room.tasteVector) : "lofi";
+
+  // 자유모드: 맵에 장르별 음악 존(스피커) 배치
+  useEffect(() => {
+    if (!room || mode !== "free") return;
+    let active = true;
+    (async () => {
+      const genres = [
+        roomGenre,
+        ...GENRE_LIST.map((g) => g.id).filter((x) => x !== roomGenre),
+      ].slice(0, SPOTS.length);
+      const out: SpeakerT[] = [];
+      for (let i = 0; i < genres.length; i++) {
+        const tr = await tracksByGenre(genres[i], 1);
+        if (tr[0])
+          out.push({
+            id: `spk_${genres[i]}`,
+            x: SPOTS[i].x,
+            y: SPOTS[i].y,
+            genre: genres[i],
+            label: GENRES[genres[i]].label,
+            track: tr[0],
+          });
+      }
+      if (active) setSpeakers(out);
+    })();
+    return () => {
+      active = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [room?.id, mode, roomGenre]);
+
+  // 맵 NPC (룸 멤버)
+  const npcs = useMemo<MapAvatar[]>(() => {
+    if (!room) return [];
+    return room.members.map((m, i) => ({
+      id: m.userId,
+      handle: m.handle,
+      appearance: appearanceFromSeed(m.handle),
+      x: 110 + (i % 4) * 130,
+      y: 130 + Math.floor(i / 4) * 110,
+    }));
+  }, [room]);
+
+  if (!room) {
     return (
       <div className="phone-shell min-h-[100dvh] grid place-items-center">
         <div className="text-center">
@@ -67,23 +129,22 @@ export default function RoomPage() {
     );
   }
 
-  const room = session.room;
-  const g = GENRES[session.play ? session.play.track.genre : topGenre(room.tasteVector)];
-  const track = session.play?.track;
+  // 현재 들리는 곡: party=동기화 곡, free=가장 가까운 스피커
+  const audible = mode === "free" ? speakers.find((s) => s.id === nearest.id) : null;
+  const track = mode === "free" ? audible?.track : session.play?.track;
+  const g = GENRES[track ? track.genre : roomGenre];
   const pct = progress.dur > 0 ? (progress.cur / progress.dur) * 100 : 0;
-  const isHost = room.queueMode === "dj"; // 데모: dj 모드면 스킵 권한
+  const isHost = room.queueMode === "dj";
 
   const handleProgress = (cur: number, dur: number) => {
     setProgress({ cur, dur });
     listenAccum.current += 1;
-    if (listenAccum.current === 30 && track) {
-      logListen(track, 30);
-    }
+    if (listenAccum.current === 30 && track) logListen(track, 30);
   };
 
   const onSaveDigg = () => {
     if (!track) return;
-    const isNew = addDigg(track, room.id);
+    addDigg(track, room.id);
     setSavedToast(true);
     setTimeout(() => setSavedToast(false), 1500);
   };
@@ -117,8 +178,8 @@ export default function RoomPage() {
         <div className="text-center">
           <p className="font-bold text-sm truncate max-w-[200px]">{room.title}</p>
           <p className="text-[11px] text-white/70">
-            👥 {session.online}명 ·{" "}
-            {session.connected === "realtime" ? "🟢 실시간 동기화" : "🟡 데모 동기화"}
+            {mode === "free" ? "🎐 자유모드" : "🎙 리스닝 파티"} · 👥 {session.online} ·{" "}
+            {session.connected === "realtime" ? "🟢 동기화" : "🟡 데모"}
           </p>
         </div>
         <button
@@ -129,134 +190,142 @@ export default function RoomPage() {
         </button>
       </header>
 
-      {/* Now Playing — 30초 미리듣기 + 앨범아트 */}
+      {/* Now Playing 바 */}
       <div className="px-4">
-        <div
-          className="relative w-full rounded-2xl overflow-hidden shadow-soft py-6 flex items-center justify-center"
-          style={{ background: `linear-gradient(135deg, ${g.bg[0]}, ${g.bg[1]})` }}
-        >
-          <span className="absolute top-2 right-2 chip bg-black/35 text-white text-[10px]">
-            ▶ 30초 미리듣기
-          </span>
+        <div className="card p-2.5 flex items-center gap-3">
           {track?.artwork ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={track.artwork}
-              alt={track.title}
-              className="w-36 h-36 rounded-2xl object-cover shadow-soft"
-            />
+            <img src={track.artwork} alt="" className="w-12 h-12 rounded-xl object-cover" />
           ) : (
-            <div className="w-36 h-36 rounded-2xl grid place-items-center text-5xl bg-black/20">
+            <div
+              className="w-12 h-12 rounded-xl grid place-items-center text-xl"
+              style={{ background: g.color + "22" }}
+            >
               {g.emoji}
             </div>
           )}
-          {session.play && track?.previewUrl && (
-            <AudioPlayer
-              previewUrl={track.previewUrl}
-              startedAt={session.play.startedAt}
-              muted={muted}
-              onProgress={handleProgress}
-              onEnded={session.skip}
-            />
+          <div className="min-w-0 flex-1">
+            {track ? (
+              <>
+                <p className="text-sm font-bold truncate text-ink-900">{track.title}</p>
+                <p className="text-[11px] text-ink-700/55 truncate">
+                  {track.artist} · {g.emoji} {g.label}
+                  {mode === "free" && (
+                    <span className="ml-1 text-brand-dark font-bold">
+                      🔊 {Math.round(nearest.vol * 100)}%
+                    </span>
+                  )}
+                </p>
+              </>
+            ) : (
+              <p className="text-sm text-ink-700/50">
+                {mode === "free" ? "음악 존으로 다가가 보세요 🎐" : "곡 불러오는 중…"}
+              </p>
+            )}
+          </div>
+          {track && (
+            <button
+              onClick={onSaveDigg}
+              className={`w-9 h-9 rounded-full grid place-items-center ${
+                hasDigg(track.id) ? "bg-brand text-white" : "bg-cream-100"
+              }`}
+              title="디깅함 저장"
+            >
+              {hasDigg(track.id) ? "💾" : "＋"}
+            </button>
+          )}
+          {mode === "party" && isHost && (
+            <button
+              onClick={session.skip}
+              className="w-9 h-9 rounded-full bg-cream-100 grid place-items-center"
+            >
+              ⏭
+            </button>
           )}
         </div>
-        {track && (
-          <div className="mt-2 flex items-center justify-between text-white">
-            <div className="min-w-0">
-              <p className="font-bold truncate">{track.title}</p>
-              <p className="text-xs text-white/70 truncate">
-                {track.artist} · {g.emoji} {g.label}
-              </p>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <button
-                onClick={onSaveDigg}
-                className={`w-10 h-10 rounded-full grid place-items-center text-lg ${
-                  hasDigg(track.id) ? "bg-white text-brand" : "bg-black/25"
-                }`}
-                title="디깅함 저장"
-              >
-                {hasDigg(track.id) ? "💾" : "＋"}
-              </button>
-              {isHost && (
-                <button
-                  onClick={session.skip}
-                  className="w-10 h-10 rounded-full bg-black/25 grid place-items-center"
-                  title="다음 곡"
-                >
-                  ⏭
-                </button>
-              )}
-            </div>
+        {mode === "party" && (
+          <div className="mt-1.5 h-1.5 rounded-full bg-white/25 overflow-hidden">
+            <div className="h-full bg-white rounded-full" style={{ width: `${pct}%` }} />
           </div>
         )}
-        {/* 진행바 */}
-        <div className="mt-2 h-1.5 rounded-full bg-white/20 overflow-hidden">
-          <div
-            className="h-full bg-white rounded-full transition-all"
-            style={{ width: `${pct}%` }}
-          />
-        </div>
       </div>
 
-      {/* 캐릭터 무대 + 반응 */}
-      <div className="relative flex-1 min-h-[140px] mt-2 overflow-hidden">
-        <div className="absolute inset-0 flex flex-wrap items-center justify-center gap-1 px-4">
-          {/* 나 */}
-          <div className="flex flex-col items-center">
-            <Character genre={myGenre} baseType={user?.character.baseType} size={64} bpm={g.bpm} />
-            <span className="text-[10px] text-white/80 font-semibold">나</span>
-          </div>
-          {room.members.slice(0, 7).map((m) => (
-            <div key={m.userId} className="flex flex-col items-center">
-              <Character genre={m.topGenre} baseType={m.baseType} size={56} bpm={g.bpm} />
-              <span className="text-[10px] text-white/70 truncate max-w-[56px]">
-                {m.handle}
-              </span>
-            </div>
-          ))}
-        </div>
+      {/* 오디오 엔진 */}
+      {mode === "party" && session.play && track?.previewUrl && (
+        <AudioPlayer
+          previewUrl={track.previewUrl}
+          startedAt={session.play.startedAt}
+          muted={muted}
+          onProgress={handleProgress}
+          onEnded={session.skip}
+        />
+      )}
+      {mode === "free" && audible?.track.previewUrl && (
+        <AudioPlayer
+          key={audible.id}
+          previewUrl={audible.track.previewUrl}
+          startedAt={0}
+          loop
+          volume={nearest.vol}
+          muted={muted || nearest.vol <= 0}
+        />
+      )}
 
-        {/* 떠다니는 반응 */}
-        <div className="pointer-events-none absolute inset-0">
-          <AnimatePresence>
-            {session.reactions.map((r, i) => (
-              <span
-                key={r.id}
-                className="float-heart absolute text-2xl"
-                style={{ left: `${15 + ((i * 23) % 70)}%`, bottom: 10 }}
-              >
-                {r.emoji}
-              </span>
-            ))}
-          </AnimatePresence>
-        </div>
+      {/* 맵 */}
+      <div className="px-4 mt-2">
+        <RoomMap
+          meAppearance={user?.character.appearance ?? defaultAppearance()}
+          meHandle={user?.handle ?? "나"}
+          npcs={npcs}
+          remote={session.remotePlayers}
+          speakers={mode === "free" ? speakers : []}
+          bg={g.bg}
+          onMove={session.broadcastMove}
+          onNearestSource={(sid, vol) => setNearest({ id: sid, vol })}
+        />
       </div>
 
       {/* 반응 버튼 */}
-      <div className="px-4 flex gap-2 justify-center pb-1">
+      <div className="px-4 mt-2 flex gap-2 justify-center">
         {REACTIONS.map((e) => (
           <button
             key={e}
             onClick={() => session.react(e)}
-            className="w-10 h-10 rounded-full bg-black/20 backdrop-blur grid place-items-center text-lg active:scale-90 transition"
+            className="w-9 h-9 rounded-full bg-black/20 backdrop-blur grid place-items-center text-lg active:scale-90 transition"
           >
             {e}
           </button>
         ))}
       </div>
 
+      {/* 떠다니는 반응 */}
+      <div className="pointer-events-none fixed inset-x-0 bottom-[40vh] max-w-[440px] mx-auto h-0">
+        <AnimatePresence>
+          {session.reactions.map((r, i) => (
+            <span
+              key={r.id}
+              className="float-heart absolute text-2xl"
+              style={{ left: `${15 + ((i * 23) % 70)}%` }}
+            >
+              {r.emoji}
+            </span>
+          ))}
+        </AnimatePresence>
+      </div>
+
       {/* 큐 / 채팅 패널 */}
-      <div className="bg-cream-50 rounded-t-3xl mt-2 flex flex-col min-h-[34vh] max-h-[44vh]">
+      <div className="bg-cream-50 rounded-t-3xl mt-2 flex flex-col flex-1 min-h-[26vh] max-h-[40vh]">
         <div className="flex items-center gap-2 px-4 pt-3">
-          <button
-            onClick={() => setTab("queue")}
-            className={`chip py-1.5 px-4 ${
-              tab === "queue" ? "bg-brand text-white" : "bg-cream-100 text-ink-700"
-            }`}
-          >
-            🤝 큐 ({session.queue.length})
-          </button>
+          {mode === "party" && (
+            <button
+              onClick={() => setTab("queue")}
+              className={`chip py-1.5 px-4 ${
+                tab === "queue" ? "bg-brand text-white" : "bg-cream-100 text-ink-700"
+              }`}
+            >
+              🤝 큐 ({session.queue.length})
+            </button>
+          )}
           <button
             onClick={() => setTab("chat")}
             className={`chip py-1.5 px-4 ${
@@ -265,7 +334,7 @@ export default function RoomPage() {
           >
             💬 채팅
           </button>
-          {room.queueMode === "collab" && tab === "queue" && (
+          {mode === "party" && room.queueMode === "collab" && tab === "queue" && (
             <button
               onClick={() => setShowSuggest(true)}
               className="ml-auto chip py-1.5 px-3 bg-brand/10 text-brand-dark font-bold"
@@ -275,9 +344,8 @@ export default function RoomPage() {
           )}
         </div>
 
-        {/* 내용 */}
         <div className="flex-1 overflow-y-auto no-scrollbar px-4 py-3">
-          {tab === "queue" ? (
+          {tab === "queue" && mode === "party" ? (
             <div className="space-y-2">
               {session.queue.length === 0 && (
                 <p className="text-center text-ink-700/40 text-sm py-6">
@@ -288,9 +356,7 @@ export default function RoomPage() {
                 const ig = GENRES[item.track.genre];
                 return (
                   <div key={item.id} className="flex items-center gap-3 card px-3 py-2">
-                    <span className="text-xs font-bold text-ink-700/40 w-4">
-                      {idx + 1}
-                    </span>
+                    <span className="text-xs font-bold text-ink-700/40 w-4">{idx + 1}</span>
                     <span
                       className="w-8 h-8 rounded-lg grid place-items-center"
                       style={{ background: ig.color + "22" }}
@@ -298,9 +364,7 @@ export default function RoomPage() {
                       {ig.emoji}
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold truncate">
-                        {item.track.title}
-                      </p>
+                      <p className="text-sm font-semibold truncate">{item.track.title}</p>
                       <p className="text-[11px] text-ink-700/50 truncate">
                         {item.track.artist} · {item.suggestedByHandle} 제안
                       </p>
@@ -308,9 +372,7 @@ export default function RoomPage() {
                     <button
                       onClick={() => session.like(item.id)}
                       className={`flex items-center gap-1 chip py-1 px-2.5 ${
-                        item.likedByMe
-                          ? "bg-live/15 text-live"
-                          : "bg-cream-100 text-ink-700"
+                        item.likedByMe ? "bg-live/15 text-live" : "bg-cream-100 text-ink-700"
                       }`}
                     >
                       ❤️ {item.likes}
@@ -321,6 +383,11 @@ export default function RoomPage() {
             </div>
           ) : (
             <div className="space-y-2">
+              {mode === "free" && (
+                <p className="text-[11px] text-ink-700/45 text-center pb-1">
+                  맵의 🔊 음악 존에 가까이 갈수록 그 음악이 크게 들려요.
+                </p>
+              )}
               {session.chat.map((m) => (
                 <div key={m.id} className="text-sm">
                   <span className="font-bold text-ink-800">{m.handle}</span>{" "}
@@ -332,7 +399,6 @@ export default function RoomPage() {
           )}
         </div>
 
-        {/* 채팅 입력 */}
         {tab === "chat" && (
           <div className="px-4 pb-4 pt-1 flex gap-2">
             <input

@@ -1,0 +1,116 @@
+// 아바타 페이퍼돌 외형 모델 + 선택 옵션 (동물의 숲 느낌 커스터마이징)
+
+export type HairStyle =
+  | "short"
+  | "bob"
+  | "long"
+  | "ponytail"
+  | "spiky"
+  | "bun"
+  | "curly"
+  | "bald";
+
+export type HatStyle = "none" | "cap" | "beanie" | "headphones" | "fedora" | "flower";
+
+export interface Appearance {
+  skin: string;
+  hair: HairStyle;
+  hairColor: string;
+  outfit: string; // 상의 색
+  pants: string; // 하의 색
+  hat: HatStyle;
+}
+
+export const SKIN_TONES = ["#FBE2C8", "#F2C9A0", "#E0A878", "#C68642", "#8D5524"];
+
+export const HAIR_COLORS = [
+  "#2A251D", // 검정
+  "#5A3A22", // 갈색
+  "#B5894B", // 다크블론드
+  "#E6C36B", // 금발
+  "#C0392B", // 빨강
+  "#6C8AE4", // 파랑
+  "#FF6EC7", // 핑크
+  "#9B59B6", // 보라
+  "#46D8C5", // 민트
+  "#E8E8E8", // 백발
+];
+
+export const HAIR_STYLES: HairStyle[] = [
+  "short",
+  "bob",
+  "long",
+  "ponytail",
+  "spiky",
+  "bun",
+  "curly",
+  "bald",
+];
+
+export const OUTFIT_COLORS = [
+  "#6C8AE4",
+  "#FF5A5F",
+  "#46D8C5",
+  "#FFB23E",
+  "#9B59B6",
+  "#2ECC71",
+  "#34495E",
+  "#FF6EC7",
+];
+
+export const PANTS_COLORS = ["#3E4A5E", "#6B4A2B", "#2A2A35", "#5A6B8C", "#7A7A7A"];
+
+export const HATS: HatStyle[] = [
+  "none",
+  "cap",
+  "beanie",
+  "headphones",
+  "fedora",
+  "flower",
+];
+
+export const HAT_LABEL: Record<HatStyle, string> = {
+  none: "없음",
+  cap: "🧢 캡",
+  beanie: "🧶 비니",
+  headphones: "🎧 헤드폰",
+  fedora: "🎩 페도라",
+  flower: "🌸 꽃",
+};
+
+export const HAIR_LABEL: Record<HairStyle, string> = {
+  short: "숏",
+  bob: "단발",
+  long: "롱",
+  ponytail: "포니테일",
+  spiky: "스파이크",
+  bun: "번",
+  curly: "곱슬",
+  bald: "민머리",
+};
+
+export function defaultAppearance(): Appearance {
+  return {
+    skin: SKIN_TONES[1],
+    hair: "short",
+    hairColor: HAIR_COLORS[0],
+    outfit: OUTFIT_COLORS[0],
+    pants: PANTS_COLORS[0],
+    hat: "none",
+  };
+}
+
+// 핸들(닉네임) 기반 결정적 외형 — NPC/다른 유저용
+export function appearanceFromSeed(seed: string): Appearance {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
+  const pick = <T,>(arr: T[], salt: number) => arr[(h + salt) % arr.length];
+  return {
+    skin: pick(SKIN_TONES, 1),
+    hair: pick(HAIR_STYLES.filter((s) => s !== "bald"), 2),
+    hairColor: pick(HAIR_COLORS, 3),
+    outfit: pick(OUTFIT_COLORS, 5),
+    pants: pick(PANTS_COLORS, 7),
+    hat: pick(HATS, 11),
+  };
+}

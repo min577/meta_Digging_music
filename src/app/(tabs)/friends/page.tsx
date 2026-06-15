@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from "react";
 import TopBar from "@/components/TopBar";
-import Character from "@/components/Character";
+import Avatar from "@/components/Avatar";
+import { appearanceFromSeed } from "@/lib/appearance";
 import { useAppStore } from "@/store/useAppStore";
 import { GENRES } from "@/lib/genres";
 import { matchPercent } from "@/lib/taste";
@@ -106,7 +107,7 @@ export default function FriendsPage() {
           <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1">
             {suggestions.map((s) => (
               <div key={s.userId} className="card shrink-0 w-32 p-3 text-center">
-                <Character genre={s.topGenre} size={56} animate={false} />
+                <Avatar appearance={appearanceFromSeed(s.handle)} size={56} bob={false} />
                 <p className="font-bold text-sm mt-1 truncate">{s.handle}</p>
                 <p className="text-[11px] text-ink-700/50">
                   {GENRES[s.topGenre].emoji} {s.matchPct}% 일치
@@ -129,7 +130,7 @@ export default function FriendsPage() {
         <div className="space-y-2">
           {filtered.map((f) => (
             <div key={f.userId} className="card px-3 py-2.5 flex items-center gap-3">
-              <Character genre={f.topGenre} size={44} animate={false} />
+              <Avatar appearance={appearanceFromSeed(f.handle)} size={44} bob={false} />
               <div className="flex-1 min-w-0">
                 <p className="font-bold text-sm truncate">{f.handle}</p>
                 <p className="text-[11px] text-ink-700/50">

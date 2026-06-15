@@ -8,7 +8,12 @@ import { LOCATIONS } from "@/lib/mock";
 import { GENRES } from "@/lib/genres";
 import { vectorFromTracks } from "@/lib/taste";
 import { useAppStore, useMyTopGenre } from "@/store/useAppStore";
-import type { Room, Track, QueueMode, RoomVisibility } from "@/lib/types";
+import type { Room, Track, QueueMode, RoomVisibility, RoomMode } from "@/lib/types";
+
+const ROOM_MODES: { id: RoomMode; label: string; desc: string }[] = [
+  { id: "party", label: "🎙 리스닝 파티", desc: "호스트가 전체 음악을 운영, 다 같이 같은 곡" },
+  { id: "free", label: "🎐 자유모드", desc: "맵을 돌아다니며 가까운 음악 존의 곡이 들림" },
+];
 
 const MODES: { id: QueueMode; label: string; desc: string }[] = [
   { id: "collab", label: "🤝 협업 큐", desc: "모두 곡 제안 → 좋아요순" },
@@ -30,6 +35,7 @@ export default function CreateRoomPage() {
 
   const [loc, setLoc] = useState(LOCATIONS[0]);
   const [title, setTitle] = useState("");
+  const [roomMode, setRoomMode] = useState<RoomMode>("party");
   const [mode, setMode] = useState<QueueMode>("collab");
   const [vis, setVis] = useState<RoomVisibility>("public");
   const [seed, setSeed] = useState<Track | null>(null);
@@ -45,6 +51,7 @@ export default function CreateRoomPage() {
       title: title.trim() || `${loc.name} 디깅`,
       visibility: vis,
       queueMode: mode,
+      roomMode,
       tasteVector: vectorFromTracks(seed ? [seed] : [{ genre: loc.primaryGenre } as Track]),
       currentTrack: seed ? { track: seed, startedAt: Date.now() } : null,
       capacity: 12,
@@ -103,25 +110,49 @@ export default function CreateRoomPage() {
         maxLength={28}
       />
 
-      {/* 큐 모드 */}
-      <p className="text-sm font-bold text-ink-800 mt-5 mb-2">큐 운영 모드</p>
+      {/* 룸 모드 */}
+      <p className="text-sm font-bold text-ink-800 mt-5 mb-2">룸 모드</p>
       <div className="space-y-2">
-        {MODES.map((m) => (
+        {ROOM_MODES.map((m) => (
           <button
             key={m.id}
-            onClick={() => setMode(m.id)}
+            onClick={() => setRoomMode(m.id)}
             className={`w-full card px-4 py-3 flex items-center justify-between transition ${
-              mode === m.id ? "ring-2 ring-brand" : ""
+              roomMode === m.id ? "ring-2 ring-brand" : ""
             }`}
           >
             <span>
               <span className="font-bold text-sm">{m.label}</span>
               <span className="block text-xs text-ink-700/55">{m.desc}</span>
             </span>
-            {mode === m.id && <span className="text-brand font-bold">✓</span>}
+            {roomMode === m.id && <span className="text-brand font-bold">✓</span>}
           </button>
         ))}
       </div>
+
+      {/* 큐 모드 (리스닝 파티 전용) */}
+      {roomMode === "party" && (
+        <>
+          <p className="text-sm font-bold text-ink-800 mt-5 mb-2">큐 운영 모드</p>
+          <div className="space-y-2">
+            {MODES.map((m) => (
+              <button
+                key={m.id}
+                onClick={() => setMode(m.id)}
+                className={`w-full card px-4 py-3 flex items-center justify-between transition ${
+                  mode === m.id ? "ring-2 ring-brand" : ""
+                }`}
+              >
+                <span>
+                  <span className="font-bold text-sm">{m.label}</span>
+                  <span className="block text-xs text-ink-700/55">{m.desc}</span>
+                </span>
+                {mode === m.id && <span className="text-brand font-bold">✓</span>}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
 
       {/* 공개 범위 */}
       <p className="text-sm font-bold text-ink-800 mt-5 mb-2">공개 범위</p>

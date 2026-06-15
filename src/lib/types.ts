@@ -1,13 +1,17 @@
 import type { GenreId } from "./genres";
+import type { Appearance } from "./appearance";
 
 /** 장르 비율 벡터 — 기획서 6장: {jazz:0.4, citypop:0.3, lofi:0.3} */
 export type TasteVector = Partial<Record<GenreId, number>>;
 
 export type QueueMode = "dj" | "collab" | "radio";
 export type RoomVisibility = "public" | "unlisted" | "friends";
+/** party = 호스트가 전체 음악 운영(동기화) · free = 자유 이동 + 근접 오디오 */
+export type RoomMode = "party" | "free";
 
 export interface CharacterState {
-  baseType: string; // 베이스 캐릭터 id
+  baseType: string; // 레거시 베이스 id (호환용)
+  appearance: Appearance; // 커스터마이징 외형 (헤어/피부/옷/모자)
   equipped: Record<string, string>; // 슬롯 -> 아이템 id
   evolutionStage: number; // 0~3
 }
@@ -59,6 +63,7 @@ export interface Room {
   title: string;
   visibility: RoomVisibility;
   queueMode: QueueMode;
+  roomMode: RoomMode; // party | free
   tasteVector: TasteVector; // 룸 곡 분포 (추천용)
   currentTrack: { track: Track; startedAt: number } | null;
   capacity: number;
