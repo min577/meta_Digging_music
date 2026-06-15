@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import YouTubePlayer from "@/components/YouTubePlayer";
+import AudioPlayer from "@/components/AudioPlayer";
 import Character from "@/components/Character";
 import TrackSearch from "@/components/TrackSearch";
 import { useRoomSession } from "@/hooks/useRoomSession";
@@ -52,7 +52,7 @@ export default function RoomPage() {
   // 30초 이상 청취 시 취향 벡터에 반영
   useEffect(() => {
     listenAccum.current = 0;
-  }, [session.play?.track.videoId]);
+  }, [session.play?.track.id]);
 
   if (!session.room) {
     return (
@@ -129,12 +129,30 @@ export default function RoomPage() {
         </button>
       </header>
 
-      {/* Now Playing */}
+      {/* Now Playing — 30초 미리듣기 + 앨범아트 */}
       <div className="px-4">
-        <div className="aspect-video w-full rounded-2xl overflow-hidden shadow-soft bg-black">
-          {session.play && track && (
-            <YouTubePlayer
-              videoId={track.videoId}
+        <div
+          className="relative w-full rounded-2xl overflow-hidden shadow-soft py-6 flex items-center justify-center"
+          style={{ background: `linear-gradient(135deg, ${g.bg[0]}, ${g.bg[1]})` }}
+        >
+          <span className="absolute top-2 right-2 chip bg-black/35 text-white text-[10px]">
+            ▶ 30초 미리듣기
+          </span>
+          {track?.artwork ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={track.artwork}
+              alt={track.title}
+              className="w-36 h-36 rounded-2xl object-cover shadow-soft"
+            />
+          ) : (
+            <div className="w-36 h-36 rounded-2xl grid place-items-center text-5xl bg-black/20">
+              {g.emoji}
+            </div>
+          )}
+          {session.play && track?.previewUrl && (
+            <AudioPlayer
+              previewUrl={track.previewUrl}
               startedAt={session.play.startedAt}
               muted={muted}
               onProgress={handleProgress}
@@ -154,11 +172,11 @@ export default function RoomPage() {
               <button
                 onClick={onSaveDigg}
                 className={`w-10 h-10 rounded-full grid place-items-center text-lg ${
-                  hasDigg(track.videoId) ? "bg-white text-brand" : "bg-black/25"
+                  hasDigg(track.id) ? "bg-white text-brand" : "bg-black/25"
                 }`}
                 title="디깅함 저장"
               >
-                {hasDigg(track.videoId) ? "💾" : "＋"}
+                {hasDigg(track.id) ? "💾" : "＋"}
               </button>
               {isHost && (
                 <button

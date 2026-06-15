@@ -26,11 +26,13 @@ export interface UserProfile {
 }
 
 export interface Track {
-  videoId: string;
+  id: string; // iTunes trackId (고유 식별자)
   title: string;
   artist: string;
   genre: GenreId;
-  durationSec: number;
+  durationSec: number; // 미리듣기 길이 (~30초)
+  previewUrl: string; // 30초 미리듣기 오디오 (iTunes)
+  artwork: string; // 앨범 아트 URL
 }
 
 export interface Location {

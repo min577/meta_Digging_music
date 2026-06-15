@@ -19,7 +19,7 @@ import { updateVector, vectorFromTracks, topGenre } from "@/lib/taste";
 interface ListenEvent {
   genre: GenreId;
   artist: string;
-  videoId: string;
+  id: string;
   seconds: number;
   at: number;
 }
@@ -54,8 +54,8 @@ interface AppState {
 
   // ---- 디깅함 ----
   addDigg: (track: Track, roomId: string | null) => boolean; // 신규면 true
-  removeDigg: (videoId: string) => void;
-  hasDigg: (videoId: string) => boolean;
+  removeDigg: (id: string) => void;
+  hasDigg: (id: string) => boolean;
 
   // ---- 청취/취향 ----
   logListen: (track: Track, seconds: number) => void;
@@ -142,10 +142,10 @@ export const useAppStore = create<AppState>()(
         }),
 
       addDigg: (track, roomId) => {
-        const exists = get().diggs.some((d) => d.track.videoId === track.videoId);
+        const exists = get().diggs.some((d) => d.track.id === track.id);
         if (exists) return false;
         const digg: Digg = {
-          id: `digg_${track.videoId}_${get().diggs.length}`,
+          id: `digg_${track.id}_${get().diggs.length}`,
           track,
           discoveredInRoom: roomId,
           createdAt: new Date().toISOString(),
@@ -157,10 +157,10 @@ export const useAppStore = create<AppState>()(
         return true;
       },
 
-      removeDigg: (videoId) =>
-        set((s) => ({ diggs: s.diggs.filter((d) => d.track.videoId !== videoId) })),
+      removeDigg: (id) =>
+        set((s) => ({ diggs: s.diggs.filter((d) => d.track.id !== id) })),
 
-      hasDigg: (videoId) => get().diggs.some((d) => d.track.videoId === videoId),
+      hasDigg: (id) => get().diggs.some((d) => d.track.id === id),
 
       logListen: (track, seconds) =>
         set((s) => {
@@ -169,7 +169,7 @@ export const useAppStore = create<AppState>()(
           const ev: ListenEvent = {
             genre: track.genre,
             artist: track.artist,
-            videoId: track.videoId,
+            id: track.id,
             seconds,
             at: Date.now(),
           };

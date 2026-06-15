@@ -4,8 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useAppStore } from "@/store/useAppStore";
 import { ROOMS } from "@/lib/mock";
-import { CATALOG, searchCatalog } from "@/lib/catalog";
-import { vectorFromTracks } from "@/lib/taste";
+import { tracksByGenre } from "@/lib/music";
+import { topGenre } from "@/lib/taste";
 import type {
   Room,
   Track,
@@ -76,21 +76,27 @@ export function useRoomSession(
     topGenre: myGenre,
   });
 
-  // 초기 큐 시드 (협업 큐 데모: 같은 장르 곡 몇 개 + 좋아요)
+  // 초기 재생곡 + 큐 시드 — iTunes에서 룸 장르의 실제 곡(30초 미리듣기)을 가져온다.
   useEffect(() => {
     if (!room) return;
-    const genre = room.currentTrack?.track.genre ?? "lofi";
-    const seeds = CATALOG.filter((t) => t.genre === genre).slice(1, 4);
-    const extra = CATALOG.filter((t) => t.genre !== genre).slice(0, 2);
-    const seedQueue: QueueItem[] = [...seeds, ...extra].map((t, i) => ({
-      id: `q_${t.videoId}`,
-      track: t,
-      suggestedBy: room.members[i % room.members.length]?.userId ?? "host",
-      suggestedByHandle: room.members[i % room.members.length]?.handle ?? room.hostHandle,
-      likes: Math.floor((seeds.length - i) * 3) + (i % 2),
-      position: i,
-    }));
-    setQueue(sortQueue(seedQueue));
+    const genre = room.currentTrack?.track.genre ?? topGenre(room.tasteVector);
+    let active = true;
+    (async () => {
+      const tracks = await tracksByGenre(genre, 6);
+      if (!active || tracks.length === 0) return;
+      setPlay({ track: tracks[0], startedAt: Date.now() });
+      const rest = tracks.slice(1);
+      const seedQueue: QueueItem[] = rest.map((t, i) => ({
+        id: `q_${t.id}`,
+        track: t,
+        suggestedBy: room.members[i % room.members.length]?.userId ?? "host",
+        suggestedByHandle:
+          room.members[i % room.members.length]?.handle ?? room.hostHandle,
+        likes: (rest.length - i) * 2 + (i % 2),
+        position: i,
+      }));
+      setQueue(sortQueue(seedQueue));
+    })();
     setChat([
       {
         id: "c0",
@@ -100,6 +106,9 @@ export function useRoomSession(
         at: Date.now() - 60000,
       },
     ]);
+    return () => {
+      active = false;
+    };
   }, [room]);
 
   // ---- Supabase Realtime (있으면) ----
@@ -159,9 +168,9 @@ export function useRoomSession(
   const suggest = useCallback(
     (t: Track) => {
       setQueue((q) => {
-        if (q.some((i) => i.track.videoId === t.videoId)) return q;
+        if (q.some((i) => i.track.id === t.id)) return q;
         const item: QueueItem = {
-          id: `q_${t.videoId}_${q.length}`,
+          id: `q_${t.id}_${q.length}`,
           track: t,
           suggestedBy: meRef.current.userId,
           suggestedByHandle: meRef.current.handle,
@@ -200,23 +209,34 @@ export function useRoomSession(
 
   const advance = useCallback(() => {
     setQueue((q) => {
-      let nextTrack: Track | undefined;
-      let rest = q;
       if (q.length > 0) {
-        nextTrack = q[0].track;
-        rest = q.slice(1);
-      } else {
-        // radio 모드 폴백: 카탈로그에서 같은 장르 곡
-        const genre = play?.track.genre ?? "lofi";
-        nextTrack = searchCatalog(genre)[0] ?? CATALOG[0];
-      }
-      if (nextTrack) {
+        const nextTrack = q[0].track;
+        const rest = q.slice(1);
         const startedAt = Date.now();
         setPlay({ track: nextTrack, startedAt });
         broadcast("track", { track: nextTrack, startedAt });
+        broadcast("queue", { queue: rest });
+        return rest;
       }
-      broadcast("queue", { queue: rest });
-      return rest;
+      // 큐가 비면 라디오 모드: iTunes에서 같은 장르 곡으로 보충
+      const genre = play?.track.genre ?? "lofi";
+      tracksByGenre(genre, 5).then((tracks) => {
+        if (tracks.length === 0) return;
+        const startedAt = Date.now();
+        setPlay({ track: tracks[0], startedAt });
+        broadcast("track", { track: tracks[0], startedAt });
+        const rest: QueueItem[] = tracks.slice(1).map((t, i) => ({
+          id: `q_${t.id}_${startedAt}`,
+          track: t,
+          suggestedBy: "radio",
+          suggestedByHandle: "라디오",
+          likes: 0,
+          position: i,
+        }));
+        setQueue(sortQueue(rest));
+        broadcast("queue", { queue: rest });
+      });
+      return q;
     });
   }, [broadcast, play?.track.genre]);
 

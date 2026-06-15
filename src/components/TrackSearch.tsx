@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { searchTracks } from "@/lib/youtube";
+import { searchTracks } from "@/lib/music";
 import { GENRES } from "@/lib/genres";
 import type { Track } from "@/lib/types";
 
@@ -52,10 +52,10 @@ export default function TrackSearch({
         )}
         {results.map((t) => {
           const g = GENRES[t.genre];
-          const picked = pickedIds.includes(t.videoId);
+          const picked = pickedIds.includes(t.id);
           return (
             <button
-              key={t.videoId}
+              key={t.id}
               onClick={() => onPick(t)}
               disabled={picked}
               className={`w-full flex items-center gap-3 card px-3 py-2.5 text-left active:scale-[0.99] transition ${

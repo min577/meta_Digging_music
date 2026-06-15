@@ -207,19 +207,28 @@ export default function ProfilePage() {
                 {diggs.map((d) => (
                   <a
                     key={d.id}
-                    href={`https://youtu.be/${d.track.videoId}`}
+                    href={d.track.previewUrl || undefined}
                     target="_blank"
                     rel="noreferrer"
                     className="card overflow-hidden"
                   >
-                    <div
-                      className="h-20 flex items-center justify-center text-3xl"
-                      style={{
-                        background: `linear-gradient(135deg, ${GENRES[d.track.genre].bg[0]}, ${GENRES[d.track.genre].bg[1]})`,
-                      }}
-                    >
-                      {GENRES[d.track.genre].emoji}
-                    </div>
+                    {d.track.artwork ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={d.track.artwork}
+                        alt={d.track.title}
+                        className="h-24 w-full object-cover"
+                      />
+                    ) : (
+                      <div
+                        className="h-20 flex items-center justify-center text-3xl"
+                        style={{
+                          background: `linear-gradient(135deg, ${GENRES[d.track.genre].bg[0]}, ${GENRES[d.track.genre].bg[1]})`,
+                        }}
+                      >
+                        {GENRES[d.track.genre].emoji}
+                      </div>
+                    )}
                     <div className="p-2">
                       <p className="text-xs font-bold truncate">{d.track.title}</p>
                       <p className="text-[10px] text-ink-700/50 truncate">

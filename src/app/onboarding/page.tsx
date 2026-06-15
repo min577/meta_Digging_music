@@ -48,13 +48,13 @@ export default function OnboardingPage() {
 
   const pickSeed = (t: Track) =>
     setSeeds((prev) =>
-      prev.some((x) => x.videoId === t.videoId) || prev.length >= 3
+      prev.some((x) => x.id === t.id) || prev.length >= 3
         ? prev
         : [...prev, t]
     );
 
   const removeSeed = (id: string) =>
-    setSeeds((prev) => prev.filter((x) => x.videoId !== id));
+    setSeeds((prev) => prev.filter((x) => x.id !== id));
 
   const preview = vectorFromTracks(seeds);
 
@@ -200,12 +200,12 @@ export default function OnboardingPage() {
                 <div className="flex flex-wrap gap-2 mt-3">
                   {seeds.map((t) => (
                     <span
-                      key={t.videoId}
+                      key={t.id}
                       className="chip bg-brand/10 text-brand-dark py-1.5 flex items-center gap-1"
                     >
                       {GENRES[t.genre].emoji} {t.title.slice(0, 14)}
                       <button
-                        onClick={() => removeSeed(t.videoId)}
+                        onClick={() => removeSeed(t.id)}
                         className="ml-1 font-bold"
                       >
                         ×
@@ -218,7 +218,7 @@ export default function OnboardingPage() {
               <div className="mt-3 flex-1 min-h-0">
                 <TrackSearch
                   onPick={pickSeed}
-                  pickedIds={seeds.map((s) => s.videoId)}
+                  pickedIds={seeds.map((s) => s.id)}
                 />
               </div>
 
