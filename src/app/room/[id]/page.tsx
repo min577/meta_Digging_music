@@ -15,11 +15,12 @@ import { appearanceFromSeed, defaultAppearance } from "@/lib/appearance";
 import type { Track } from "@/lib/types";
 
 const REACTIONS = ["❤️", "🔥", "🎶", "😭", "🕺", "👏"];
+// 음악 존 배치 (월드 1100x820 기준)
 const SPOTS = [
-  { x: 150, y: 120 },
-  { x: 450, y: 120 },
-  { x: 150, y: 300 },
-  { x: 450, y: 300 },
+  { x: 300, y: 250 },
+  { x: 800, y: 250 },
+  { x: 300, y: 620 },
+  { x: 800, y: 620 },
 ];
 type SpeakerT = Speaker & { track: Track };
 
@@ -110,8 +111,8 @@ export default function RoomPage() {
       id: m.userId,
       handle: m.handle,
       appearance: appearanceFromSeed(m.handle),
-      x: 110 + (i % 4) * 130,
-      y: 130 + Math.floor(i / 4) * 110,
+      x: 220 + (i % 4) * 230,
+      y: 360 + Math.floor(i / 4) * 200,
     }));
   }, [room]);
 
@@ -317,15 +318,15 @@ export default function RoomPage() {
         })}
 
       {/* 맵 */}
-      <div className="px-4 mt-2">
+      <div className="px-4 mt-2 h-[46vh]">
         <RoomMap
           meAppearance={user?.character.appearance ?? defaultAppearance()}
           meHandle={user?.handle ?? "나"}
           meTrack={myTrack}
+          genre={roomGenre}
           npcs={npcs}
           remote={session.remotePlayers}
           speakers={mode === "free" ? speakers : []}
-          bg={g.bg}
           onMove={session.broadcastMove}
           onAudio={(v) => setVols(v)}
         />
