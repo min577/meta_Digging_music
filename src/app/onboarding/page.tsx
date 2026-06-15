@@ -1,0 +1,284 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import Character from "@/components/Character";
+import TrackSearch from "@/components/TrackSearch";
+import { GENRE_LIST, type GenreId } from "@/lib/genres";
+import type { Track } from "@/lib/types";
+import { useAppStore } from "@/store/useAppStore";
+import { vectorFromTracks, sortedGenres } from "@/lib/taste";
+import { GENRES } from "@/lib/genres";
+
+const BASES: { id: string; genre: GenreId; label: string }[] = [
+  { id: "hood", genre: "lofi", label: "차분한 후디" },
+  { id: "shades", genre: "citypop", label: "네온 시티" },
+  { id: "fedora", genre: "jazz", label: "올드 재즈" },
+  { id: "glow", genre: "house", label: "디스코 글로우" },
+  { id: "glitter", genre: "kpop", label: "글리터 팝" },
+  { id: "antique", genre: "classical", label: "앤틱 클래식" },
+];
+
+const SITUATIONS = [
+  "공부할 때",
+  "운동할 때",
+  "자기 전",
+  "출퇴근길",
+  "드라이브",
+  "작업/집중",
+  "기분 전환",
+  "파티",
+];
+
+export default function OnboardingPage() {
+  const router = useRouter();
+  const complete = useAppStore((s) => s.completeOnboarding);
+
+  const [step, setStep] = useState(0);
+  const [handle, setHandle] = useState("");
+  const [base, setBase] = useState(BASES[0]);
+  const [situations, setSituations] = useState<string[]>([]);
+  const [seeds, setSeeds] = useState<Track[]>([]);
+
+  const toggleSituation = (s: string) =>
+    setSituations((prev) =>
+      prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s].slice(0, 4)
+    );
+
+  const pickSeed = (t: Track) =>
+    setSeeds((prev) =>
+      prev.some((x) => x.videoId === t.videoId) || prev.length >= 3
+        ? prev
+        : [...prev, t]
+    );
+
+  const removeSeed = (id: string) =>
+    setSeeds((prev) => prev.filter((x) => x.videoId !== id));
+
+  const preview = vectorFromTracks(seeds);
+
+  const finish = () => {
+    complete({
+      handle: handle.trim() || "디깅러",
+      baseType: base.id,
+      situations,
+      seedTracks: seeds,
+    });
+    router.replace("/home");
+  };
+
+  const canNext = [true, true, situations.length > 0, seeds.length === 3][step];
+
+  return (
+    <div className="phone-shell min-h-[100dvh] flex flex-col px-5 pt-10 pb-6 bg-gradient-to-b from-cream-100 to-cream-200">
+      {/* 진행 점 */}
+      <div className="flex gap-2 justify-center mb-6">
+        {[0, 1, 2, 3].map((i) => (
+          <div
+            key={i}
+            className={`h-1.5 rounded-full transition-all ${
+              i === step ? "w-7 bg-brand" : "w-2 bg-cream-300"
+            }`}
+          />
+        ))}
+      </div>
+
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={step}
+          initial={{ opacity: 0, x: 24 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -24 }}
+          transition={{ duration: 0.25 }}
+          className="flex-1 flex flex-col"
+        >
+          {step === 0 && (
+            <div className="flex-1 flex flex-col">
+              <div className="text-center mt-4">
+                <div className="text-5xl mb-3 animate-float-slow">🎧</div>
+                <h1 className="text-2xl font-extrabold text-ink-900">
+                  디깅타운에 오신 걸 환영해요
+                </h1>
+                <p className="text-ink-700/60 mt-2 text-sm leading-relaxed">
+                  혼자 듣지 마세요. 같은 곡을 함께 들으며
+                  <br />
+                  취향이 통하는 사람을 발견하는 곳.
+                </p>
+              </div>
+              <div className="mt-8">
+                <label className="text-sm font-bold text-ink-800">
+                  뭐라고 부를까요?
+                </label>
+                <input
+                  value={handle}
+                  onChange={(e) => setHandle(e.target.value)}
+                  placeholder="닉네임 (예: 새벽디깅)"
+                  className="mt-2 w-full card px-4 py-3 text-sm outline-none"
+                  maxLength={16}
+                />
+              </div>
+            </div>
+          )}
+
+          {step === 1 && (
+            <div className="flex-1 flex flex-col">
+              <h2 className="text-xl font-extrabold text-ink-900">
+                캐릭터를 골라주세요
+              </h2>
+              <p className="text-ink-700/60 text-sm mt-1">
+                취향에 따라 외형이 계속 변해요.
+              </p>
+              <div className="mt-5 flex justify-center">
+                <Character genre={base.genre} baseType={base.id} size={120} />
+              </div>
+              <div className="grid grid-cols-3 gap-3 mt-5">
+                {BASES.map((b) => (
+                  <button
+                    key={b.id}
+                    onClick={() => setBase(b)}
+                    className={`card p-2 flex flex-col items-center gap-1 transition ${
+                      base.id === b.id
+                        ? "ring-2 ring-brand"
+                        : "opacity-80"
+                    }`}
+                  >
+                    <Character
+                      genre={b.genre}
+                      baseType={b.id}
+                      size={52}
+                      animate={false}
+                    />
+                    <span className="text-[11px] font-semibold text-ink-700">
+                      {b.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {step === 2 && (
+            <div className="flex-1 flex flex-col">
+              <h2 className="text-xl font-extrabold text-ink-900">
+                주로 언제 음악을 들어요?
+              </h2>
+              <p className="text-ink-700/60 text-sm mt-1">
+                룸 추천에 사용돼요. (최대 4개)
+              </p>
+              <div className="flex flex-wrap gap-2 mt-5">
+                {SITUATIONS.map((s) => {
+                  const on = situations.includes(s);
+                  return (
+                    <button
+                      key={s}
+                      onClick={() => toggleSituation(s)}
+                      className={`chip py-2 px-4 border transition ${
+                        on
+                          ? "bg-brand text-white border-brand"
+                          : "bg-cream-50 text-ink-700 border-cream-200"
+                      }`}
+                    >
+                      {s}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {step === 3 && (
+            <div className="flex-1 flex flex-col min-h-0">
+              <h2 className="text-xl font-extrabold text-ink-900">
+                좋아하는 곡 3개를 골라주세요
+              </h2>
+              <p className="text-ink-700/60 text-sm mt-1">
+                이 3곡으로 당신의 취향 벡터를 만들어요. ({seeds.length}/3)
+              </p>
+
+              {seeds.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-3">
+                  {seeds.map((t) => (
+                    <span
+                      key={t.videoId}
+                      className="chip bg-brand/10 text-brand-dark py-1.5 flex items-center gap-1"
+                    >
+                      {GENRES[t.genre].emoji} {t.title.slice(0, 14)}
+                      <button
+                        onClick={() => removeSeed(t.videoId)}
+                        className="ml-1 font-bold"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              <div className="mt-3 flex-1 min-h-0">
+                <TrackSearch
+                  onPick={pickSeed}
+                  pickedIds={seeds.map((s) => s.videoId)}
+                />
+              </div>
+
+              {seeds.length === 3 && (
+                <div className="card p-3 mt-3">
+                  <p className="text-xs font-bold text-ink-700 mb-2">
+                    🎯 당신의 취향 미리보기
+                  </p>
+                  <div className="space-y-1.5">
+                    {sortedGenres(preview).map(([g, v]) => (
+                      <div key={g} className="flex items-center gap-2">
+                        <span className="text-xs w-14 text-ink-700">
+                          {GENRES[g].emoji} {GENRES[g].label}
+                        </span>
+                        <div className="flex-1 h-2 rounded-full bg-cream-200 overflow-hidden">
+                          <div
+                            className="h-full rounded-full"
+                            style={{
+                              width: `${v * 100}%`,
+                              background: GENRES[g].color,
+                            }}
+                          />
+                        </div>
+                        <span className="text-xs text-ink-700/60 w-9 text-right">
+                          {Math.round(v * 100)}%
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </motion.div>
+      </AnimatePresence>
+
+      <div className="flex gap-3 mt-5">
+        {step > 0 && (
+          <button onClick={() => setStep((s) => s - 1)} className="btn-ghost">
+            이전
+          </button>
+        )}
+        {step < 3 ? (
+          <button
+            onClick={() => setStep((s) => s + 1)}
+            disabled={!canNext}
+            className="btn-primary flex-1"
+          >
+            다음
+          </button>
+        ) : (
+          <button
+            onClick={finish}
+            disabled={!canNext}
+            className="btn-primary flex-1"
+          >
+            디깅 시작하기 →
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
