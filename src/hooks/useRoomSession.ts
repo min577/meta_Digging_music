@@ -39,6 +39,7 @@ export interface RoomSession {
   sendChat: (text: string) => void;
   react: (emoji: string) => void;
   broadcastMove: (x: number, y: number, dir: MapAvatar["dir"]) => void;
+  setMyTrack: (t: Track | null) => void;
 }
 
 // 클라이언트마다 고유 id (멀티플레이어 구분)
@@ -73,13 +74,23 @@ export function useRoomSession(
   const [remote, setRemote] = useState<Record<string, MapAvatar>>({});
 
   const channelRef = useRef<any>(null);
-  const meRef = useRef<RoomMemberLite & { id: string; appearance: Appearance }>({
+  const meRef = useRef<
+    RoomMemberLite & {
+      id: string;
+      appearance: Appearance;
+      x: number;
+      y: number;
+      track?: Track;
+    }
+  >({
     userId: "me",
     id: makeId(),
     handle: myHandle,
     baseType: myBase,
     topGenre: myGenre,
     appearance: myAppearance ?? defaultAppearance(),
+    x: 300,
+    y: 235,
   });
 
   // 초기 재생곡 + 큐 시드 — iTunes에서 룸 장르의 실제 곡(30초 미리듣기)을 가져온다.
@@ -142,7 +153,17 @@ export function useRoomSession(
       })
       .on("broadcast", { event: "move" }, ({ payload }: any) => {
         if (payload.id === meRef.current.id) return;
-        setRemote((r) => ({ ...r, [payload.id]: payload }));
+        setRemote((r) => ({ ...r, [payload.id]: { ...r[payload.id], ...payload } }));
+      })
+      .on("broadcast", { event: "playing" }, ({ payload }: any) => {
+        if (payload.id === meRef.current.id) return;
+        setRemote((r) => ({
+          ...r,
+          [payload.id]: {
+            ...(r[payload.id] ?? { x: payload.x, y: payload.y }),
+            ...payload,
+          },
+        }));
       })
       .on("presence", { event: "leave" }, ({ leftPresences }: any) => {
         setRemote((r) => {
@@ -290,6 +311,8 @@ export function useRoomSession(
 
   const broadcastMove = useCallback(
     (x: number, y: number, dir: MapAvatar["dir"]) => {
+      meRef.current.x = x;
+      meRef.current.y = y;
       broadcast("move", {
         id: meRef.current.id,
         handle: meRef.current.handle,
@@ -298,6 +321,23 @@ export function useRoomSession(
         y,
         dir,
         walking: true,
+        track: meRef.current.track,
+      });
+    },
+    [broadcast]
+  );
+
+  // 내가 송출하는 곡 설정 (자유모드 per-player 오디오)
+  const setMyTrack = useCallback(
+    (t: Track | null) => {
+      meRef.current.track = t ?? undefined;
+      broadcast("playing", {
+        id: meRef.current.id,
+        handle: meRef.current.handle,
+        appearance: meRef.current.appearance,
+        x: meRef.current.x,
+        y: meRef.current.y,
+        track: t ?? undefined,
       });
     },
     [broadcast]
@@ -319,6 +359,7 @@ export function useRoomSession(
     sendChat,
     react,
     broadcastMove,
+    setMyTrack,
   };
 }
 

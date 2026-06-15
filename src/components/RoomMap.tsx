@@ -5,6 +5,12 @@ import Avatar, { type Dir } from "./Avatar";
 import type { Appearance } from "@/lib/appearance";
 import type { GenreId } from "@/lib/genres";
 import { GENRES } from "@/lib/genres";
+import type { Track } from "@/lib/types";
+
+export interface AudioVol {
+  id: string;
+  volume: number;
+}
 
 // 논리 맵 크기 (좌표계). 컨테이너에 비율로 스케일.
 const W = 600;
@@ -21,6 +27,7 @@ export interface MapAvatar {
   y: number;
   dir?: Dir;
   walking?: boolean;
+  track?: Track; // 이 플레이어가 송출 중인 곡 (자유모드)
 }
 
 export interface Speaker {
@@ -44,28 +51,41 @@ interface Mover {
 export default function RoomMap({
   meAppearance,
   meHandle,
+  meTrack,
   npcs,
   remote = [],
   speakers = [],
   bg,
   onMove,
-  onNearestSource,
+  onAudio,
 }: {
   meAppearance: Appearance;
   meHandle: string;
+  meTrack?: Track | null;
   npcs: MapAvatar[];
   remote?: MapAvatar[];
   speakers?: Speaker[];
   bg: [string, string];
   onMove?: (x: number, y: number, dir: Dir) => void;
-  onNearestSource?: (id: string | null, volume: number) => void;
+  onAudio?: (vols: AudioVol[]) => void;
 }) {
   const me = useRef({ x: W / 2, y: H * 0.62, dir: "down" as Dir, walking: false });
   const keys = useRef<Set<string>>(new Set());
   const movers = useRef<Record<string, Mover>>({});
   const lastEmit = useRef(0);
-  const lastNearest = useRef<{ id: string | null; vol: number }>({ id: null, vol: 0 });
+  const lastAudio = useRef("");
+  const lastAudioAt = useRef(0);
   const [, force] = useReducer((c) => c + 1, 0);
+
+  // 루프가 항상 최신 props를 읽도록 ref 동기화
+  const remoteRef = useRef(remote);
+  remoteRef.current = remote;
+  const speakersRef = useRef(speakers);
+  speakersRef.current = speakers;
+  const onAudioRef = useRef(onAudio);
+  onAudioRef.current = onAudio;
+  const onMoveRef = useRef(onMove);
+  onMoveRef.current = onMove;
 
   // NPC 무버 초기화
   useEffect(() => {
@@ -157,27 +177,30 @@ export default function RoomMap({
         }
       }
 
-      // 근접 오디오 (자유모드)
-      if (speakers.length && onNearestSource) {
-        let best: { id: string | null; vol: number } = { id: null, vol: 0 };
-        for (const s of speakers) {
-          const dist = Math.hypot(m.x - s.x, m.y - s.y);
-          const vol = Math.max(0, 1 - dist / RANGE);
-          if (vol > best.vol) best = { id: s.id, vol };
+      // 다중소스 공간 오디오 (자유모드): 스피커 존 + 플레이어 송출곡
+      if (onAudioRef.current && now - lastAudioAt.current > 160) {
+        const out: AudioVol[] = [];
+        for (const s of speakersRef.current) {
+          const v = 1 - Math.hypot(m.x - s.x, m.y - s.y) / RANGE;
+          if (v > 0.03) out.push({ id: s.id, volume: +v.toFixed(2) });
         }
-        if (
-          best.id !== lastNearest.current.id ||
-          Math.abs(best.vol - lastNearest.current.vol) > 0.04
-        ) {
-          lastNearest.current = best;
-          onNearestSource(best.id, +best.vol.toFixed(2));
+        for (const r of remoteRef.current) {
+          if (!r.track) continue;
+          const v = 1 - Math.hypot(m.x - r.x, m.y - r.y) / RANGE;
+          if (v > 0.03) out.push({ id: `player_${r.id}`, volume: +v.toFixed(2) });
+        }
+        const sig = out.map((o) => `${o.id}:${o.volume}`).join("|");
+        if (sig !== lastAudio.current) {
+          lastAudio.current = sig;
+          lastAudioAt.current = now;
+          onAudioRef.current(out);
         }
       }
 
       // 위치 broadcast (throttle)
-      if (onMove && now - lastEmit.current > 120 && m.walking) {
+      if (onMoveRef.current && now - lastEmit.current > 120 && m.walking) {
         lastEmit.current = now;
-        onMove(Math.round(m.x), Math.round(m.y), m.dir);
+        onMoveRef.current(Math.round(m.x), Math.round(m.y), m.dir);
       }
 
       force();
@@ -185,12 +208,11 @@ export default function RoomMap({
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [speakers.length]);
+  }, []);
 
   // 렌더용 아바타 목록 (y 정렬 = 깊이감)
   const all: (MapAvatar & { me?: boolean; dir: Dir; walking: boolean })[] = [
-    { id: "__me", handle: meHandle, appearance: meAppearance, x: me.current.x, y: me.current.y, dir: me.current.dir, walking: me.current.walking, me: true },
+    { id: "__me", handle: meHandle, appearance: meAppearance, x: me.current.x, y: me.current.y, dir: me.current.dir, walking: me.current.walking, track: meTrack ?? undefined, me: true },
     ...npcs.map((n) => {
       const v = movers.current[n.id];
       return { ...n, x: v?.x ?? n.x, y: v?.y ?? n.y, dir: v?.dir ?? "down", walking: v?.walking ?? false };
@@ -255,6 +277,11 @@ export default function RoomMap({
           style={{ left: `${(p.x / W) * 100}%`, top: `${(p.y / H) * 100}%`, zIndex: Math.floor(p.y) + 100 }}
         >
           <div className="flex flex-col items-center">
+            {p.track && (
+              <span className="text-sm animate-bob mb-0.5" title={`${p.track.title} 송출 중`}>
+                🎵
+              </span>
+            )}
             <span
               className={`text-[10px] font-bold mb-0.5 px-1.5 rounded-full whitespace-nowrap ${
                 p.me ? "bg-brand text-white" : "bg-black/35 text-white"

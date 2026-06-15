@@ -46,13 +46,12 @@ export default function RoomPage() {
   const [progress, setProgress] = useState({ cur: 0, dur: 0 });
   const [tab, setTab] = useState<"queue" | "chat">("chat");
   const [showSuggest, setShowSuggest] = useState(false);
+  const [showMyMusic, setShowMyMusic] = useState(false);
   const [chatInput, setChatInput] = useState("");
   const [savedToast, setSavedToast] = useState(false);
   const [speakers, setSpeakers] = useState<SpeakerT[]>([]);
-  const [nearest, setNearest] = useState<{ id: string | null; vol: number }>({
-    id: null,
-    vol: 0,
-  });
+  const [vols, setVols] = useState<{ id: string; volume: number }[]>([]);
+  const [myTrack, setMyTrack] = useState<Track | null>(null);
   const listenAccum = useRef(0);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
@@ -129,12 +128,32 @@ export default function RoomPage() {
     );
   }
 
-  // 현재 들리는 곡: party=동기화 곡, free=가장 가까운 스피커
-  const audible = mode === "free" ? speakers.find((s) => s.id === nearest.id) : null;
-  const track = mode === "free" ? audible?.track : session.play?.track;
+  // 자유모드 오디오 소스 레지스트리: 스피커 존 + 플레이어 송출곡
+  const remoteWithTrack = session.remotePlayers.filter((p) => p.track);
+  const sourceTrack: Record<string, Track> = {};
+  for (const s of speakers) sourceTrack[s.id] = s.track;
+  for (const p of remoteWithTrack) sourceTrack[`player_${p.id}`] = p.track!;
+  const sortedVols = [...vols].sort((a, b) => b.volume - a.volume);
+  const loudest = sortedVols[0];
+  const loudestTrack = loudest ? sourceTrack[loudest.id] : undefined;
+
+  // 현재 들리는 곡: party=동기화 곡 / free=내 송출곡 우선, 없으면 가장 큰 주변 음악
+  const track =
+    mode === "free" ? myTrack ?? loudestTrack : session.play?.track;
+  const headerVol = myTrack ? 1 : loudest?.volume ?? 0;
   const g = GENRES[track ? track.genre : roomGenre];
   const pct = progress.dur > 0 ? (progress.cur / progress.dur) * 100 : 0;
   const isHost = room.queueMode === "dj";
+
+  const pickMyMusic = (t: Track) => {
+    setMyTrack(t);
+    session.setMyTrack(t);
+    setShowMyMusic(false);
+  };
+  const stopMyMusic = () => {
+    setMyTrack(null);
+    session.setMyTrack(null);
+  };
 
   const handleProgress = (cur: number, dur: number) => {
     setProgress({ cur, dur });
@@ -212,7 +231,7 @@ export default function RoomPage() {
                   {track.artist} · {g.emoji} {g.label}
                   {mode === "free" && (
                     <span className="ml-1 text-brand-dark font-bold">
-                      🔊 {Math.round(nearest.vol * 100)}%
+                      {myTrack ? "🎵 내 음악 송출 중" : `🔊 ${Math.round(headerVol * 100)}%`}
                     </span>
                   )}
                 </p>
@@ -242,6 +261,16 @@ export default function RoomPage() {
               ⏭
             </button>
           )}
+          {mode === "free" && (
+            <button
+              onClick={() => (myTrack ? stopMyMusic() : setShowMyMusic(true))}
+              className={`shrink-0 chip py-2 px-3 font-bold ${
+                myTrack ? "bg-live/15 text-live" : "bg-brand text-white"
+              }`}
+            >
+              {myTrack ? "⏹ 내 음악 끄기" : "🎶 내 음악 틀기"}
+            </button>
+          )}
         </div>
         {mode === "party" && (
           <div className="mt-1.5 h-1.5 rounded-full bg-white/25 overflow-hidden">
@@ -260,28 +289,45 @@ export default function RoomPage() {
           onEnded={session.skip}
         />
       )}
-      {mode === "free" && audible?.track.previewUrl && (
+      {/* 자유모드: 내 송출곡(풀볼륨) + 주변 소스 거리별 볼륨 동시 믹싱 */}
+      {mode === "free" && myTrack?.previewUrl && (
         <AudioPlayer
-          key={audible.id}
-          previewUrl={audible.track.previewUrl}
+          key={`me_${myTrack.id}`}
+          previewUrl={myTrack.previewUrl}
           startedAt={0}
           loop
-          volume={nearest.vol}
-          muted={muted || nearest.vol <= 0}
+          volume={1}
+          muted={muted}
         />
       )}
+      {mode === "free" &&
+        vols.map((v) => {
+          const t = sourceTrack[v.id];
+          if (!t?.previewUrl) return null;
+          return (
+            <AudioPlayer
+              key={v.id}
+              previewUrl={t.previewUrl}
+              startedAt={0}
+              loop
+              volume={v.volume}
+              muted={muted || v.volume <= 0}
+            />
+          );
+        })}
 
       {/* 맵 */}
       <div className="px-4 mt-2">
         <RoomMap
           meAppearance={user?.character.appearance ?? defaultAppearance()}
           meHandle={user?.handle ?? "나"}
+          meTrack={myTrack}
           npcs={npcs}
           remote={session.remotePlayers}
           speakers={mode === "free" ? speakers : []}
           bg={g.bg}
           onMove={session.broadcastMove}
-          onNearestSource={(sid, vol) => setNearest({ id: sid, vol })}
+          onAudio={(v) => setVols(v)}
         />
       </div>
 
@@ -450,6 +496,35 @@ export default function RoomPage() {
               <div className="w-10 h-1 bg-cream-300 rounded-full mx-auto mb-4" />
               <h3 className="font-bold text-ink-900 mb-3">큐에 곡 제안하기</h3>
               <TrackSearch onPick={onSuggest} placeholder="제안할 곡 검색" />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 내 음악 틀기 모달 (자유모드) */}
+      <AnimatePresence>
+        {showMyMusic && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/40 flex items-end justify-center"
+            onClick={() => setShowMyMusic(false)}
+          >
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 28 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-[440px] bg-cream-100 rounded-t-3xl p-5 max-h-[80vh]"
+            >
+              <div className="w-10 h-1 bg-cream-300 rounded-full mx-auto mb-4" />
+              <h3 className="font-bold text-ink-900 mb-1">내 음악 틀기 🎶</h3>
+              <p className="text-xs text-ink-700/55 mb-3">
+                고른 곡이 내 캐릭터 주변에 흘러나와요. 가까이 온 사람에게 들려요.
+              </p>
+              <TrackSearch onPick={pickMyMusic} placeholder="내가 틀 곡 검색" />
             </motion.div>
           </motion.div>
         )}
