@@ -61,7 +61,7 @@ interface Props {
 }
 
 const SKY: Record<string, string> = {
-  day: "#aedcf0", dawn: "#f6cdb0", dusk: "#e89a78", night: "#141a33",
+  day: "#aedcf0", dawn: "#f6cdb0", dusk: "#e89a78", night: "#2b3666",
 };
 
 export default function RoomScene3D(props: Props) {
@@ -265,7 +265,13 @@ function Scene({
         shadow-camera-near={1}
         shadow-camera-far={2000}
       />
-      {time.isNight && <pointLight position={[700, 200, 500]} intensity={0.5} color="#8aa0ff" distance={1600} />}
+      <hemisphereLight intensity={time.isNight ? 0.45 : 0.4} color={SKY[time.phase]} groundColor="#3a3530" />
+      {time.isNight && (
+        <>
+          <pointLight position={[450, 260, 400]} intensity={1.0} color="#aebbff" distance={2200} />
+          <pointLight position={[1000, 260, 650]} intensity={0.9} color="#9ad0ff" distance={2200} />
+        </>
+      )}
 
       {/* 바닥 */}
       <mesh
@@ -442,8 +448,8 @@ function lightCfg(t: TimePhase) {
   switch (t.phase) {
     case "dawn": return { amb: 0.55, ambColor: "#ffd8c0", dir: 0.95, dirColor: "#ffd0a0" };
     case "dusk": return { amb: 0.5, ambColor: "#ffc0a0", dir: 0.85, dirColor: "#ff9a6a" };
-    case "night": return { amb: 0.32, ambColor: "#5a6aa0", dir: 0.4, dirColor: "#7a8ad0" };
-    default: return { amb: 0.72, ambColor: "#ffffff", dir: 1.15, dirColor: "#fff6e0" };
+    case "night": return { amb: 0.62, ambColor: "#9aa8da", dir: 0.7, dirColor: "#b7c4f0" };
+    default: return { amb: 0.78, ambColor: "#ffffff", dir: 1.15, dirColor: "#fff6e0" };
   }
 }
 function clamp(v: number, lo: number, hi: number) { return Math.max(lo, Math.min(hi, v)); }

@@ -28,20 +28,21 @@ export interface Place {
   zones: ZoneCfg[]; // 음악 존(실제 곡)
 }
 
-// 배경 소품 배치 좌표 (월드 1400x1000) — 빽빽하게. 중앙(700,560 스폰)·상단 무대 영역은 비움.
-const POS: [number, number, number][] = [
-  // 좌측 열
-  [120, 180, 1], [230, 300, 1], [130, 440, 1], [240, 580, 1], [150, 740, 1], [250, 890, 1],
-  // 우측 열
-  [1280, 180, 1], [1170, 300, 1], [1270, 440, 1], [1160, 580, 1], [1250, 740, 1], [1150, 890, 1],
-  // 상단 행
-  [420, 150, 1], [600, 200, 1], [820, 180, 1], [1000, 150, 1],
-  // 하단 행
-  [420, 900, 1], [600, 940, 1], [820, 930, 1], [1000, 900, 1],
-  // 중간 스캐터 (중앙 스폰 회피)
-  [360, 470, 1], [1040, 470, 1], [360, 690, 1], [1040, 690, 1],
-  [540, 760, 1], [900, 760, 1], [520, 250, 1], [900, 250, 1],
-];
+// 배경 소품 배치 좌표 (월드 1400x1000) — 격자+지터로 빽빽하게. 중앙 스폰 영역은 비움.
+const POS: [number, number][] = (() => {
+  const out: [number, number][] = [];
+  for (let gx = 0; gx < 8; gx++) {
+    for (let gz = 0; gz < 6; gz++) {
+      const jx = Math.sin(gx * 12.9 + gz * 4.1) * 60;
+      const jz = Math.sin(gx * 3.7 + gz * 7.3) * 55;
+      const x = 120 + gx * (1160 / 7) + jx;
+      const y = 150 + gz * (720 / 5) + jz;
+      if (x > 540 && x < 860 && y > 430 && y < 700) continue; // 스폰 영역 회피
+      out.push([Math.round(x), Math.round(y)]);
+    }
+  }
+  return out;
+})();
 
 const PLACES: Record<PlaceId, Place> = {
   gym: {
@@ -56,7 +57,7 @@ const PLACES: Record<PlaceId, Place> = {
     stage: "#46505e",
     floorType: "tile",
     env: "indoor",
-    decorKinds: ["treadmill", "dumbbell", "bench", "locker", "mirror", "dumbbell", "treadmill", "bench", "locker", "speaker", "plant", "dumbbell"],
+    decorKinds: ["treadmill", "dumbbell", "bench", "locker", "mirror", "plant", "treadmill", "dumbbell", "bench", "speaker", "locker", "mirror", "dumbbell", "treadmill", "bench", "plant"],
     zones: [
       { label: "운동 부스트", genre: "house", term: "workout hype edm" },
       { label: "런닝 하이", genre: "kpop", term: "k-pop dance hits" },
@@ -75,7 +76,7 @@ const PLACES: Record<PlaceId, Place> = {
     stage: "#6e5234",
     floorType: "wood",
     env: "indoor",
-    decorKinds: ["bookshelf", "desk", "globe", "bookshelf", "lamp", "desk", "bookshelf", "plant", "candle", "bookshelf", "desk", "painting"],
+    decorKinds: ["bookshelf", "desk", "globe", "bookshelf", "lamp", "plant", "bookshelf", "desk", "candle", "bookshelf", "painting", "desk", "bookshelf", "lamp", "globe", "bookshelf"],
     zones: [
       { label: "집중 로파이", genre: "lofi", term: "study lofi beats" },
       { label: "빗소리 ASMR", genre: "lofi", term: "rain ambience sleep" },
@@ -94,7 +95,7 @@ const PLACES: Record<PlaceId, Place> = {
     stage: "#2f5a4a",
     floorType: "grass",
     env: "water",
-    decorKinds: ["bench", "streetlamp", "tree", "bicycle", "bench", "streetlamp", "tent", "tree", "bench", "streetlamp", "plant", "fountain"],
+    decorKinds: ["bench", "streetlamp", "tree", "bicycle", "bench", "streetlamp", "tent", "tree", "plant", "streetlamp", "bench", "tree", "fountain", "streetlamp", "bench", "tree"],
     zones: [
       { label: "한강 발라드", genre: "rnb", term: "korean ballad" },
       { label: "감성 인디", genre: "lofi", term: "korean indie acoustic" },
@@ -113,7 +114,7 @@ const PLACES: Record<PlaceId, Place> = {
     stage: "#5a6270",
     floorType: "tile",
     env: "sky",
-    decorKinds: ["planeseat", "planeseat", "window", "cloud", "planeseat", "window", "cloud", "planeseat", "cloud", "window", "planeseat", "counter"],
+    decorKinds: ["planeseat", "window", "planeseat", "cloud", "planeseat", "window", "planeseat", "counter", "planeseat", "cloud", "window", "planeseat", "planeseat", "cloud", "window", "planeseat"],
     zones: [
       { label: "여행 팝", genre: "citypop", term: "travel pop summer" },
       { label: "세계음악", genre: "house", term: "world music tropical house" },
@@ -132,7 +133,7 @@ const PLACES: Record<PlaceId, Place> = {
     stage: "#5a2f7a",
     floorType: "neon",
     env: "skyline",
-    decorKinds: ["building", "neon", "streetlamp", "car", "building", "neon", "building", "car", "streetlamp", "neon", "building", "vinyl"],
+    decorKinds: ["building", "neon", "streetlamp", "car", "building", "neon", "building", "streetlamp", "car", "neon", "building", "streetlamp", "building", "car", "neon", "building"],
     zones: [
       { label: "시티팝", genre: "citypop", term: "city pop japanese" },
       { label: "나이트 드라이브", genre: "house", term: "night drive synthwave" },
@@ -151,7 +152,7 @@ const PLACES: Record<PlaceId, Place> = {
     stage: "#6e5234",
     floorType: "wood",
     env: "indoor",
-    decorKinds: ["table", "chair", "counter", "plant", "table", "chair", "painting", "bookshelf", "table", "chair", "candle", "plant"],
+    decorKinds: ["table", "chair", "counter", "plant", "table", "chair", "painting", "candle", "table", "chair", "bookshelf", "plant", "table", "chair", "candle", "counter"],
     zones: [
       { label: "카페 재즈", genre: "jazz", term: "cafe jazz bossa nova" },
       { label: "어쿠스틱", genre: "lofi", term: "acoustic cafe chill" },
@@ -172,7 +173,7 @@ export function placeScene(id: PlaceId) {
   const decor: Decor[] = POS.map(([x, y], i) => ({
     x,
     y,
-    size: 56,
+    size: 48 + ((i * 13) % 6) * 6, // 48~78 크기 변주
     kind: p.decorKinds[i % p.decorKinds.length],
   }));
   return { floor: p.floor, wall: p.wall, stage: p.stage, floorType: p.floorType, env: p.env, decor };
