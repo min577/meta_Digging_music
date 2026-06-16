@@ -13,9 +13,11 @@ export type HairStyle =
 export type HatStyle = "none" | "cap" | "beanie" | "headphones" | "fedora" | "flower";
 export type FaceStyle = "smile" | "happy" | "wink" | "cool" | "cat";
 export type GlassesStyle = "none" | "round" | "sun" | "star";
+export type AnimalType = "cat" | "rabbit" | "bear" | "dog" | "fox" | "frog" | "bird" | "hamster";
 
 export interface Appearance {
-  skin: string;
+  animal: AnimalType; // 동물 종류 (동물의 숲풍)
+  skin: string; // 털색
   hair: HairStyle;
   hairColor: string;
   outfit: string; // 상의 색
@@ -25,7 +27,17 @@ export interface Appearance {
   glasses: GlassesStyle;
 }
 
-export const SKIN_TONES = ["#FBE2C8", "#F2C9A0", "#E0A878", "#C68642", "#8D5524"];
+export const ANIMALS: AnimalType[] = ["cat", "rabbit", "bear", "dog", "fox", "frog", "bird", "hamster"];
+export const ANIMAL_LABEL: Record<AnimalType, string> = {
+  cat: "🐱 고양이", rabbit: "🐰 토끼", bear: "🐻 곰", dog: "🐶 강아지",
+  fox: "🦊 여우", frog: "🐸 개구리", bird: "🐤 새", hamster: "🐹 햄스터",
+};
+
+// 털색 (동물 캐릭터)
+export const SKIN_TONES = [
+  "#FBE2C8", "#F2C9A0", "#E0A878", "#C68642", "#8D5524",
+  "#FAF4EA", "#D9D2C7", "#9aa0a6", "#E8965A", "#5a4634", "#3a332c", "#F4C6D2",
+];
 
 export const HAIR_COLORS = [
   "#2A251D", // 검정
@@ -112,6 +124,7 @@ export const HAIR_LABEL: Record<HairStyle, string> = {
 
 export function defaultAppearance(): Appearance {
   return {
+    animal: "cat",
     skin: SKIN_TONES[1],
     hair: "short",
     hairColor: HAIR_COLORS[0],
@@ -129,6 +142,7 @@ export function appearanceFromSeed(seed: string): Appearance {
   for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
   const pick = <T,>(arr: T[], salt: number) => arr[(h + salt) % arr.length];
   return {
+    animal: pick(ANIMALS, 0),
     skin: pick(SKIN_TONES, 1),
     hair: pick(HAIR_STYLES.filter((s) => s !== "bald"), 2),
     hairColor: pick(HAIR_COLORS, 3),

@@ -56,12 +56,117 @@ export default function Avatar3D({ a }: { a: Appearance }) {
         </mesh>
       ))}
 
+      <Animal type={a.animal} fur={a.skin} />
       <Face a={a} />
       <Glasses kind={a.glasses} />
       <Hair style={a.hair} color={a.hairColor} />
       <Hat kind={a.hat} />
     </group>
   );
+}
+
+// 동물 귀/주둥이/꼬리 (동물의 숲풍). 털색 = a.skin
+function Animal({ type, fur }: { type: Appearance["animal"]; fur: string }) {
+  const mat = <meshStandardMaterial color={fur} roughness={0.7} />;
+  const inner = "#ff9bb0";
+  const dk = darkc(fur, 30);
+  const Tail = ({ tip }: { tip?: string }) => (
+    <group position={[0, 18, -13]} rotation={[-0.7, 0, 0]}>
+      <mesh castShadow><capsuleGeometry args={[4, 12, 4, 10]} /><meshStandardMaterial color={fur} /></mesh>
+      {tip && <mesh position={[0, 8, 0]}><sphereGeometry args={[4.4, 12, 12]} /><meshStandardMaterial color={tip} /></mesh>}
+    </group>
+  );
+  switch (type) {
+    case "cat":
+      return (
+        <group>
+          {[-8, 8].map((x) => (
+            <group key={x} position={[x, 60, -1]} rotation={[0, 0, x < 0 ? 0.25 : -0.25]}>
+              <mesh castShadow><coneGeometry args={[5, 12, 4]} />{mat}</mesh>
+              <mesh position={[0, -1, 1.5]} scale={0.55}><coneGeometry args={[5, 12, 4]} /><meshStandardMaterial color={inner} /></mesh>
+            </group>
+          ))}
+          <Tail />
+        </group>
+      );
+    case "fox":
+      return (
+        <group>
+          {[-8, 8].map((x) => (
+            <group key={x} position={[x, 60, -1]} rotation={[0, 0, x < 0 ? 0.2 : -0.2]}>
+              <mesh castShadow><coneGeometry args={[5, 13, 4]} />{mat}</mesh>
+              <mesh position={[0, 4, 1]} scale={0.5}><coneGeometry args={[5, 8, 4]} /><meshStandardMaterial color="#fff" /></mesh>
+            </group>
+          ))}
+          <Tail tip="#ffffff" />
+        </group>
+      );
+    case "rabbit":
+      return (
+        <group>
+          {[-6, 6].map((x) => (
+            <group key={x} position={[x, 70, -1]} rotation={[0, 0, x < 0 ? 0.12 : -0.12]}>
+              <mesh castShadow><capsuleGeometry args={[3.4, 16, 4, 10]} />{mat}</mesh>
+              <mesh position={[0, 0, 1.6]} scale={[0.5, 0.8, 0.5]}><capsuleGeometry args={[3.4, 16, 4, 10]} /><meshStandardMaterial color={inner} /></mesh>
+            </group>
+          ))}
+        </group>
+      );
+    case "bear":
+      return (
+        <group>
+          {[-11, 11].map((x) => (
+            <mesh key={x} castShadow position={[x, 59, -1]}><sphereGeometry args={[6, 16, 16]} />{mat}</mesh>
+          ))}
+        </group>
+      );
+    case "hamster":
+      return (
+        <group>
+          {[-10, 10].map((x) => (
+            <mesh key={x} castShadow position={[x, 58, 0]}><sphereGeometry args={[5, 14, 14]} /><meshStandardMaterial color={dk} /></mesh>
+          ))}
+        </group>
+      );
+    case "dog":
+      return (
+        <group>
+          {[-13, 13].map((x) => (
+            <mesh key={x} castShadow position={[x, 50, 0]} rotation={[0, 0, x < 0 ? 0.5 : -0.5]}>
+              <boxGeometry args={[6, 16, 8]} />
+              <meshStandardMaterial color={dk} />
+            </mesh>
+          ))}
+          <Tail />
+        </group>
+      );
+    case "frog":
+      return (
+        <group>
+          {[-7, 7].map((x) => (
+            <group key={x} position={[x, 60, 4]}>
+              <mesh castShadow><sphereGeometry args={[6, 16, 16]} />{mat}</mesh>
+              <mesh position={[0, 1, 4.5]}><sphereGeometry args={[2.6, 12, 12]} /><meshStandardMaterial color="#2a251d" /></mesh>
+            </group>
+          ))}
+        </group>
+      );
+    case "bird":
+      return (
+        <group>
+          <mesh position={[0, 43, 15]} rotation={[Math.PI / 2, 0, 0]}><coneGeometry args={[4, 8, 8]} /><meshStandardMaterial color="#ffb13a" /></mesh>
+          <mesh castShadow position={[0, 63, -2]} rotation={[0.3, 0, 0]}><coneGeometry args={[4, 12, 6]} />{mat}</mesh>
+        </group>
+      );
+    default:
+      return null;
+  }
+}
+
+function darkc(hex: string, a: number) {
+  const n = parseInt(hex.replace("#", ""), 16);
+  const r = Math.max(0, (n >> 16) - a), g = Math.max(0, ((n >> 8) & 0xff) - a), b = Math.max(0, (n & 0xff) - a);
+  return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, "0")}`;
 }
 
 function Face({ a }: { a: Appearance }) {

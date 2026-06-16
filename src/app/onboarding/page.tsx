@@ -19,10 +19,12 @@ import {
   HATS,
   FACES,
   GLASSES,
+  ANIMALS,
   HAIR_LABEL,
   HAT_LABEL,
   FACE_LABEL,
   GLASSES_LABEL,
+  ANIMAL_LABEL,
   type Appearance,
 } from "@/lib/appearance";
 
@@ -37,11 +39,12 @@ const SITUATIONS = [
   "파티",
 ];
 
-type Part = "hair" | "hairColor" | "skin" | "face" | "glasses" | "outfit" | "pants" | "hat";
+type Part = "animal" | "hair" | "hairColor" | "skin" | "face" | "glasses" | "outfit" | "pants" | "hat";
 const PARTS: { id: Part; label: string }[] = [
+  { id: "animal", label: "동물" },
+  { id: "skin", label: "털색" },
   { id: "hair", label: "헤어" },
   { id: "hairColor", label: "머리색" },
-  { id: "skin", label: "피부" },
   { id: "face", label: "표정" },
   { id: "glasses", label: "안경" },
   { id: "outfit", label: "상의" },
@@ -240,6 +243,22 @@ export default function OnboardingPage() {
                     value={look.pants}
                     onPick={(c) => set({ pants: c })}
                   />
+                )}
+                {part === "animal" && (
+                  <div className="grid grid-cols-4 gap-2">
+                    {ANIMALS.map((an) => (
+                      <button
+                        key={an}
+                        onClick={() => set({ animal: an })}
+                        className={`rounded-xl p-1 flex flex-col items-center ${
+                          look.animal === an ? "ring-2 ring-brand bg-brand/5" : ""
+                        }`}
+                      >
+                        <Avatar appearance={{ ...look, animal: an }} size={46} bob={false} />
+                        <span className="text-[10px] text-ink-700/60">{ANIMAL_LABEL[an]}</span>
+                      </button>
+                    ))}
+                  </div>
                 )}
                 {part === "face" && (
                   <div className="grid grid-cols-3 gap-2">

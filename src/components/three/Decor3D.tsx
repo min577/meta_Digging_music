@@ -11,13 +11,13 @@ const GLB: Partial<Record<DecorKind, { file: string; h: number; flat?: boolean }
   chair: { file: "chair_A", h: 36 },
   table: { file: "table_medium", h: 34 },
   bed: { file: "bed_double_A", h: 30 },
-  bookshelf: { file: "shelf_B_large", h: 76 },
+  bookshelf: { file: "shelf_B_large_decorated", h: 78 },
   lamp: { file: "lamp_table", h: 40 },
   floorlamp: { file: "lamp_standing", h: 66 },
   plant: { file: "cactus_medium_A", h: 44 },
   painting: { file: "pictureframe_standing_A", h: 48 },
   cushion: { file: "pillow_A", h: 14 },
-  counter: { file: "cabinet_medium", h: 44 },
+  counter: { file: "cabinet_medium_decorated", h: 44 },
   rug: { file: "rug_rectangle_A", h: 180, flat: true },
 };
 const glbUrl = (f: string) => `/models/kaykit/${f}.gltf`;

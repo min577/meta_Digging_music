@@ -329,21 +329,21 @@ function Scene({
       {/* 벽 (실내 장소: 뒤+좌우, 밝은 실내색 + 걸레받이) */}
       {scene.env === "indoor" && (
         <>
-          <mesh position={[WORLD_W / 2, 130, -4]} receiveShadow>
-            <boxGeometry args={[WORLD_W, 260, 12]} />
+          <mesh position={[WORLD_W / 2, 80, -4]} receiveShadow>
+            <boxGeometry args={[WORLD_W, 160, 12]} />
             <meshStandardMaterial color={scene.wallColor} />
           </mesh>
-          <mesh position={[WORLD_W / 2, 14, 4]}>
-            <boxGeometry args={[WORLD_W, 28, 8]} />
+          <mesh position={[WORLD_W / 2, 13, 4]}>
+            <boxGeometry args={[WORLD_W, 26, 8]} />
             <meshStandardMaterial color={adjust(scene.wallColor, -36)} />
           </mesh>
-          <mesh position={[2, 130, WORLD_H / 2]} receiveShadow>
-            <boxGeometry args={[12, 260, WORLD_H]} />
-            <meshStandardMaterial color={adjust(scene.wallColor, -14)} />
+          <mesh position={[3, 65, WORLD_H / 2]} receiveShadow>
+            <boxGeometry args={[10, 130, WORLD_H]} />
+            <meshStandardMaterial color={adjust(scene.wallColor, -12)} />
           </mesh>
-          <mesh position={[WORLD_W - 2, 130, WORLD_H / 2]} receiveShadow>
-            <boxGeometry args={[12, 260, WORLD_H]} />
-            <meshStandardMaterial color={adjust(scene.wallColor, -14)} />
+          <mesh position={[WORLD_W - 3, 65, WORLD_H / 2]} receiveShadow>
+            <boxGeometry args={[10, 130, WORLD_H]} />
+            <meshStandardMaterial color={adjust(scene.wallColor, -12)} />
           </mesh>
           {/* 따뜻한 실내 조명 */}
           <pointLight position={[300, 150, 250]} intensity={0.55} color="#ffd9a0" distance={700} />

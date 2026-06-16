@@ -252,7 +252,7 @@ export function placeScene(id: PlaceId) {
   return {
     floor: p.floor,
     wall: p.wall,
-    wallColor: lighten(p.wall, 82), // 실내 벽(밝게)
+    wallColor: lighten(p.wall, 104), // 실내 벽(밝게)
     stage: p.stage,
     floorType: p.floorType,
     env: p.env,
