@@ -6,10 +6,10 @@ import { Html } from "@react-three/drei";
 import * as THREE from "three";
 import Avatar3D from "./Avatar3D";
 import Decor3D from "./Decor3D";
+import MusicZone3D from "./MusicZone3D";
 import type { Appearance } from "@/lib/appearance";
 import { appearanceFromSeed } from "@/lib/appearance";
 import type { GenreId } from "@/lib/genres";
-import { GENRES } from "@/lib/genres";
 import type { Track, PlacedItem } from "@/lib/types";
 import type { DecorKind } from "@/components/DecorSprite";
 import { sceneFor } from "@/lib/scenes";
@@ -296,22 +296,10 @@ function Scene({
         </group>
       ))}
 
-      {/* 스피커 존 */}
-      {speakers.map((s) => {
-        const g = GENRES[s.genre];
-        return (
-          <group key={s.id} position={[s.x, 0, s.y]}>
-            <Decor3D kind="speaker" />
-            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 1, 0]}>
-              <ringGeometry args={[RANGE - 8, RANGE, 48]} />
-              <meshBasicMaterial color={g.color} transparent opacity={0.25} side={THREE.DoubleSide} />
-            </mesh>
-            <Html position={[0, 90, 0]} center distanceFactor={560}>
-              <div className="chip bg-black/50 text-white text-[11px] whitespace-nowrap">{g.emoji} {s.label}</div>
-            </Html>
-          </group>
-        );
-      })}
+      {/* 음악 존 (네온 댄스플로어 + DJ부스) */}
+      {speakers.map((s) => (
+        <MusicZone3D key={s.id} x={s.x} y={s.y} genre={s.genre} label={s.label} range={RANGE} meRef={me} />
+      ))}
 
       {/* 나 */}
       <group ref={playerRef}>
