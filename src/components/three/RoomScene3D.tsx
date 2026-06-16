@@ -70,7 +70,7 @@ export default function RoomScene3D(props: Props) {
       <Canvas
         shadows
         dpr={[1, 1.6]}
-        camera={{ fov: 46, near: 1, far: 4000, position: [500, 240, 620] }}
+        camera={{ fov: 46, near: 1, far: 4000, position: [500, 320, 820] }}
       >
         <color attach="background" args={[SKY[time.phase]]} />
         <fog attach="fog" args={[SKY[time.phase], 1100, 2600]} />
@@ -203,8 +203,8 @@ function Scene({
     }
 
     // 카메라 추적
-    const target = new THREE.Vector3(m.x, 46, m.z);
-    const camPos = new THREE.Vector3(m.x, 235, m.z + 270);
+    const target = new THREE.Vector3(m.x, 55, m.z - 40);
+    const camPos = new THREE.Vector3(m.x, 320, m.z + 380);
     camera.position.lerp(camPos, 0.12);
     camera.lookAt(target);
 
@@ -403,18 +403,29 @@ function AudioAura({ genre }: { genre: GenreId }) {
 // 장소별 특수 배경 (한강 물 / 비행기 구름 / 도시 스카이라인)
 function EnvFx({ env, night }: { env: EnvType; night: boolean }) {
   if (env === "water") {
+    const cx = WORLD_W / 2;
     return (
       <>
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[700, -3, -780]}>
-          <planeGeometry args={[3600, 1800]} />
-          <meshStandardMaterial color="#1f5170" transparent opacity={0.92} roughness={0.22} metalness={0.45} emissive={night ? "#163a52" : "#000000"} emissiveIntensity={night ? 0.4 : 0} />
+        {/* 강물 (정면 먼 쪽으로 크게) */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[cx, -2, -260]}>
+          <planeGeometry args={[3000, 1300]} />
+          <meshStandardMaterial color="#3f86ad" roughness={0.16} metalness={0.55} emissive={night ? "#205a82" : "#1a4e72"} emissiveIntensity={night ? 0.55 : 0.2} />
+        </mesh>
+        {/* 강변(잔디→물 경계) */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[cx, 0.5, 10]}>
+          <planeGeometry args={[WORLD_W + 200, 40]} />
+          <meshStandardMaterial color="#caa46e" />
         </mesh>
         {/* 한강 다리 */}
-        <mesh position={[700, 66, -110]} castShadow><boxGeometry args={[1800, 18, 36]} /><meshStandardMaterial color="#3a3f48" /></mesh>
-        {[-700, -300, 100, 500, 900, 1300, 1700, 2100].map((x, i) => (
-          <mesh key={i} position={[x, 42, -110]}><boxGeometry args={[14, 54, 14]} /><meshStandardMaterial color="#2e333b" /></mesh>
+        <mesh position={[cx, 70, -70]} castShadow><boxGeometry args={[1500, 16, 34]} /><meshStandardMaterial color="#3a3f48" /></mesh>
+        {[-300, -50, 200, 450, 700, 950, 1200].map((x, i) => (
+          <mesh key={i} position={[x, 44, -70]}><boxGeometry args={[13, 52, 13]} /><meshStandardMaterial color="#2e333b" /></mesh>
         ))}
-        <Skyline z={-680} night={night} />
+        {/* 다리 조명 */}
+        {night && [-50, 200, 450, 700, 950].map((x, i) => (
+          <mesh key={"l" + i} position={[x, 84, -70]}><sphereGeometry args={[4, 10, 10]} /><meshStandardMaterial color="#ffe6a0" emissive="#ffcf6a" emissiveIntensity={1} /></mesh>
+        ))}
+        <Skyline z={-560} night={night} />
       </>
     );
   }
@@ -486,8 +497,8 @@ function AirplaneCabin({ night }: { night: boolean }) {
 
 function Skyline({ z, night, tall }: { z: number; night: boolean; tall?: boolean }) {
   const items = [];
-  for (let i = 0; i < 16; i++) {
-    const x = -300 + i * 120;
+  for (let i = 0; i < 14; i++) {
+    const x = -150 + i * 90;
     const h = (180 + ((i * 53) % 5) * 80) * (tall ? 1.4 : 1);
     items.push(
       <mesh key={i} position={[x, h / 2, z - ((i * 37) % 3) * 130]}>
@@ -504,7 +515,7 @@ function lightCfg(t: TimePhase) {
   switch (t.phase) {
     case "dawn": return { amb: 0.55, ambColor: "#ffd8c0", dir: 0.95, dirColor: "#ffd0a0" };
     case "dusk": return { amb: 0.5, ambColor: "#ffc0a0", dir: 0.85, dirColor: "#ff9a6a" };
-    case "night": return { amb: 0.62, ambColor: "#9aa8da", dir: 0.7, dirColor: "#b7c4f0" };
+    case "night": return { amb: 0.72, ambColor: "#a6b2e0", dir: 0.82, dirColor: "#c2cdf2" };
     default: return { amb: 0.78, ambColor: "#ffffff", dir: 1.15, dirColor: "#fff6e0" };
   }
 }
