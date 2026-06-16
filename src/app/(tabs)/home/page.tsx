@@ -8,7 +8,7 @@ import RoomCard from "@/components/RoomCard";
 import MoodBuilding from "@/components/MoodBuilding";
 import { LOCATIONS, ROOMS } from "@/lib/mock";
 import { GENRES, GENRE_LIST, type GenreId } from "@/lib/genres";
-import { matchPercent } from "@/lib/taste";
+import { matchPercent, topGenre } from "@/lib/taste";
 import { useAppStore } from "@/store/useAppStore";
 
 type Filter = "match" | GenreId;
@@ -30,17 +30,22 @@ export default function HomePage() {
     if (filter === "match") {
       return withPct.sort((a, b) => b.pct - a.pct);
     }
-    // 테마별: 해당 장르 우선, 그 안에서 취향순
+    // 장르 필터: 룸의 vibe 장르 기준
     return withPct
-      .filter((x) => GENRES[x.room.locationId.replace("loc_", "") as GenreId])
       .filter((x) => {
         const loc = LOCATIONS.find((l) => l.id === x.room.locationId);
-        return loc?.primaryGenre === filter;
+        return (loc?.primaryGenre ?? topGenre(x.room.tasteVector)) === filter;
       })
       .sort((a, b) => b.pct - a.pct);
   }, [taste, filter, customRooms]);
 
   const topRoom = ranked[0];
+
+  // 무드 공간 카드 → 해당 장소 룸으로 입장
+  const enterPlace = (loc: (typeof LOCATIONS)[number]) => {
+    const r = [...customRooms, ...ROOMS].find((x) => x.place === loc.place);
+    router.push(r ? `/room/${r.id}` : "/room/create");
+  };
 
   return (
     <div>
@@ -57,25 +62,26 @@ export default function HomePage() {
             + 룸 만들기
           </Link>
         </div>
-        <div className="mt-3 flex gap-3 overflow-x-auto no-scrollbar px-5 pb-1">
-          {LOCATIONS.map((loc) => (
-            <button
-              key={loc.id}
-              onClick={() => setFilter(loc.primaryGenre)}
-              className="card shrink-0 w-36 p-3 flex flex-col items-center active:scale-[0.98] transition"
-              style={{
-                background: `linear-gradient(160deg, ${GENRES[loc.primaryGenre].bg[0]}22, #FFFDF7)`,
-              }}
-            >
-              <MoodBuilding genre={loc.primaryGenre} emoji={loc.emoji} size={96} />
-              <span className="mt-1 font-bold text-sm text-ink-900">
-                {loc.name}
-              </span>
-              <span className="text-[11px] text-ink-700/55 text-center leading-tight mt-0.5">
-                {loc.theme}
-              </span>
-            </button>
-          ))}
+        <div className="mt-3 overflow-hidden">
+          <div className="flex gap-3 w-max marquee-track px-5 pb-1">
+            {[...LOCATIONS, ...LOCATIONS].map((loc, idx) => (
+              <button
+                key={loc.id + "_" + idx}
+                onClick={() => enterPlace(loc)}
+                className="card shrink-0 w-36 p-3 flex flex-col items-center active:scale-[0.97] transition"
+                style={{
+                  background: `linear-gradient(160deg, ${GENRES[loc.primaryGenre].bg[0]}22, #FFFDF7)`,
+                }}
+              >
+                <MoodBuilding genre={loc.primaryGenre} emoji={loc.emoji} size={96} />
+                <span className="mt-1 font-bold text-sm text-ink-900">{loc.name}</span>
+                <span className="text-[11px] text-ink-700/55 text-center leading-tight mt-0.5">
+                  {loc.theme}
+                </span>
+                <span className="mt-1 text-[10px] font-bold text-brand">입장하기 →</span>
+              </button>
+            ))}
+          </div>
         </div>
       </section>
 

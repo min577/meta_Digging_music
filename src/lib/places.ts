@@ -4,7 +4,7 @@ import type { Decor, FloorType } from "./scenes";
 
 // 실제 청취 "상황" 기반 장소. 각 장소는 고유 3D 환경 + 실제 음악(검색어)을 가진다.
 export type PlaceId = "gym" | "library" | "hanriver" | "airplane" | "city" | "cafe";
-export type EnvType = "indoor" | "water" | "sky" | "skyline";
+export type EnvType = "indoor" | "water" | "sky" | "skyline" | "cabin";
 
 export interface ZoneCfg {
   label: string;

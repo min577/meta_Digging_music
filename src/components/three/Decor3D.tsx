@@ -1,10 +1,49 @@
 "use client";
 
-import { RoundedBox } from "@react-three/drei";
+import { useMemo } from "react";
+import { RoundedBox, useGLTF } from "@react-three/drei";
+import * as THREE from "three";
 import type { DecorKind } from "@/components/DecorSprite";
 
-// DecorKind를 둥근 로우폴리 3D 메시로. 바닥 y=0 기준, 높이는 아바타(~58)와 어울리게.
+// CC0 KayKit 가구 GLTF 매핑 (있으면 실제 모델, 없으면 프리미티브 폴백)
+const GLB: Partial<Record<DecorKind, { file: string; h: number }>> = {
+  sofa: { file: "couch_pillows", h: 34 },
+  chair: { file: "chair_A", h: 36 },
+  table: { file: "table_medium", h: 34 },
+  bed: { file: "bed_double_A", h: 30 },
+  bookshelf: { file: "shelf_B_large", h: 76 },
+  lamp: { file: "lamp_table", h: 40 },
+  floorlamp: { file: "lamp_standing", h: 66 },
+  plant: { file: "cactus_medium_A", h: 44 },
+  painting: { file: "pictureframe_standing_A", h: 48 },
+  cushion: { file: "pillow_A", h: 14 },
+  counter: { file: "cabinet_medium", h: 44 },
+};
+const glbUrl = (f: string) => `/models/kaykit/${f}.gltf`;
+Object.values(GLB).forEach((v) => v && useGLTF.preload(glbUrl(v.file)));
+
+// 로드한 GLTF를 목표 높이로 정규화 + 바닥에 안착 + 그림자
+function GlbProp({ file, targetH }: { file: string; targetH: number }) {
+  const { scene } = useGLTF(glbUrl(file));
+  const obj = useMemo(() => {
+    const c = scene.clone(true);
+    const box = new THREE.Box3().setFromObject(c);
+    const h = box.max.y - box.min.y || 1;
+    c.scale.setScalar(targetH / h);
+    const box2 = new THREE.Box3().setFromObject(c);
+    c.position.y = -box2.min.y;
+    c.traverse((o: any) => {
+      if (o.isMesh) o.castShadow = true;
+    });
+    return c;
+  }, [scene, targetH]);
+  return <primitive object={obj} />;
+}
+
+// DecorKind를 3D로. KayKit 가구가 있으면 실제 모델, 없으면 프리미티브.
 export default function Decor3D({ kind }: { kind: DecorKind }) {
+  const g = GLB[kind];
+  if (g) return <GlbProp file={g.file} targetH={g.h} />;
   return <group>{render(kind)}</group>;
 }
 

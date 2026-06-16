@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { Suspense, useEffect, useMemo, useRef } from "react";
 import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import * as THREE from "three";
@@ -75,7 +75,9 @@ export default function RoomScene3D(props: Props) {
       >
         <color attach="background" args={[SKY[time.phase]]} />
         <fog attach="fog" args={[SKY[time.phase], 1100, 2600]} />
-        <Scene {...props} time={time} />
+        <Suspense fallback={null}>
+          <Scene {...props} time={time} />
+        </Suspense>
       </Canvas>
 
       {/* DOM 오버레이 */}
