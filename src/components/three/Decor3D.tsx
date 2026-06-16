@@ -19,6 +19,14 @@ const GLB: Partial<Record<DecorKind, { file: string; h: number; flat?: boolean }
   cushion: { file: "pillow_A", h: 14 },
   counter: { file: "cabinet_medium_decorated", h: 44 },
   rug: { file: "rug_rectangle_A", h: 180, flat: true },
+  // 변형(반복감 완화)
+  chair2: { file: "armchair", h: 38 },
+  chair3: { file: "chair_stool", h: 30 },
+  table2: { file: "table_small", h: 30 },
+  plant2: { file: "cactus_small_A", h: 30 },
+  shelf2: { file: "shelf_A_big", h: 70 },
+  painting2: { file: "pictureframe_large_A", h: 52 },
+  books: { file: "book_set", h: 16 },
 };
 const glbUrl = (f: string) => `/models/kaykit/${f}.gltf`;
 Object.values(GLB).forEach((v) => v && useGLTF.preload(glbUrl(v.file)));

@@ -12,7 +12,8 @@ export type DecorKind =
   | "building" | "neon" | "column" | "cocktail" | "vinyl" | "arcade"
   | "treadmill" | "dumbbell" | "bench" | "locker" | "mirror" | "desk"
   | "globe" | "streetlamp" | "bicycle" | "tent" | "planeseat" | "cloud"
-  | "car" | "counter" | "rug";
+  | "car" | "counter" | "rug"
+  | "chair2" | "chair3" | "table2" | "plant2" | "shelf2" | "painting2" | "books";
 
 export const DECOR_LABEL: Partial<Record<DecorKind, string>> = {
   plant: "화분", tree: "나무", palm: "야자수", sofa: "소파", chair: "의자",

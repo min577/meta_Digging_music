@@ -47,9 +47,10 @@ function mapItem(it: any, genreHint?: GenreId): Track | null {
 }
 
 async function fetchITunes(term: string, limit: number): Promise<any[]> {
+  // 한국 스토어(K-pop/힙합/가요 + 미리듣기). lang=ko_kr 로 한글 메타.
   const url = `${ENDPOINT}?term=${encodeURIComponent(
     term
-  )}&media=music&entity=song&limit=${limit}`;
+  )}&media=music&entity=song&limit=${limit}&country=KR&lang=ko_kr`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`iTunes ${res.status}`);
   const data = await res.json();

@@ -61,9 +61,9 @@ const PLACES: Record<PlaceId, Place> = {
     env: "indoor",
     decorKinds: ["treadmill", "dumbbell", "bench", "locker", "mirror", "plant", "treadmill", "dumbbell", "bench", "speaker", "locker", "mirror", "dumbbell", "treadmill", "bench", "plant"],
     zones: [
-      { label: "운동 부스트", genre: "house", term: "workout hype edm" },
-      { label: "런닝 하이", genre: "kpop", term: "k-pop dance hits" },
-      { label: "헬스 힙합", genre: "rnb", term: "hip hop workout" },
+      { label: "운동 K-pop", genre: "kpop", term: "케이팝 댄스" },
+      { label: "하이텐션", genre: "house", term: "workout edm" },
+      { label: "힙합 펌핑", genre: "rnb", term: "한국 힙합" },
     ],
   },
   library: {
@@ -137,9 +137,9 @@ const PLACES: Record<PlaceId, Place> = {
     env: "skyline",
     decorKinds: ["building", "neon", "streetlamp", "car", "building", "neon", "building", "streetlamp", "car", "neon", "building", "streetlamp", "building", "car", "neon", "building"],
     zones: [
-      { label: "시티팝", genre: "citypop", term: "city pop japanese" },
-      { label: "나이트 드라이브", genre: "house", term: "night drive synthwave" },
-      { label: "도시 힙합", genre: "rnb", term: "korean hip hop" },
+      { label: "요즘 인기 가요", genre: "citypop", term: "가요" },
+      { label: "한국 힙합", genre: "rnb", term: "korean hip hop" },
+      { label: "K-pop 히트", genre: "kpop", term: "케이팝" },
     ],
   },
   cafe: {
@@ -173,39 +173,50 @@ export function place(id: PlaceId): Place {
 const W = WORLD_W, H = WORLD_H;
 const HALF = Math.PI / 2;
 type D = Decor;
-const rowX = (kind: DecorKind, x0: number, x1: number, y: number, n: number, size = 56, rot = 0): D[] =>
-  Array.from({ length: n }, (_, i) => ({ kind, x: Math.round(x0 + (x1 - x0) * (n <= 1 ? 0.5 : i / (n - 1))), y, size, rot }));
-const colY = (kind: DecorKind, y0: number, y1: number, x: number, n: number, size = 56, rot = 0): D[] =>
-  Array.from({ length: n }, (_, i) => ({ kind, x, y: Math.round(y0 + (y1 - y0) * (n <= 1 ? 0.5 : i / (n - 1))), size, rot }));
-const corners = (kind: DecorKind, size = 48): D[] =>
-  ([[80, 110], [W - 80, 110], [80, H - 110], [W - 80, H - 110]] as const).map(([x, y]) => ({ kind, x, y, size }));
-const tableSet = (x: number, y: number): D[] => [
-  { kind: "table", x, y, size: 54 },
-  { kind: "chair", x: x - 48, y, size: 46, rot: HALF },
-  { kind: "chair", x: x + 48, y, size: 46, rot: -HALF },
-];
+type K = DecorKind | DecorKind[];
+const pick = (k: K, i: number): DecorKind => (Array.isArray(k) ? k[i % k.length] : k);
+const rowX = (kind: K, x0: number, x1: number, y: number, n: number, size = 56, rot = 0): D[] =>
+  Array.from({ length: n }, (_, i) => ({ kind: pick(kind, i), x: Math.round(x0 + (x1 - x0) * (n <= 1 ? 0.5 : i / (n - 1))), y, size, rot }));
+const colY = (kind: K, y0: number, y1: number, x: number, n: number, size = 56, rot = 0): D[] =>
+  Array.from({ length: n }, (_, i) => ({ kind: pick(kind, i), x, y: Math.round(y0 + (y1 - y0) * (n <= 1 ? 0.5 : i / (n - 1))), size, rot }));
+const corners = (kind: K, size = 48): D[] =>
+  ([[80, 110], [W - 80, 110], [80, H - 110], [W - 80, H - 110]] as const).map(([x, y], i) => ({ kind: pick(kind, i), x, y, size }));
+let TS = 0; // 테이블세트 변형 인덱스
+const tableSet = (x: number, y: number): D[] => {
+  const tables: DecorKind[] = ["table", "table2"];
+  const chairsL: DecorKind[] = ["chair", "chair2", "chair3"];
+  const chairsR: DecorKind[] = ["chair2", "chair3", "chair"];
+  const i = TS++;
+  return [
+    { kind: tables[i % tables.length], x, y, size: 54 },
+    { kind: chairsL[i % chairsL.length], x: x - 48, y, size: 46, rot: HALF },
+    { kind: chairsR[i % chairsR.length], x: x + 48, y, size: 46, rot: -HALF },
+    { kind: "books", x, y: y - 4, size: 22 },
+  ];
+};
 
 // 장소별 구조적 배치
 function layoutFor(id: PlaceId): D[] {
+  TS = 0;
   switch (id) {
     case "cafe":
       return [
-        { kind: "rug", x: 400, y: 330, size: 56 }, { kind: "rug", x: 560, y: 510, size: 56 },
+        { kind: "rug", x: 400, y: 330, size: 56 }, { kind: "rug", x: 600, y: 520, size: 56 },
         ...rowX("counter", 270, 730, 95, 3, 70),
-        ...rowX("painting", 200, 800, 55, 3, 44),
+        ...rowX(["painting", "painting2"], 200, 800, 55, 3, 46),
         ...tableSet(290, 320), ...tableSet(500, 320), ...tableSet(710, 320),
-        ...tableSet(390, 510), ...tableSet(610, 510),
-        ...corners("plant", 46),
+        ...tableSet(390, 510), ...tableSet(620, 510),
+        ...corners(["plant", "plant2"], 46),
       ];
     case "library":
       return [
-        { kind: "rug", x: 500, y: 420, size: 56 },
-        ...rowX("bookshelf", 170, 830, 80, 5, 78),
-        ...colY("bookshelf", 210, 540, 90, 3, 72, HALF),
-        ...colY("bookshelf", 210, 540, W - 90, 3, 72, -HALF),
+        { kind: "rug", x: 500, y: 430, size: 56 },
+        ...rowX(["bookshelf", "shelf2"], 160, 840, 80, 6, 78),
+        ...colY(["bookshelf", "shelf2"], 210, 540, 88, 3, 72, HALF),
+        ...colY(["shelf2", "bookshelf"], 210, 540, W - 88, 3, 72, -HALF),
         ...tableSet(360, 340), ...tableSet(640, 340), ...tableSet(500, 520),
-        { kind: "lamp", x: 360, y: 300, size: 38 }, { kind: "lamp", x: 640, y: 300, size: 38 },
-        ...corners("plant", 44),
+        { kind: "lamp", x: 360, y: 304, size: 36 }, { kind: "floorlamp", x: 640, y: 304, size: 60 },
+        ...corners(["plant", "plant2"], 44),
       ];
     case "gym":
       return [
