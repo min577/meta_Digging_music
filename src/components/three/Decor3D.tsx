@@ -1,22 +1,24 @@
 "use client";
 
+import { RoundedBox } from "@react-three/drei";
 import type { DecorKind } from "@/components/DecorSprite";
 
-// DecorKind를 로우폴리 3D 메시로. 바닥 y=0 기준, 높이는 아바타(~58)와 어울리게.
+// DecorKind를 둥근 로우폴리 3D 메시로. 바닥 y=0 기준, 높이는 아바타(~58)와 어울리게.
 export default function Decor3D({ kind }: { kind: DecorKind }) {
   return <group>{render(kind)}</group>;
 }
 
 const M = (color: string, emissive?: string, ei = 0.6) => (
-  <meshStandardMaterial color={color} emissive={emissive} emissiveIntensity={emissive ? ei : 0} />
+  <meshStandardMaterial color={color} emissive={emissive} emissiveIntensity={emissive ? ei : 0} roughness={0.85} />
 );
 
+// 둥근 모서리 박스 (동물의 숲 느낌)
 function box(w: number, h: number, d: number, y: number, color: string, pos: [number, number, number] = [0, 0, 0], em?: string) {
+  const r = Math.min(4, Math.min(w, h, d) * 0.28);
   return (
-    <mesh castShadow position={[pos[0], y + h / 2, pos[2]]}>
-      <boxGeometry args={[w, h, d]} />
+    <RoundedBox args={[w, h, d]} radius={r} smoothness={3} castShadow position={[pos[0], y + h / 2, pos[2]]}>
       {M(color, em)}
-    </mesh>
+    </RoundedBox>
   );
 }
 function cyl(r: number, h: number, y: number, color: string, pos: [number, number, number] = [0, 0, 0], em?: string) {

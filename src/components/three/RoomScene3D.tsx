@@ -199,8 +199,8 @@ function Scene({
     }
 
     // 카메라 추적
-    const target = new THREE.Vector3(m.x, 40, m.z);
-    const camPos = new THREE.Vector3(m.x, 330, m.z + 360);
+    const target = new THREE.Vector3(m.x, 48, m.z);
+    const camPos = new THREE.Vector3(m.x, 300, m.z + 330);
     camera.position.lerp(camPos, 0.12);
     camera.lookAt(target);
 
