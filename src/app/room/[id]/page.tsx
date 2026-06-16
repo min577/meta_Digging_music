@@ -4,8 +4,19 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import AudioPlayer from "@/components/AudioPlayer";
-import RoomMap, { type MapAvatar, type Speaker } from "@/components/RoomMap";
+import dynamic from "next/dynamic";
+import type { MapAvatar3D, Speaker3D } from "@/components/three/RoomScene3D";
 import DecorSprite, { type DecorKind } from "@/components/DecorSprite";
+
+// 3D 룸은 클라이언트 전용 (three.js)
+const RoomScene3D = dynamic(() => import("@/components/three/RoomScene3D"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full grid place-items-center bg-cream-200 rounded-2xl text-ink-700/60">
+      🌍 3D 룸 불러오는 중…
+    </div>
+  ),
+});
 import TrackSearch from "@/components/TrackSearch";
 import { useRoomSession } from "@/hooks/useRoomSession";
 import { useAppStore, useMyTopGenre } from "@/store/useAppStore";
@@ -23,7 +34,7 @@ const SPOTS = [
   { x: 380, y: 740 },
   { x: 1020, y: 740 },
 ];
-type SpeakerT = Speaker & { track: Track };
+type SpeakerT = Speaker3D & { track: Track };
 
 // 꾸미기 가구 팔레트 (SVG 소품)
 const FURNITURE: DecorKind[] = [
@@ -119,7 +130,7 @@ export default function RoomPage() {
   }, [room?.id, mode, roomGenre]);
 
   // 맵 NPC (룸 멤버)
-  const npcs = useMemo<MapAvatar[]>(() => {
+  const npcs = useMemo<MapAvatar3D[]>(() => {
     if (!room) return [];
     return room.members.map((m, i) => ({
       id: m.userId,
@@ -381,14 +392,14 @@ export default function RoomPage() {
       )}
 
       {/* 맵 */}
-      <div className="px-4 mt-2 h-[46vh]">
-        <RoomMap
+      <div className="px-4 mt-2 h-[52vh]">
+        <RoomScene3D
           meAppearance={user?.character.appearance ?? defaultAppearance()}
           meHandle={user?.handle ?? "나"}
           meTrack={myTrack}
           genre={roomGenre}
           npcs={npcs}
-          remote={session.remotePlayers}
+          remote={session.remotePlayers as MapAvatar3D[]}
           speakers={mode === "free" ? speakers : []}
           placed={[...myDecor, ...session.othersDecor]}
           editMode={editMode}
