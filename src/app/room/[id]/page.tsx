@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import AudioPlayer from "@/components/AudioPlayer";
 import RoomMap, { type MapAvatar, type Speaker } from "@/components/RoomMap";
+import DecorSprite, { type DecorKind } from "@/components/DecorSprite";
 import TrackSearch from "@/components/TrackSearch";
 import { useRoomSession } from "@/hooks/useRoomSession";
 import { useAppStore, useMyTopGenre } from "@/store/useAppStore";
@@ -24,10 +25,12 @@ const SPOTS = [
 ];
 type SpeakerT = Speaker & { track: Track };
 
-// 꾸미기 가구 팔레트
-const FURNITURE = [
-  "🪴", "🛋️", "🪑", "🛏️", "🌳", "🌸", "🪩", "🎹", "📺", "🕯️",
-  "🧸", "🖼️", "⛲", "🪵", "☕", "🎮", "🪟", "🎸", "🏮", "🛼",
+// 꾸미기 가구 팔레트 (SVG 소품)
+const FURNITURE: DecorKind[] = [
+  "plant", "tree", "palm", "sofa", "chair", "bed", "table", "lamp", "floorlamp",
+  "tv", "painting", "bookshelf", "window", "cushion", "candle", "lantern",
+  "fountain", "speaker", "piano", "guitar", "drum", "disco", "arcade", "vinyl",
+  "cocktail", "balloon", "crystal", "star",
 ];
 
 export default function RoomPage() {
@@ -172,7 +175,7 @@ export default function RoomPage() {
   const placeAt = (x: number, y: number) => {
     const item = {
       id: `d_${Date.now()}_${Math.floor(Math.random() * 1e4)}`,
-      emoji: selectedItem,
+      kind: selectedItem,
       x,
       y,
     };
@@ -367,11 +370,11 @@ export default function RoomPage() {
             <button
               key={f}
               onClick={() => setSelectedItem(f)}
-              className={`shrink-0 w-10 h-10 rounded-xl grid place-items-center text-xl ${
+              className={`shrink-0 w-11 h-11 rounded-xl grid place-items-center ${
                 selectedItem === f ? "bg-brand/30 ring-2 ring-brand" : "bg-black/25"
               }`}
             >
-              {f}
+              <DecorSprite kind={f} size={34} />
             </button>
           ))}
         </div>

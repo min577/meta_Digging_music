@@ -1,4 +1,5 @@
 import type { GenreId } from "./genres";
+import type { DecorKind } from "@/components/DecorSprite";
 
 // 월드 좌표계 (RoomMap과 동일하게 유지) — 넓은 공간
 export const WORLD_W = 1400;
@@ -9,7 +10,7 @@ export type FloorType = "wood" | "grass" | "tile" | "neon" | "dark";
 export interface Decor {
   x: number;
   y: number;
-  emoji: string;
+  kind: DecorKind;
   size: number;
 }
 
@@ -42,7 +43,7 @@ interface Cfg {
   wall: string;
   stage: string;
   floorType: FloorType;
-  emojis: string[];
+  kinds: DecorKind[];
 }
 
 const CFG: Record<GenreId, Cfg> = {
@@ -51,56 +52,56 @@ const CFG: Record<GenreId, Cfg> = {
     wall: "#1c1610",
     stage: "#4a3826",
     floorType: "wood",
-    emojis: ["🎹", "🎷", "🎺", "🍸", "🥃", "🪑", "🕯️", "🛋️", "🎶", "🎙️", "🌙", "🎵"],
+    kinds: ["piano", "mic", "cocktail", "chair", "candle", "sofa", "lamp", "painting", "vinyl", "lantern", "table", "floorlamp"],
   },
   citypop: {
     floor: ["#241a40", "#3d2a63"],
     wall: "#160f2b",
     stage: "#5a2f7a",
     floorType: "neon",
-    emojis: ["🌃", "🗼", "🚆", "🌴", "🍹", "🛵", "💿", "🕶️", "🌆", "🎐", "🌙", "🎵"],
+    kinds: ["building", "neon", "palm", "tv", "speaker", "crystal", "vinyl", "balloon", "building", "neon", "star", "cocktail"],
   },
   lofi: {
     floor: ["#22304d", "#33456b"],
     wall: "#18233a",
     stage: "#3a4f7a",
     floorType: "wood",
-    emojis: ["🪟", "☔", "🪴", "📚", "☕", "🛋️", "🐱", "🧸", "🕯️", "🎧", "🌙", "🎵"],
+    kinds: ["window", "plant", "bookshelf", "table", "sofa", "lamp", "cushion", "tv", "candle", "plant", "floorlamp", "painting"],
   },
   house: {
     floor: ["#0f2a33", "#15414a"],
     wall: "#0a1c22",
     stage: "#1f6f68",
     floorType: "neon",
-    emojis: ["🪩", "🔊", "🔊", "🍸", "🎛️", "🕺", "💃", "✨", "🌈", "💿", "🔆", "🎵"],
+    kinds: ["disco", "speaker", "speaker", "cocktail", "crystal", "star", "vinyl", "balloon", "disco", "speaker", "star", "cocktail"],
   },
   kpop: {
     floor: ["#3a1838", "#5e2752"],
     wall: "#260f24",
     stage: "#8e3a78",
     floorType: "tile",
-    emojis: ["🎤", "💡", "💡", "🎀", "📣", "💖", "🌟", "🪅", "🩷", "💫", "🎶", "🎵"],
+    kinds: ["mic", "star", "balloon", "speaker", "painting", "star", "balloon", "mic", "crystal", "star", "balloon", "mic"],
   },
   classical: {
     floor: ["#2b2620", "#473d2c"],
     wall: "#1e1a14",
     stage: "#6e5a36",
     floorType: "tile",
-    emojis: ["🏛️", "🏛️", "🎻", "🎼", "🕯️", "🌹", "🎹", "👑", "🕰️", "📜", "🎶", "🎵"],
+    kinds: ["column", "column", "piano", "candle", "painting", "fountain", "lamp", "column", "candle", "painting", "lantern", "column"],
   },
   metal: {
     floor: ["#161620", "#28283a"],
     wall: "#0e0e16",
     stage: "#3a3a52",
     floorType: "dark",
-    emojis: ["🤘", "🎸", "🥁", "⚡", "🔥", "💀", "⛓️", "🖤", "🦂", "🪨", "🎶", "🎵"],
+    kinds: ["guitar", "drum", "speaker", "star", "mic", "guitar", "drum", "crystal", "speaker", "star", "guitar", "drum"],
   },
   rnb: {
     floor: ["#2d1b3d", "#492c63"],
     wall: "#1d1129",
     stage: "#6b4a82",
     floorType: "tile",
-    emojis: ["🎙️", "🍷", "🪞", "🕯️", "🥂", "🛋️", "🌙", "💜", "✨", "🌃", "🎶", "🎵"],
+    kinds: ["mic", "cocktail", "sofa", "candle", "lamp", "painting", "vinyl", "crystal", "sofa", "candle", "lamp", "mic"],
   },
 };
 
@@ -115,7 +116,7 @@ export function sceneFor(genre: GenreId): Scene {
       x,
       y,
       size,
-      emoji: c.emojis[i % c.emojis.length],
+      kind: c.kinds[i % c.kinds.length],
     })),
   };
 }

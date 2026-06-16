@@ -86,6 +86,12 @@ body {
   50% { transform: rotate(-22deg); }
 }
 
+/* 밤하늘 별 반짝임 */
+@keyframes twinkle {
+  0%, 100% { opacity: 0.25; transform: scale(0.7); }
+  50% { opacity: 0.9; transform: scale(1); }
+}
+
 /* 떠다니는 하트 반응 */
 @keyframes floatUp {
   0% {

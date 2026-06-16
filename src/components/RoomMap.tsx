@@ -6,7 +6,9 @@ import type { Appearance } from "@/lib/appearance";
 import type { GenreId } from "@/lib/genres";
 import { GENRES } from "@/lib/genres";
 import type { Track, PlacedItem } from "@/lib/types";
+import DecorSprite from "./DecorSprite";
 import { sceneFor, floorPattern, WORLD_W, WORLD_H } from "@/lib/scenes";
+import { useTimePhase } from "@/hooks/useTimePhase";
 
 const PAD = 54;
 const SPEED = 235; // units/sec
@@ -97,6 +99,7 @@ export default function RoomMap({
   onMoveRef.current = onMove;
 
   const scene = sceneFor(genre);
+  const time = useTimePhase();
 
   // 뷰포트 크기 측정 (카메라용)
   useEffect(() => {
@@ -297,7 +300,7 @@ export default function RoomMap({
         {/* 바닥 패턴 (잔디/마루/타일/네온) */}
         <div className="absolute inset-0" style={floorPattern(scene.floorType)} />
 
-        {/* 소품 (깊이 정렬) */}
+        {/* 소품 (SVG, 깊이 정렬) */}
         {scene.decor.map((d, i) => (
           <div
             key={i}
@@ -305,12 +308,11 @@ export default function RoomMap({
             style={{
               left: d.x,
               top: d.y,
-              fontSize: d.size,
               zIndex: Math.floor(d.y),
-              filter: "drop-shadow(0 4px 4px rgba(0,0,0,0.35))",
+              filter: "drop-shadow(0 5px 4px rgba(0,0,0,0.35))",
             }}
           >
-            {d.emoji}
+            <DecorSprite kind={d.kind} size={d.size} />
           </div>
         ))}
 
@@ -329,13 +331,12 @@ export default function RoomMap({
             style={{
               left: p.x,
               top: p.y,
-              fontSize: 46,
               zIndex: Math.floor(p.y),
-              filter: "drop-shadow(0 4px 4px rgba(0,0,0,0.35))",
+              filter: "drop-shadow(0 5px 4px rgba(0,0,0,0.35))",
             }}
             title={editMode ? "클릭해서 삭제" : undefined}
           >
-            {p.emoji}
+            <DecorSprite kind={p.kind} size={52} />
             {editMode && (
               <span className="absolute -top-1 -right-1 text-[10px] bg-live text-white rounded-full w-4 h-4 grid place-items-center">
                 ×
@@ -397,17 +398,47 @@ export default function RoomMap({
         ))}
       </div>
 
-      {/* 조작 힌트 (뷰포트 고정) */}
-      <div className="absolute bottom-2 left-2 chip bg-black/40 text-white text-[10px] z-[999]">
+      {/* 실시간 낮/밤 조명 오버레이 */}
+      <div
+        className="absolute inset-0 pointer-events-none z-[1500] transition-colors duration-1000"
+        style={{ background: time.overlay }}
+      >
+        {time.isNight &&
+          NIGHT_STARS.map((s, i) => (
+            <span
+              key={i}
+              className="absolute rounded-full bg-white"
+              style={{
+                left: `${s.x}%`,
+                top: `${s.y}%`,
+                width: s.r,
+                height: s.r,
+                opacity: 0.8,
+                animation: `twinkle ${1.5 + (i % 4) * 0.6}s ease-in-out infinite`,
+              }}
+            />
+          ))}
+      </div>
+
+      {/* 시계 + 해/달 (뷰포트 고정) */}
+      <div className="absolute top-2 left-2 chip bg-black/40 text-white text-[11px] z-[2000] flex items-center gap-1">
+        <span className="text-sm">{time.icon}</span> {time.clock} · {time.label}
+      </div>
+      <div className="absolute bottom-2 left-2 chip bg-black/40 text-white text-[10px] z-[2000]">
         WASD / 화살표로 이동
       </div>
-      {/* 미니 위치 표시 */}
-      <div className="absolute top-2 right-2 chip bg-black/40 text-white text-[10px] z-[999]">
+      <div className="absolute top-2 right-2 chip bg-black/40 text-white text-[10px] z-[2000]">
         🗺️ {Math.round((me.current.x / WORLD_W) * 100)},{Math.round((me.current.y / WORLD_H) * 100)}
       </div>
     </div>
   );
 }
+
+const NIGHT_STARS = [
+  { x: 12, y: 14, r: 2 }, { x: 28, y: 8, r: 1.5 }, { x: 44, y: 16, r: 2.5 },
+  { x: 62, y: 10, r: 1.5 }, { x: 78, y: 18, r: 2 }, { x: 90, y: 9, r: 1.5 },
+  { x: 20, y: 26, r: 1.5 }, { x: 70, y: 28, r: 2 }, { x: 52, y: 6, r: 1.5 },
+];
 
 function clamp(v: number, lo: number, hi: number) {
   return Math.max(lo, Math.min(hi, v));

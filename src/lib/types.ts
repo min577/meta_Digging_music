@@ -147,7 +147,7 @@ export interface ShopItem {
 /** 룸에 배치한 가구/소품 (공간 꾸미기) */
 export interface PlacedItem {
   id: string;
-  emoji: string;
+  kind: import("@/components/DecorSprite").DecorKind;
   x: number;
   y: number;
 }
