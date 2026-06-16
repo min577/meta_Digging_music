@@ -248,6 +248,99 @@ function render(kind: DecorKind): React.ReactNode {
         {box(22, 16, 2, 38, "#5bc8e0", [0, 0, 11], "#3aa8c8")}
         {box(24, 6, 6, 30, "#2a2a3a", [0, 0, 11])}
       </>);
+    case "treadmill":
+      return (<>
+        {box(40, 8, 26, 0, "#2a2d35")}
+        {box(30, 2, 22, 8, "#16181e")}
+        {box(5, 30, 4, 8, "#3a3f48", [-11, 0, -9])}
+        {box(5, 30, 4, 8, "#3a3f48", [11, 0, -9])}
+        {box(26, 6, 4, 38, "#43434f", [0, 0, -9], "#2a2d35")}
+      </>);
+    case "dumbbell":
+      return (<>
+        {box(10, 14, 14, 0, "#33363f", [-9, 0, 0])}
+        {box(10, 14, 14, 0, "#33363f", [9, 0, 0])}
+        {cyl(2.5, 14, 5, "#9aa0b5")}
+      </>);
+    case "bench":
+      return (<>
+        {box(44, 5, 16, 14, "#8a5e3a")}
+        {box(44, 16, 4, 14, "#7a5230", [0, 0, -6])}
+        {box(4, 14, 14, 0, "#6a4628", [-18, 0, 0])}
+        {box(4, 14, 14, 0, "#6a4628", [18, 0, 0])}
+      </>);
+    case "locker":
+      return (<>
+        {box(34, 72, 22, 0, "#46505e")}
+        {box(15, 70, 1, 1, "#3a424e", [-8, 0, 11.2])}
+        {box(15, 70, 1, 1, "#3a424e", [8, 0, 11.2])}
+      </>);
+    case "mirror":
+      return (<>
+        {box(38, 72, 4, 0, "#7a5230")}
+        {box(30, 64, 1, 4, "#cdd8e0", [0, 0, 2.5], "#90a0b0")}
+      </>);
+    case "desk":
+      return (<>
+        {box(54, 5, 30, 32, "#6e5234")}
+        {box(50, 24, 4, 6, "#5a4228", [0, 0, -12])}
+        {box(4, 32, 28, 0, "#5a4228", [-23, 0, 0])}
+        {box(4, 32, 28, 0, "#5a4228", [23, 0, 0])}
+      </>);
+    case "globe":
+      return (<>
+        {cyl(4, 14, 0, "#5a4632")}
+        {sph(11, [0, 26, 0], "#5aa0c8")}
+        <mesh position={[0, 26, 0]} rotation={[0.3, 0, 0.3]}><torusGeometry args={[12, 0.8, 8, 24]} /><meshStandardMaterial color="#caa46e" /></mesh>
+      </>);
+    case "streetlamp":
+      return (<>
+        {cyl(2.5, 62, 0, "#3a3f48")}
+        {box(20, 3, 4, 62, "#3a3f48", [6, 0, 0])}
+        {sph(5, [12, 60, 0], "#ffe6a0", "#ffcf6a")}
+      </>);
+    case "bicycle":
+      return (<>
+        <mesh position={[-13, 14, 0]} rotation={[0, 0, 0]}><torusGeometry args={[12, 1.6, 8, 24]} /><meshStandardMaterial color="#2a2d35" /></mesh>
+        <mesh position={[13, 14, 0]}><torusGeometry args={[12, 1.6, 8, 24]} /><meshStandardMaterial color="#2a2d35" /></mesh>
+        {box(26, 3, 3, 16, "#d8484f")}
+        {box(3, 14, 3, 16, "#d8484f", [-6, 0, 0])}
+        {box(10, 3, 3, 28, "#33363f", [-13, 0, 0])}
+      </>);
+    case "tent":
+      return (<>
+        <mesh castShadow position={[0, 22, 0]} rotation={[0, Math.PI / 4, 0]}><coneGeometry args={[26, 40, 4]} /><meshStandardMaterial color="#d8632e" roughness={0.85} /></mesh>
+        <mesh position={[0, 12, 19]}><coneGeometry args={[8, 22, 3]} /><meshStandardMaterial color="#7a3818" /></mesh>
+      </>);
+    case "planeseat":
+      return (<>
+        {box(28, 8, 26, 10, "#3a4150")}
+        {box(28, 28, 5, 10, "#46505e", [0, 0, -10])}
+        {box(4, 12, 24, 16, "#2e3440", [-13, 0, 0])}
+        {box(4, 12, 24, 16, "#2e3440", [13, 0, 0])}
+      </>);
+    case "cloud":
+      return (<>
+        {sph(13, [0, 46, 0], "#ffffff")}
+        {sph(10, [-13, 42, 2], "#f0f4f8")}
+        {sph(10, [13, 42, -2], "#f0f4f8")}
+        {sph(8, [0, 40, 10], "#ffffff")}
+      </>);
+    case "car":
+      return (<>
+        {box(50, 14, 24, 7, "#d8484f")}
+        {box(30, 13, 21, 19, "#c44a50", [2, 0, 0])}
+        {box(26, 9, 22, 20, "#8fd0ec", [2, 0, 0], "#2a7a9a")}
+        {cyl(6, 5, 0, "#16161a", [-15, 2.5, 12])}
+        {cyl(6, 5, 0, "#16161a", [15, 2.5, 12])}
+        {sph(3, [25, 12, 10], "#ffe6a0", "#ffcf6a")}
+      </>);
+    case "counter":
+      return (<>
+        {box(64, 30, 26, 0, "#5a4632")}
+        {box(70, 5, 30, 30, "#7a5234")}
+        {box(60, 2, 1, 14, "#caa46e", [0, 0, 13.5])}
+      </>);
     default:
       return box(20, 24, 20, 0, "#9aa0b5");
   }

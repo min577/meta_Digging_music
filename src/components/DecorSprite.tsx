@@ -9,9 +9,12 @@ export type DecorKind =
   | "lamp" | "floorlamp" | "tv" | "painting" | "bookshelf" | "window"
   | "cushion" | "candle" | "lantern" | "fountain" | "speaker" | "piano"
   | "guitar" | "drum" | "mic" | "disco" | "crystal" | "star" | "balloon"
-  | "building" | "neon" | "column" | "cocktail" | "vinyl" | "arcade";
+  | "building" | "neon" | "column" | "cocktail" | "vinyl" | "arcade"
+  | "treadmill" | "dumbbell" | "bench" | "locker" | "mirror" | "desk"
+  | "globe" | "streetlamp" | "bicycle" | "tent" | "planeseat" | "cloud"
+  | "car" | "counter";
 
-export const DECOR_LABEL: Record<DecorKind, string> = {
+export const DECOR_LABEL: Partial<Record<DecorKind, string>> = {
   plant: "화분", tree: "나무", palm: "야자수", sofa: "소파", chair: "의자",
   bed: "침대", table: "테이블", lamp: "램프", floorlamp: "플로어램프", tv: "TV",
   painting: "액자", bookshelf: "책장", window: "창문", cushion: "쿠션", candle: "촛불",

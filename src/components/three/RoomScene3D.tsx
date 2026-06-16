@@ -12,7 +12,7 @@ import { appearanceFromSeed } from "@/lib/appearance";
 import type { GenreId } from "@/lib/genres";
 import type { Track, PlacedItem } from "@/lib/types";
 import type { DecorKind } from "@/components/DecorSprite";
-import { sceneFor } from "@/lib/scenes";
+import { placeScene, type PlaceId, type EnvType } from "@/lib/places";
 import { useTimePhase, type TimePhase } from "@/hooks/useTimePhase";
 
 const WORLD_W = 1400;
@@ -46,7 +46,7 @@ interface Props {
   meAppearance: Appearance;
   meHandle: string;
   meTrack?: Track | null;
-  genre: GenreId;
+  place: PlaceId;
   npcs: MapAvatar3D[];
   remote?: MapAvatar3D[];
   speakers?: Speaker3D[];
@@ -93,11 +93,11 @@ export default function RoomScene3D(props: Props) {
 }
 
 function Scene({
-  meAppearance, meHandle, meTrack, genre, npcs, remote = [], speakers = [],
+  meAppearance, meHandle, meTrack, place, npcs, remote = [], speakers = [],
   placed = [], editMode, onMove, onAudio, onPlaceAt, onRemovePlaced, time,
 }: Props & { time: TimePhase }) {
   const { camera } = useThree();
-  const scene = sceneFor(genre);
+  const scene = placeScene(place);
 
   const me = useRef({ x: 700, z: 560, heading: Math.PI, walking: false });
   const keys = useRef<Set<string>>(new Set());
@@ -112,6 +112,7 @@ function Scene({
   // 최신 props ref
   const remoteR = useRef(remote); remoteR.current = remote;
   const speakersR = useRef(speakers); speakersR.current = speakers;
+  const npcsR = useRef(npcs); npcsR.current = npcs;
   const cbR = useRef({ onMove, onAudio }); cbR.current = { onMove, onAudio };
 
   // NPC 상태 초기화
@@ -216,6 +217,13 @@ function Scene({
         const v = 1 - Math.hypot(m.x - r.x, m.z - r.y) / RANGE;
         if (v > 0.03) out.push({ id: `player_${r.id}`, volume: +v.toFixed(2) });
       }
+      for (const n of npcsR.current) {
+        if (!n.track) continue;
+        const st = npcState.current[n.id];
+        const nx = st?.x ?? n.x, nz = st?.z ?? n.y;
+        const v = 1 - Math.hypot(m.x - nx, m.z - nz) / RANGE;
+        if (v > 0.03) out.push({ id: `npc_${n.id}`, volume: +v.toFixed(2) });
+      }
       const sig = out.map((o) => `${o.id}:${o.volume}`).join("|");
       if (sig !== lastAudio.current) {
         lastAudio.current = sig; lastAudioAt.current = now;
@@ -267,11 +275,16 @@ function Scene({
         <planeGeometry args={[WORLD_W, WORLD_H]} />
         <meshStandardMaterial color={adjust(scene.floor[0], 24)} />
       </mesh>
-      {/* 벽 (뒤편) */}
-      <mesh position={[WORLD_W / 2, 120, 0]} receiveShadow>
-        <boxGeometry args={[WORLD_W, 240, 12]} />
-        <meshStandardMaterial color={scene.wall} />
-      </mesh>
+      {/* 벽 (실내 장소만) */}
+      {scene.env === "indoor" && (
+        <mesh position={[WORLD_W / 2, 120, 0]} receiveShadow>
+          <boxGeometry args={[WORLD_W, 240, 12]} />
+          <meshStandardMaterial color={scene.wall} />
+        </mesh>
+      )}
+
+      {/* 장소별 특수 환경 */}
+      <EnvFx env={scene.env} night={time.isNight} />
 
       {/* 씬 소품 */}
       {scene.decor.map((d, i) => (
@@ -311,7 +324,7 @@ function Scene({
       {npcs.map((n) => (
         <group key={n.id} ref={(el) => { if (el) npcRefs.current[n.id] = el; }} position={[n.x, 0, n.y]}>
           <Avatar3D a={n.appearance ?? appearanceFromSeed(n.handle)} />
-          <NameTag handle={n.handle} />
+          <NameTag handle={n.handle} track={n.track} />
         </group>
       ))}
 
@@ -337,6 +350,60 @@ function NameTag({ handle, me, track }: { handle: string; me?: boolean; track?: 
       </div>
     </Html>
   );
+}
+
+// 장소별 특수 배경 (한강 물 / 비행기 구름 / 도시 스카이라인)
+function EnvFx({ env, night }: { env: EnvType; night: boolean }) {
+  if (env === "water") {
+    return (
+      <>
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[700, -3, -780]}>
+          <planeGeometry args={[3600, 1800]} />
+          <meshStandardMaterial color="#1f5170" transparent opacity={0.92} roughness={0.22} metalness={0.45} emissive={night ? "#163a52" : "#000000"} emissiveIntensity={night ? 0.4 : 0} />
+        </mesh>
+        {/* 한강 다리 */}
+        <mesh position={[700, 66, -110]} castShadow><boxGeometry args={[1800, 18, 36]} /><meshStandardMaterial color="#3a3f48" /></mesh>
+        {[-700, -300, 100, 500, 900, 1300, 1700, 2100].map((x, i) => (
+          <mesh key={i} position={[x, 42, -110]}><boxGeometry args={[14, 54, 14]} /><meshStandardMaterial color="#2e333b" /></mesh>
+        ))}
+        <Skyline z={-680} night={night} />
+      </>
+    );
+  }
+  if (env === "skyline") return <Skyline z={-360} night={night} tall />;
+  if (env === "sky") {
+    const spots: [number, number, number][] = [
+      [120, 70, 160], [1300, 100, 120], [700, 130, -260], [180, 50, 780],
+      [1260, 90, 820], [760, 40, 1080], [430, 160, -120], [1010, 160, -120],
+    ];
+    return (
+      <>
+        {spots.map((p, i) => (
+          <group key={i} position={p}>
+            <mesh><sphereGeometry args={[28, 16, 16]} /><meshStandardMaterial color="#ffffff" roughness={1} /></mesh>
+            <mesh position={[-26, -5, 5]}><sphereGeometry args={[19, 14, 14]} /><meshStandardMaterial color="#eef3f8" /></mesh>
+            <mesh position={[26, -5, -5]}><sphereGeometry args={[19, 14, 14]} /><meshStandardMaterial color="#eef3f8" /></mesh>
+          </group>
+        ))}
+      </>
+    );
+  }
+  return null;
+}
+
+function Skyline({ z, night, tall }: { z: number; night: boolean; tall?: boolean }) {
+  const items = [];
+  for (let i = 0; i < 16; i++) {
+    const x = -300 + i * 120;
+    const h = (180 + ((i * 53) % 5) * 80) * (tall ? 1.4 : 1);
+    items.push(
+      <mesh key={i} position={[x, h / 2, z - ((i * 37) % 3) * 130]}>
+        <boxGeometry args={[88, h, 88]} />
+        <meshStandardMaterial color={night ? "#1a2030" : "#39414f"} emissive={night ? "#ffd98a" : "#000000"} emissiveIntensity={night ? 0.08 : 0} />
+      </mesh>
+    );
+  }
+  return <>{items}</>;
 }
 
 // ---- helpers ----

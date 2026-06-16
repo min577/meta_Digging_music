@@ -52,6 +52,7 @@ export default function CreateRoomPage() {
       visibility: vis,
       queueMode: mode,
       roomMode,
+      place: loc.place,
       tasteVector: vectorFromTracks(seed ? [seed] : [{ genre: loc.primaryGenre } as Track]),
       currentTrack: seed ? { track: seed, startedAt: Date.now() } : null,
       capacity: 12,

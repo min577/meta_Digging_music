@@ -10,91 +10,50 @@ import type {
 import { CATALOG } from "./catalog";
 import { vectorFromTracks } from "./taste";
 import { defaultAppearance } from "./appearance";
+import { PLACE_LIST, place as getPlace, type PlaceId } from "./places";
 
-// 무드 공간(장소) — 기획서 3장 홈 캐러셀. Focustown의 National Library / Focus Plane / Stockholm Cafe 대응.
-export const LOCATIONS: Location[] = [
-  {
-    id: "loc_jazz",
-    name: "Late Night Jazz",
-    theme: "자정의 재즈 바, 세피아빛 무드",
-    emoji: "🎷",
-    moodTags: ["밤", "집중", "차분"],
-    primaryGenre: "jazz",
-  },
-  {
-    id: "loc_citypop",
-    name: "City Pop Train",
-    theme: "네온 도시를 달리는 야간 열차",
-    emoji: "🚆",
-    moodTags: ["드라이브", "설렘", "레트로"],
-    primaryGenre: "citypop",
-  },
-  {
-    id: "loc_lofi",
-    name: "Rainy Lo-fi Room",
-    theme: "빗소리와 함께하는 공부방",
-    emoji: "🌧️",
-    moodTags: ["공부", "휴식", "잔잔"],
-    primaryGenre: "lofi",
-  },
-  {
-    id: "loc_house",
-    name: "Disco Rooftop",
-    theme: "루프탑 하우스 파티",
-    emoji: "🪩",
-    moodTags: ["운동", "에너지", "댄스"],
-    primaryGenre: "house",
-  },
-  {
-    id: "loc_kpop",
-    name: "K-Pop Stage",
-    theme: "아이돌 무대 백스테이지",
-    emoji: "💖",
-    moodTags: ["신남", "팬", "응원"],
-    primaryGenre: "kpop",
-  },
-  {
-    id: "loc_classical",
-    name: "Antique Hall",
-    theme: "금빛 클래식 연주회장",
-    emoji: "🎻",
-    moodTags: ["자기 전", "사색", "우아"],
-    primaryGenre: "classical",
-  },
-];
+// 청취 "상황" 기반 장소 (홈 캐러셀). places.ts 에서 파생.
+export const LOCATIONS: Location[] = PLACE_LIST.map((p) => ({
+  id: `loc_${p.id}`,
+  name: p.name,
+  theme: p.theme,
+  emoji: p.emoji,
+  moodTags: p.situations,
+  primaryGenre: p.vibeGenre,
+  place: p.id,
+}));
 
 const t = (genre: string) => CATALOG.filter((c) => c.genre === genre);
 
 function room(
   id: string,
-  locationId: string,
-  primaryGenre: string,
+  placeId: PlaceId,
   title: string,
   host: string,
-  members: { handle: string; base: string; genre: string }[],
+  members: { handle: string; genre: string }[],
   extra: Partial<Room> = {}
 ): Room {
-  const tracks = t(primaryGenre);
+  const vibe = getPlace(placeId).vibeGenre;
+  const tracks = t(vibe);
   return {
     id,
-    locationId,
+    locationId: `loc_${placeId}`,
+    place: placeId,
     hostId: `u_${host}`,
     hostHandle: host,
     title,
     visibility: "public",
     queueMode: "collab",
-    roomMode: "party",
+    roomMode: "free",
     tasteVector: vectorFromTracks(tracks.length ? tracks : CATALOG),
-    currentTrack: tracks[0]
-      ? { track: tracks[0], startedAt: Date.now() - 30_000 }
-      : null,
-    capacity: 12,
+    currentTrack: tracks[0] ? { track: tracks[0], startedAt: Date.now() - 30_000 } : null,
+    capacity: 16,
     isLive: true,
     scheduledAt: null,
-    members: members.map((m, i) => ({
+    members: members.map((m) => ({
       userId: `u_${m.handle}`,
       handle: m.handle,
-      baseType: m.base,
+      baseType: "custom",
       topGenre: m.genre as any,
     })),
     countries: ["KR", "JP", "US"],
@@ -103,40 +62,44 @@ function room(
 }
 
 export const ROOMS: Room[] = [
-  room("room_jazz_1", "loc_jazz", "jazz", "새벽 3시 재즈 디깅", "miso", [
-    { handle: "miso", base: "fedora", genre: "jazz" },
-    { handle: "noir", base: "fedora", genre: "jazz" },
-    { handle: "lune", base: "hood", genre: "lofi" },
+  room("room_gym_1", "gym", "오운완 하이텐션 헬스장 🏋️", "muscle", [
+    { handle: "muscle", genre: "house" },
+    { handle: "pump_it", genre: "kpop" },
+    { handle: "runner", genre: "house" },
+    { handle: "sweat", genre: "rnb" },
   ]),
-  room("room_citypop_1", "loc_citypop", "citypop", "네온 시티팝 거리 🌃 (자유모드)", "yuki", [
-    { handle: "yuki", base: "shades", genre: "citypop" },
-    { handle: "rina", base: "shades", genre: "citypop" },
-    { handle: "kenji", base: "shades", genre: "citypop" },
-    { handle: "aoi", base: "hood", genre: "lofi" },
-  ], { roomMode: "free" }),
-  room("room_lofi_1", "loc_lofi", "lofi", "자유로운 로파이 라운지 🎐 (자유모드)", "rain", [
-    { handle: "rain", base: "hood", genre: "lofi" },
-    { handle: "cozy", base: "hood", genre: "lofi" },
-    { handle: "mellow", base: "hood", genre: "lofi" },
-  ], { capacity: 12, roomMode: "free" }),
-  room("room_house_1", "loc_house", "house", "루프탑 하우스 파티 🪩", "dj_max", [
-    { handle: "dj_max", base: "glow", genre: "house" },
-    { handle: "neon", base: "glow", genre: "house" },
-    { handle: "pulse", base: "glow", genre: "house" },
-    { handle: "vibe", base: "shades", genre: "citypop" },
-    { handle: "echo", base: "glow", genre: "house" },
-  ], { queueMode: "dj", capacity: 200 }),
-  room("room_kpop_1", "loc_kpop", "kpop", "K-팝 떼창 대형룸 💖", "starlight", [
-    { handle: "starlight", base: "glitter", genre: "kpop" },
-    { handle: "minji_fan", base: "glitter", genre: "kpop" },
-    { handle: "borahae", base: "glitter", genre: "kpop" },
-  ], { queueMode: "dj", capacity: 500 }),
-  room("room_classical_1", "loc_classical", "classical", "자기 전 클래식 🎻", "adagio", [
-    { handle: "adagio", base: "antique", genre: "classical" },
-  ], { capacity: 8 }),
-  room("room_lofi_2", "loc_lofi", "lofi", "라디오 무인 로파이 📻", "auto", [
-    { handle: "auto", base: "hood", genre: "lofi" },
-  ], { queueMode: "radio" }),
+  room("room_library_1", "library", "조용한 도서관 · ASMR/공부 📚", "silent", [
+    { handle: "silent", genre: "lofi" },
+    { handle: "page", genre: "lofi" },
+    { handle: "focus", genre: "classical" },
+  ]),
+  room("room_hanriver_1", "hanriver", "한강 밤 산책 · 감성 발라드 🌉", "river", [
+    { handle: "river", genre: "rnb" },
+    { handle: "midnight", genre: "rnb" },
+    { handle: "breeze", genre: "lofi" },
+  ]),
+  room("room_airplane_1", "airplane", "여행 떠나는 비행기 ✈️", "voyage", [
+    { handle: "voyage", genre: "citypop" },
+    { handle: "jetlag", genre: "house" },
+    { handle: "window_seat", genre: "kpop" },
+  ]),
+  room("room_city_1", "city", "도시 야경 드라이브 🌃", "neon", [
+    { handle: "neon", genre: "citypop" },
+    { handle: "drive", genre: "house" },
+    { handle: "seoul", genre: "rnb" },
+    { handle: "rooftop", genre: "citypop" },
+  ]),
+  room("room_cafe_1", "cafe", "골목 카페 · 잔잔한 오후 ☕", "barista", [
+    { handle: "barista", genre: "jazz" },
+    { handle: "latte", genre: "lofi" },
+    { handle: "bossa", genre: "jazz" },
+  ]),
+  // 리스닝 파티(호스트) 예시
+  room("room_city_party", "city", "🎙 시티팝 리스닝 파티", "dj_yuki", [
+    { handle: "dj_yuki", genre: "citypop" },
+    { handle: "rina", genre: "citypop" },
+    { handle: "kenji", genre: "house" },
+  ], { roomMode: "party", queueMode: "dj", capacity: 200 }),
 ];
 
 export const SHOP_ITEMS: ShopItem[] = [

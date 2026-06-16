@@ -22,7 +22,8 @@ import { useRoomSession } from "@/hooks/useRoomSession";
 import { useAppStore, useMyTopGenre } from "@/store/useAppStore";
 import { GENRES, GENRE_LIST } from "@/lib/genres";
 import { topGenre } from "@/lib/taste";
-import { tracksByGenre } from "@/lib/music";
+import { tracksByTerm } from "@/lib/music";
+import { place as getPlace } from "@/lib/places";
 import { appearanceFromSeed, defaultAppearance } from "@/lib/appearance";
 import type { Track } from "@/lib/types";
 
@@ -76,6 +77,7 @@ export default function RoomPage() {
   const [speakers, setSpeakers] = useState<SpeakerT[]>([]);
   const [vols, setVols] = useState<{ id: string; volume: number }[]>([]);
   const [myTrack, setMyTrack] = useState<Track | null>(null);
+  const [npcTracks, setNpcTracks] = useState<Record<string, Track>>({});
   const [editMode, setEditMode] = useState(false);
   const [selectedItem, setSelectedItem] = useState(FURNITURE[0]);
   const listenAccum = useRef(0);
@@ -99,35 +101,43 @@ export default function RoomPage() {
 
   const roomGenre = room ? topGenre(room.tasteVector) : "lofi";
 
-  // 자유모드: 맵에 장르별 음악 존(스피커) 배치
+  // 자유모드: 장소 컨셉에 맞는 실제 음악 존 배치 + NPC가 듣는 실곡
   useEffect(() => {
     if (!room || mode !== "free") return;
     let active = true;
+    const p = getPlace(room.place);
     (async () => {
-      const genres = [
-        roomGenre,
-        ...GENRE_LIST.map((g) => g.id).filter((x) => x !== roomGenre),
-      ].slice(0, SPOTS.length);
+      const zones = p.zones.slice(0, SPOTS.length);
       const out: SpeakerT[] = [];
-      for (let i = 0; i < genres.length; i++) {
-        const tr = await tracksByGenre(genres[i], 1);
+      for (let i = 0; i < zones.length; i++) {
+        const tr = await tracksByTerm(zones[i].term, 1);
         if (tr[0])
           out.push({
-            id: `spk_${genres[i]}`,
+            id: `zone_${room.place}_${i}`,
             x: SPOTS[i].x,
             y: SPOTS[i].y,
-            genre: genres[i],
-            label: GENRES[genres[i]].label,
+            genre: zones[i].genre,
+            label: zones[i].label,
             track: tr[0],
           });
       }
       if (active) setSpeakers(out);
+
+      // 룸의 몇몇 사람이 실제로 듣고 있는 곡 (가까이 가면 들림)
+      const more = await tracksByTerm(p.zones[0].term, 6);
+      if (active && more.length) {
+        const map: Record<string, Track> = {};
+        room.members.slice(0, 3).forEach((m, i) => {
+          if (more[i + 1]) map[m.userId] = more[i + 1];
+        });
+        setNpcTracks(map);
+      }
     })();
     return () => {
       active = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [room?.id, mode, roomGenre]);
+  }, [room?.id, mode]);
 
   // 맵 NPC (룸 멤버)
   const npcs = useMemo<MapAvatar3D[]>(() => {
@@ -138,8 +148,9 @@ export default function RoomPage() {
       appearance: appearanceFromSeed(m.handle),
       x: 300 + (i % 4) * 300,
       y: 450 + Math.floor(i / 4) * 240,
+      track: npcTracks[m.userId],
     }));
-  }, [room]);
+  }, [room, npcTracks]);
 
   if (!room) {
     return (
@@ -159,6 +170,7 @@ export default function RoomPage() {
   const sourceTrack: Record<string, Track> = {};
   for (const s of speakers) sourceTrack[s.id] = s.track;
   for (const p of remoteWithTrack) sourceTrack[`player_${p.id}`] = p.track!;
+  for (const [uid, tr] of Object.entries(npcTracks)) sourceTrack[`npc_${uid}`] = tr;
   const sortedVols = [...vols].sort((a, b) => b.volume - a.volume);
   const loudest = sortedVols[0];
   const loudestTrack = loudest ? sourceTrack[loudest.id] : undefined;
@@ -397,7 +409,7 @@ export default function RoomPage() {
           meAppearance={user?.character.appearance ?? defaultAppearance()}
           meHandle={user?.handle ?? "나"}
           meTrack={myTrack}
-          genre={roomGenre}
+          place={room.place}
           npcs={npcs}
           remote={session.remotePlayers as MapAvatar3D[]}
           speakers={mode === "free" ? speakers : []}

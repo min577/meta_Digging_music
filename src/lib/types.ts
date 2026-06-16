@@ -1,5 +1,6 @@
 import type { GenreId } from "./genres";
 import type { Appearance } from "./appearance";
+import type { PlaceId } from "./places";
 
 /** 장르 비율 벡터 — 기획서 6장: {jazz:0.4, citypop:0.3, lofi:0.3} */
 export type TasteVector = Partial<Record<GenreId, number>>;
@@ -46,6 +47,7 @@ export interface Location {
   emoji: string;
   moodTags: string[];
   primaryGenre: GenreId;
+  place: PlaceId; // 3D 환경 장소
 }
 
 export interface RoomMemberLite {
@@ -64,6 +66,7 @@ export interface Room {
   visibility: RoomVisibility;
   queueMode: QueueMode;
   roomMode: RoomMode; // party | free
+  place: PlaceId; // 3D 환경 장소
   tasteVector: TasteVector; // 룸 곡 분포 (추천용)
   currentTrack: { track: Track; startedAt: number } | null;
   capacity: number;

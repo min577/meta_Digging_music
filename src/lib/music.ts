@@ -68,6 +68,17 @@ export async function searchTracks(q: string): Promise<Track[]> {
   }
 }
 
+/** 검색어 기반 실제 곡 목록 (장소 음악 존 · 상황별 플레이리스트) */
+export async function tracksByTerm(term: string, limit = 4): Promise<Track[]> {
+  try {
+    const items = await fetchITunes(term, limit + 4);
+    const tracks = items.map((it) => mapItem(it)).filter(Boolean) as Track[];
+    return tracks.slice(0, limit);
+  } catch {
+    return searchCatalog(term).slice(0, limit);
+  }
+}
+
 /** 장르별 재생 목록 (룸 입장 시 초기 곡 + 큐 시드) */
 export async function tracksByGenre(
   genre: GenreId,
