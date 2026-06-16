@@ -63,36 +63,36 @@ function room(
 
 export const ROOMS: Room[] = [
   room("room_gym_1", "gym", "오운완 하이텐션 헬스장 🏋️", "muscle", [
-    { handle: "muscle", genre: "house" },
-    { handle: "pump_it", genre: "kpop" },
-    { handle: "runner", genre: "house" },
-    { handle: "sweat", genre: "rnb" },
+    { handle: "muscle", genre: "house" }, { handle: "pump_it", genre: "kpop" },
+    { handle: "runner", genre: "house" }, { handle: "sweat", genre: "rnb" },
+    { handle: "jogging", genre: "kpop" }, { handle: "lift_kr", genre: "house" },
+    { handle: "cardio", genre: "rnb" },
   ]),
   room("room_library_1", "library", "조용한 도서관 · ASMR/공부 📚", "silent", [
-    { handle: "silent", genre: "lofi" },
-    { handle: "page", genre: "lofi" },
-    { handle: "focus", genre: "classical" },
+    { handle: "silent", genre: "lofi" }, { handle: "page", genre: "lofi" },
+    { handle: "focus", genre: "classical" }, { handle: "quiet", genre: "lofi" },
+    { handle: "study_owl", genre: "classical" }, { handle: "note_kr", genre: "lofi" },
   ]),
   room("room_hanriver_1", "hanriver", "한강 밤 산책 · 감성 발라드 🌉", "river", [
-    { handle: "river", genre: "rnb" },
-    { handle: "midnight", genre: "rnb" },
-    { handle: "breeze", genre: "lofi" },
+    { handle: "river", genre: "rnb" }, { handle: "midnight", genre: "rnb" },
+    { handle: "breeze", genre: "lofi" }, { handle: "dawn_kr", genre: "rnb" },
+    { handle: "ballad", genre: "rnb" }, { handle: "walk", genre: "lofi" },
   ]),
   room("room_airplane_1", "airplane", "여행 떠나는 비행기 ✈️", "voyage", [
-    { handle: "voyage", genre: "citypop" },
-    { handle: "jetlag", genre: "house" },
-    { handle: "window_seat", genre: "kpop" },
+    { handle: "voyage", genre: "citypop" }, { handle: "jetlag", genre: "house" },
+    { handle: "window_seat", genre: "kpop" }, { handle: "cloud9", genre: "citypop" },
+    { handle: "gate7", genre: "house" }, { handle: "mileage", genre: "kpop" },
   ]),
   room("room_city_1", "city", "도시 야경 드라이브 🌃", "neon", [
-    { handle: "neon", genre: "citypop" },
-    { handle: "drive", genre: "house" },
-    { handle: "seoul", genre: "rnb" },
-    { handle: "rooftop", genre: "citypop" },
+    { handle: "neon", genre: "citypop" }, { handle: "drive", genre: "house" },
+    { handle: "seoul", genre: "rnb" }, { handle: "rooftop", genre: "citypop" },
+    { handle: "taxi", genre: "house" }, { handle: "hongdae", genre: "rnb" },
+    { handle: "night_kr", genre: "citypop" },
   ]),
   room("room_cafe_1", "cafe", "골목 카페 · 잔잔한 오후 ☕", "barista", [
-    { handle: "barista", genre: "jazz" },
-    { handle: "latte", genre: "lofi" },
-    { handle: "bossa", genre: "jazz" },
+    { handle: "barista", genre: "jazz" }, { handle: "latte", genre: "lofi" },
+    { handle: "bossa", genre: "jazz" }, { handle: "crema", genre: "jazz" },
+    { handle: "mocha", genre: "lofi" }, { handle: "afternoon", genre: "jazz" },
   ]),
   // 리스닝 파티(호스트) 예시
   room("room_city_party", "city", "🎙 시티팝 리스닝 파티", "dj_yuki", [

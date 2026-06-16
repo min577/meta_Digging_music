@@ -35,7 +35,7 @@ const SPOTS = [
   { x: 380, y: 740 },
   { x: 1020, y: 740 },
 ];
-type SpeakerT = Speaker3D & { track: Track };
+type SpeakerT = Speaker3D & { track?: Track };
 
 // 꾸미기 가구 팔레트 (SVG 소품)
 const FURNITURE: DecorKind[] = [
@@ -101,34 +101,27 @@ export default function RoomPage() {
 
   const roomGenre = room ? topGenre(room.tasteVector) : "lofi";
 
-  // 자유모드: 장소 컨셉에 맞는 실제 음악 존 배치 + NPC가 듣는 실곡
+  // 음악 소스 구성
+  // - 파티모드: 중앙 무대 1개(글로벌 동기화)
+  // - 자유모드: 고정 존 없음 → 룸 테마에 맞는 곡을 사람마다 송출, 가까이 가면 그 사람 음악이 들림
   useEffect(() => {
-    if (!room || mode !== "free") return;
+    if (!room) return;
     let active = true;
     const p = getPlace(room.place);
     (async () => {
-      const zones = p.zones.slice(0, SPOTS.length);
-      const out: SpeakerT[] = [];
-      for (let i = 0; i < zones.length; i++) {
-        const tr = await tracksByTerm(zones[i].term, 1);
-        if (tr[0])
-          out.push({
-            id: `zone_${room.place}_${i}`,
-            x: SPOTS[i].x,
-            y: SPOTS[i].y,
-            genre: zones[i].genre,
-            label: zones[i].label,
-            track: tr[0],
-          });
+      if (mode === "party") {
+        setSpeakers([{ id: "stage", x: 700, y: 360, genre: roomGenre, label: "메인 무대" }]);
+        setNpcTracks({});
+        return;
       }
-      if (active) setSpeakers(out);
-
-      // 룸의 몇몇 사람이 실제로 듣고 있는 곡 (가까이 가면 들림)
-      const more = await tracksByTerm(p.zones[0].term, 6);
-      if (active && more.length) {
+      // 자유모드: 사람-대-사람
+      setSpeakers([]);
+      const songs = await tracksByTerm(p.zones[0].term, 9);
+      if (active && songs.length) {
         const map: Record<string, Track> = {};
-        room.members.slice(0, 3).forEach((m, i) => {
-          if (more[i + 1]) map[m.userId] = more[i + 1];
+        // 멤버 절반쯤이 룸 테마 곡을 각자 송출
+        room.members.forEach((m, i) => {
+          if (i % 2 === 0) map[m.userId] = songs[i % songs.length];
         });
         setNpcTracks(map);
       }
@@ -146,8 +139,8 @@ export default function RoomPage() {
       id: m.userId,
       handle: m.handle,
       appearance: appearanceFromSeed(m.handle),
-      x: 300 + (i % 4) * 300,
-      y: 450 + Math.floor(i / 4) * 240,
+      x: 200 + ((i * 317 + 120) % 1040),
+      y: 220 + ((i * 223 + 60) % 620),
       track: npcTracks[m.userId],
     }));
   }, [room, npcTracks]);
@@ -168,7 +161,7 @@ export default function RoomPage() {
   // 자유모드 오디오 소스 레지스트리: 스피커 존 + 플레이어 송출곡
   const remoteWithTrack = session.remotePlayers.filter((p) => p.track);
   const sourceTrack: Record<string, Track> = {};
-  for (const s of speakers) sourceTrack[s.id] = s.track;
+  for (const s of speakers) if (s.track) sourceTrack[s.id] = s.track;
   for (const p of remoteWithTrack) sourceTrack[`player_${p.id}`] = p.track!;
   for (const [uid, tr] of Object.entries(npcTracks)) sourceTrack[`npc_${uid}`] = tr;
   const sortedVols = [...vols].sort((a, b) => b.volume - a.volume);

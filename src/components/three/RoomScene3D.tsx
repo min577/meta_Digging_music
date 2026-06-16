@@ -10,6 +10,7 @@ import MusicZone3D from "./MusicZone3D";
 import type { Appearance } from "@/lib/appearance";
 import { appearanceFromSeed } from "@/lib/appearance";
 import type { GenreId } from "@/lib/genres";
+import { GENRES } from "@/lib/genres";
 import type { Track, PlacedItem } from "@/lib/types";
 import type { DecorKind } from "@/components/DecorSprite";
 import { placeScene, type PlaceId, type EnvType } from "@/lib/places";
@@ -19,7 +20,8 @@ const WORLD_W = 1400;
 const WORLD_H = 1000;
 const PAD = 60;
 const SPEED = 240;
-const RANGE = 260;
+const RANGE = 260; // 파티 중앙 무대
+const PERSON_RANGE = 190; // 사람-대-사람 근접 청취 거리
 
 export interface MapAvatar3D {
   id: string;
@@ -214,14 +216,14 @@ function Scene({
       }
       for (const r of remoteR.current) {
         if (!r.track) continue;
-        const v = 1 - Math.hypot(m.x - r.x, m.z - r.y) / RANGE;
+        const v = 1 - Math.hypot(m.x - r.x, m.z - r.y) / PERSON_RANGE;
         if (v > 0.03) out.push({ id: `player_${r.id}`, volume: +v.toFixed(2) });
       }
       for (const n of npcsR.current) {
         if (!n.track) continue;
         const st = npcState.current[n.id];
         const nx = st?.x ?? n.x, nz = st?.z ?? n.y;
-        const v = 1 - Math.hypot(m.x - nx, m.z - nz) / RANGE;
+        const v = 1 - Math.hypot(m.x - nx, m.z - nz) / PERSON_RANGE;
         if (v > 0.03) out.push({ id: `npc_${n.id}`, volume: +v.toFixed(2) });
       }
       const sig = out.map((o) => `${o.id}:${o.volume}`).join("|");
@@ -318,6 +320,7 @@ function Scene({
       <group ref={playerRef}>
         <Avatar3D a={meAppearance} />
         <NameTag handle={meHandle} me track={meTrack ?? undefined} />
+        {meTrack && <AudioAura genre={meTrack.genre} />}
       </group>
 
       {/* NPC */}
@@ -325,6 +328,7 @@ function Scene({
         <group key={n.id} ref={(el) => { if (el) npcRefs.current[n.id] = el; }} position={[n.x, 0, n.y]}>
           <Avatar3D a={n.appearance ?? appearanceFromSeed(n.handle)} />
           <NameTag handle={n.handle} track={n.track} />
+          {n.track && <AudioAura genre={n.track.genre} />}
         </group>
       ))}
 
@@ -333,6 +337,7 @@ function Scene({
         <group key={r.id} ref={(el) => { if (el) remoteRefs.current[r.id] = el; }} position={[r.x, 0, r.y]}>
           <Avatar3D a={r.appearance ?? appearanceFromSeed(r.handle)} />
           <NameTag handle={r.handle} track={r.track} />
+          {r.track && <AudioAura genre={r.track.genre} />}
         </group>
       ))}
     </group>
@@ -349,6 +354,32 @@ function NameTag({ handle, me, track }: { handle: string; me?: boolean; track?: 
         </span>
       </div>
     </Html>
+  );
+}
+
+// 음악을 송출 중인 사람 발밑의 가청 영역 (개인 단위 존)
+function AudioAura({ genre }: { genre: GenreId }) {
+  const ringRef = useRef<THREE.Mesh>(null);
+  const col = GENRES[genre]?.color ?? "#6c8ae4";
+  useFrame(() => {
+    const p = 0.5 + 0.5 * Math.sin(performance.now() / 1000 * 3);
+    if (ringRef.current) {
+      const s = 0.86 + p * 0.14;
+      ringRef.current.scale.set(s, s, 1);
+      (ringRef.current.material as THREE.MeshBasicMaterial).opacity = 0.22 + p * 0.28;
+    }
+  });
+  return (
+    <group position={[0, 1.5, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh>
+        <circleGeometry args={[PERSON_RANGE, 48]} />
+        <meshBasicMaterial color={col} transparent opacity={0.08} side={THREE.DoubleSide} depthWrite={false} />
+      </mesh>
+      <mesh ref={ringRef}>
+        <ringGeometry args={[PERSON_RANGE - 12, PERSON_RANGE, 48]} />
+        <meshBasicMaterial color={col} transparent opacity={0.4} side={THREE.DoubleSide} depthWrite={false} />
+      </mesh>
+    </group>
   );
 }
 
