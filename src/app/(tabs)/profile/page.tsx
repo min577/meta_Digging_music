@@ -9,19 +9,31 @@ import { GENRES, GENRE_LIST } from "@/lib/genres";
 import { sortedGenres } from "@/lib/taste";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { signInWithGoogle } from "@/lib/profile";
+import { ACHIEVEMENTS, buildStats, isDone } from "@/lib/achievements";
 
-type View = "report" | "diggs" | "ranking" | "badges";
+type View = "report" | "diggs" | "ranking" | "achv";
 
 const STAGE_NAME = ["새싹", "디깅 비기너", "디깅 헤드", "디깅 마스터"];
 
 export default function ProfilePage() {
   const user = useAppStore((s) => s.user);
   const diggs = useAppStore((s) => s.diggs);
-  const badges = useAppStore((s) => s.badges);
   const listenEvents = useAppStore((s) => s.listenEvents);
   const evolve = useAppStore((s) => s.evolve);
+  const setAppearance = useAppStore((s) => s.setAppearance);
   const myGenre = useMyTopGenre();
   const [view, setView] = useState<View>("report");
+
+  // 업적 통계 + 달성 수
+  const stats = useMemo(
+    () => buildStats(listenEvents, diggs, user?.level ?? 1),
+    [listenEvents, diggs, user?.level]
+  );
+  const doneCount = ACHIEVEMENTS.filter((a) => isDone(a, stats)).length;
+  const equip = (slot: "hat" | "glasses", value: string) => {
+    if (!user) return;
+    setAppearance({ ...user.character.appearance, [slot]: value } as any);
+  };
 
   // 취향 리포트: 장르 분포
   const dist = useMemo(
@@ -128,16 +140,16 @@ export default function ProfilePage() {
       <section className="px-5 mt-3 grid grid-cols-3 gap-2">
         <Stat label="디깅함" value={diggs.length} />
         <Stat label="청취곡" value={listenEvents.length} />
-        <Stat label="배지" value={badges.length} />
+        <Stat label="업적" value={`${doneCount}/${ACHIEVEMENTS.length}`} />
       </section>
 
       {/* 탭 */}
       <div className="px-5 mt-4 flex gap-2 overflow-x-auto no-scrollbar">
         {([
+          ["achv", "🏆 업적"],
           ["report", "📊 취향 리포트"],
           ["diggs", "💾 디깅함"],
-          ["ranking", "🏆 아티스트 랭킹"],
-          ["badges", "🎖 배지"],
+          ["ranking", "🎧 아티스트 랭킹"],
         ] as [View, string][]).map(([v, label]) => (
           <button
             key={v}
@@ -270,15 +282,55 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {view === "badges" && (
-          <div className="grid grid-cols-2 gap-3">
-            {badges.map((b) => (
-              <div key={b.id} className="card p-4 text-center">
-                <div className="text-3xl">🎖</div>
-                <p className="font-bold text-sm mt-1">{b.label}</p>
-                <p className="text-[11px] text-ink-700/50 mt-0.5">{b.detail}</p>
-              </div>
-            ))}
+        {view === "achv" && (
+          <div className="space-y-2">
+            <p className="text-[11px] text-ink-700/50 mb-1">
+              음악을 듣고 디깅할수록 업적이 달성돼요. 보상 아이템은 바로 착용할 수 있어요!
+            </p>
+            {ACHIEVEMENTS.map((a) => {
+              const cur = Math.min(a.goal, a.measure(stats));
+              const done = cur >= a.goal;
+              const equipped =
+                a.reward &&
+                (user.character.appearance as any)[a.reward.slot] === a.reward.value;
+              return (
+                <div key={a.id} className={`card p-3 ${done ? "" : "opacity-80"}`}>
+                  <div className="flex items-center gap-3">
+                    <span className={`text-2xl ${done ? "" : "grayscale opacity-50"}`}>
+                      {done ? a.icon : "🔒"}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-sm">
+                        {a.title} {done && <span className="text-brand">✓</span>}
+                      </p>
+                      <p className="text-[11px] text-ink-700/50">{a.desc}</p>
+                    </div>
+                    {a.reward && done && (
+                      <button
+                        onClick={() => equip(a.reward!.slot, a.reward!.value)}
+                        disabled={!!equipped}
+                        className={`chip py-1.5 px-3 font-bold ${
+                          equipped ? "bg-cream-200 text-ink-700/50" : "bg-brand text-white"
+                        }`}
+                      >
+                        {equipped ? "착용 중" : "착용"}
+                      </button>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 mt-2">
+                    <div className="flex-1 h-2 rounded-full bg-cream-200 overflow-hidden">
+                      <div
+                        className="h-full bg-brand rounded-full transition-all"
+                        style={{ width: `${(cur / a.goal) * 100}%` }}
+                      />
+                    </div>
+                    <span className="text-[11px] text-ink-700/55 w-10 text-right">
+                      {cur}/{a.goal}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </section>
@@ -308,7 +360,7 @@ export default function ProfilePage() {
   );
 }
 
-function Stat({ label, value }: { label: string; value: number }) {
+function Stat({ label, value }: { label: string; value: number | string }) {
   return (
     <div className="card p-3 text-center">
       <p className="text-xl font-extrabold text-ink-900">{value}</p>
