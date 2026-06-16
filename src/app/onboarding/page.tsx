@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Avatar from "@/components/Avatar";
+import Logo from "@/components/Logo";
 import TrackSearch from "@/components/TrackSearch";
 import type { Track } from "@/lib/types";
 import { useAppStore } from "@/store/useAppStore";
@@ -116,9 +117,11 @@ export default function OnboardingPage() {
           {step === 0 && (
             <div className="flex-1 flex flex-col">
               <div className="text-center mt-4">
-                <div className="text-5xl mb-3 animate-float-slow">🎧</div>
-                <h1 className="text-2xl font-extrabold text-ink-900">
-                  디깅타운에 오신 걸 환영해요
+                <div className="flex justify-center mb-3 animate-float-slow">
+                  <Logo size={52} wordmark={false} />
+                </div>
+                <h1 className="text-2xl font-extrabold text-ink-900 tracking-tight">
+                  <span className="text-brand">DigTown</span>에 오신 걸 환영해요
                 </h1>
                 <p className="text-ink-700/60 mt-2 text-sm leading-relaxed">
                   혼자 듣지 마세요. 같은 곡을 함께 들으며

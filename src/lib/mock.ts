@@ -62,43 +62,42 @@ function room(
 }
 
 export const ROOMS: Room[] = [
-  room("room_gym_1", "gym", "오운완 하이텐션 헬스장 🏋️", "muscle", [
-    { handle: "muscle", genre: "house" }, { handle: "pump_it", genre: "kpop" },
-    { handle: "runner", genre: "house" }, { handle: "sweat", genre: "rnb" },
-    { handle: "jogging", genre: "kpop" }, { handle: "lift_kr", genre: "house" },
-    { handle: "cardio", genre: "rnb" },
+  room("room_gym_1", "gym", "오운완 하고 가실 분 💪", "도윤", [
+    { handle: "도윤", genre: "house" }, { handle: "run_minji", genre: "kpop" },
+    { handle: "태현", genre: "house" }, { handle: "soyeon_", genre: "rnb" },
+    { handle: "헬스왕준", genre: "kpop" }, { handle: "yuna.fit", genre: "house" },
+    { handle: "지호", genre: "rnb" },
   ]),
-  room("room_library_1", "library", "조용한 도서관 · ASMR/공부 📚", "silent", [
-    { handle: "silent", genre: "lofi" }, { handle: "page", genre: "lofi" },
-    { handle: "focus", genre: "classical" }, { handle: "quiet", genre: "lofi" },
-    { handle: "study_owl", genre: "classical" }, { handle: "note_kr", genre: "lofi" },
+  room("room_library_1", "library", "같이 공부할 사람 (ASMR)", "서연", [
+    { handle: "서연", genre: "lofi" }, { handle: "책읽는하준", genre: "lofi" },
+    { handle: "jisoo_study", genre: "classical" }, { handle: "민준", genre: "lofi" },
+    { handle: "공부중", genre: "classical" }, { handle: "yejin0", genre: "lofi" },
   ]),
-  room("room_hanriver_1", "hanriver", "한강 밤 산책 · 감성 발라드 🌉", "river", [
-    { handle: "river", genre: "rnb" }, { handle: "midnight", genre: "rnb" },
-    { handle: "breeze", genre: "lofi" }, { handle: "dawn_kr", genre: "rnb" },
-    { handle: "ballad", genre: "rnb" }, { handle: "walk", genre: "lofi" },
+  room("room_hanriver_1", "hanriver", "한강에서 발라드 들을래요 🍃", "강민", [
+    { handle: "강민", genre: "rnb" }, { handle: "새벽감성", genre: "rnb" },
+    { handle: "soohyun", genre: "lofi" }, { handle: "지우", genre: "rnb" },
+    { handle: "한강러버", genre: "rnb" }, { handle: "민서", genre: "lofi" },
   ]),
-  room("room_airplane_1", "airplane", "여행 떠나는 비행기 ✈️", "voyage", [
-    { handle: "voyage", genre: "citypop" }, { handle: "jetlag", genre: "house" },
-    { handle: "window_seat", genre: "kpop" }, { handle: "cloud9", genre: "citypop" },
-    { handle: "gate7", genre: "house" }, { handle: "mileage", genre: "kpop" },
+  room("room_airplane_1", "airplane", "여행 가는 기분 내는 방 ✈️", "여행가다", [
+    { handle: "여행가다", genre: "citypop" }, { handle: "jun_trip", genre: "house" },
+    { handle: "윈도우석", genre: "kpop" }, { handle: "하늘", genre: "citypop" },
+    { handle: "gate_7", genre: "house" }, { handle: "수민_", genre: "kpop" },
   ]),
-  room("room_city_1", "city", "도시 야경 드라이브 🌃", "neon", [
-    { handle: "neon", genre: "citypop" }, { handle: "drive", genre: "house" },
-    { handle: "seoul", genre: "rnb" }, { handle: "rooftop", genre: "citypop" },
-    { handle: "taxi", genre: "house" }, { handle: "hongdae", genre: "rnb" },
-    { handle: "night_kr", genre: "citypop" },
+  room("room_city_1", "city", "야경 보면서 드라이브 🌃", "현우", [
+    { handle: "현우", genre: "citypop" }, { handle: "seoul_drive", genre: "house" },
+    { handle: "지민", genre: "rnb" }, { handle: "네온", genre: "citypop" },
+    { handle: "홍대밤", genre: "house" }, { handle: "yerin.0", genre: "rnb" },
+    { handle: "taxi_night", genre: "citypop" },
   ]),
-  room("room_cafe_1", "cafe", "골목 카페 · 잔잔한 오후 ☕", "barista", [
-    { handle: "barista", genre: "jazz" }, { handle: "latte", genre: "lofi" },
-    { handle: "bossa", genre: "jazz" }, { handle: "crema", genre: "jazz" },
-    { handle: "mocha", genre: "lofi" }, { handle: "afternoon", genre: "jazz" },
+  room("room_cafe_1", "cafe", "주말 오후 카페 음악 ☕", "바리스타준", [
+    { handle: "바리스타준", genre: "jazz" }, { handle: "latte_su", genre: "lofi" },
+    { handle: "보사노바", genre: "jazz" }, { handle: "오후세시", genre: "jazz" },
+    { handle: "모카", genre: "lofi" }, { handle: "재즈러", genre: "jazz" },
   ]),
-  // 리스닝 파티(호스트) 예시
-  room("room_city_party", "city", "🎙 시티팝 리스닝 파티", "dj_yuki", [
-    { handle: "dj_yuki", genre: "citypop" },
-    { handle: "rina", genre: "citypop" },
-    { handle: "kenji", genre: "house" },
+  // 리스닝 파티 (호스트가 진행)
+  room("room_city_party", "city", "🎧 시티팝 같이 들어요 (호스트)", "유진", [
+    { handle: "유진", genre: "citypop" }, { handle: "리나", genre: "citypop" },
+    { handle: "준호", genre: "house" }, { handle: "다은", genre: "citypop" },
   ], { roomMode: "party", queueMode: "dj", capacity: 200 }),
 ];
 
@@ -130,9 +129,9 @@ export function defaultBadges(): Badge[] {
 }
 
 export const DEMO_FRIENDS: Friend[] = [
-  { userId: "u_noir", handle: "noir", topGenre: "jazz", status: "accepted", matchPct: 0 },
-  { userId: "u_yuki", handle: "yuki", topGenre: "citypop", status: "accepted", matchPct: 0 },
-  { userId: "u_rain", handle: "rain", topGenre: "lofi", status: "pending", matchPct: 0 },
+  { userId: "u_seoyeon", handle: "서연", topGenre: "jazz", status: "accepted", matchPct: 0 },
+  { userId: "u_hyunwoo", handle: "현우", topGenre: "citypop", status: "accepted", matchPct: 0 },
+  { userId: "u_soohyun", handle: "soohyun", topGenre: "lofi", status: "pending", matchPct: 0 },
 ];
 
 /** 데모 모드 기본 유저 (Supabase 미연동 시) */
