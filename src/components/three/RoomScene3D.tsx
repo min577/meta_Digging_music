@@ -14,14 +14,13 @@ import { GENRES } from "@/lib/genres";
 import type { Track, PlacedItem } from "@/lib/types";
 import type { DecorKind } from "@/components/DecorSprite";
 import { placeScene, type PlaceId, type EnvType } from "@/lib/places";
+import { WORLD_W, WORLD_H } from "@/lib/scenes";
 import { useTimePhase, type TimePhase } from "@/hooks/useTimePhase";
 
-const WORLD_W = 1400;
-const WORLD_H = 1000;
-const PAD = 60;
-const SPEED = 240;
-const RANGE = 260; // 파티 중앙 무대
-const PERSON_RANGE = 190; // 사람-대-사람 근접 청취 거리
+const PAD = 48;
+const SPEED = 210;
+const RANGE = 220; // 파티 중앙 무대
+const PERSON_RANGE = 150; // 사람-대-사람 근접 청취 거리
 
 export interface MapAvatar3D {
   id: string;
@@ -71,7 +70,7 @@ export default function RoomScene3D(props: Props) {
       <Canvas
         shadows
         dpr={[1, 1.6]}
-        camera={{ fov: 46, near: 1, far: 4000, position: [700, 320, 920] }}
+        camera={{ fov: 46, near: 1, far: 4000, position: [500, 240, 620] }}
       >
         <color attach="background" args={[SKY[time.phase]]} />
         <fog attach="fog" args={[SKY[time.phase], 1100, 2600]} />
@@ -103,7 +102,7 @@ function Scene({
   const { camera } = useThree();
   const scene = placeScene(place);
 
-  const me = useRef({ x: 700, z: 560, heading: Math.PI, walking: false });
+  const me = useRef({ x: WORLD_W / 2, z: WORLD_H * 0.62, heading: Math.PI, walking: false });
   const keys = useRef<Set<string>>(new Set());
   const playerRef = useRef<THREE.Group>(null);
   const npcRefs = useRef<Record<string, THREE.Group>>({});
@@ -204,8 +203,8 @@ function Scene({
     }
 
     // 카메라 추적
-    const target = new THREE.Vector3(m.x, 48, m.z);
-    const camPos = new THREE.Vector3(m.x, 300, m.z + 330);
+    const target = new THREE.Vector3(m.x, 46, m.z);
+    const camPos = new THREE.Vector3(m.x, 235, m.z + 270);
     camera.position.lerp(camPos, 0.12);
     camera.lookAt(target);
 
@@ -255,23 +254,23 @@ function Scene({
     <group>
       <ambientLight intensity={L.amb} color={L.ambColor} />
       <directionalLight
-        position={[WORLD_W * 0.3, 700, WORLD_H * 0.1]}
+        position={[WORLD_W * 0.3, 620, WORLD_H * 0.1]}
         intensity={L.dir}
         color={L.dirColor}
         castShadow
         shadow-mapSize={[2048, 2048]}
-        shadow-camera-left={-900}
-        shadow-camera-right={900}
-        shadow-camera-top={900}
-        shadow-camera-bottom={-900}
+        shadow-camera-left={-700}
+        shadow-camera-right={700}
+        shadow-camera-top={700}
+        shadow-camera-bottom={-700}
         shadow-camera-near={1}
-        shadow-camera-far={2000}
+        shadow-camera-far={1800}
       />
       <hemisphereLight intensity={time.isNight ? 0.45 : 0.4} color={SKY[time.phase]} groundColor="#3a3530" />
       {time.isNight && (
         <>
-          <pointLight position={[450, 260, 400]} intensity={1.0} color="#aebbff" distance={2200} />
-          <pointLight position={[1000, 260, 650]} intensity={0.9} color="#9ad0ff" distance={2200} />
+          <pointLight position={[320, 220, 300]} intensity={1.0} color="#aebbff" distance={1600} />
+          <pointLight position={[720, 220, 460]} intensity={0.9} color="#9ad0ff" distance={1600} />
         </>
       )}
 
@@ -285,20 +284,30 @@ function Scene({
         <planeGeometry args={[WORLD_W, WORLD_H]} />
         <meshStandardMaterial color={adjust(scene.floor[0], 24)} />
       </mesh>
-      {/* 벽 (실내 장소만) */}
+      {/* 벽 (실내 장소: 뒤+좌우) */}
       {scene.env === "indoor" && (
-        <mesh position={[WORLD_W / 2, 120, 0]} receiveShadow>
-          <boxGeometry args={[WORLD_W, 240, 12]} />
-          <meshStandardMaterial color={scene.wall} />
-        </mesh>
+        <>
+          <mesh position={[WORLD_W / 2, 120, 0]} receiveShadow>
+            <boxGeometry args={[WORLD_W, 240, 12]} />
+            <meshStandardMaterial color={scene.wall} />
+          </mesh>
+          <mesh position={[6, 120, WORLD_H / 2]} receiveShadow>
+            <boxGeometry args={[12, 240, WORLD_H]} />
+            <meshStandardMaterial color={adjust(scene.wall, 10)} />
+          </mesh>
+          <mesh position={[WORLD_W - 6, 120, WORLD_H / 2]} receiveShadow>
+            <boxGeometry args={[12, 240, WORLD_H]} />
+            <meshStandardMaterial color={adjust(scene.wall, 10)} />
+          </mesh>
+        </>
       )}
 
       {/* 장소별 특수 환경 */}
       <EnvFx env={scene.env} night={time.isNight} />
 
-      {/* 씬 소품 */}
+      {/* 씬 소품 (정렬 배치) */}
       {scene.decor.map((d, i) => (
-        <group key={i} position={[d.x, 0, d.y]} scale={d.size / 56}>
+        <group key={i} position={[d.x, 0, d.y]} rotation={[0, d.rot ?? 0, 0]} scale={d.size / 56}>
           <Decor3D kind={d.kind} />
         </group>
       ))}
@@ -409,6 +418,7 @@ function EnvFx({ env, night }: { env: EnvType; night: boolean }) {
       </>
     );
   }
+  if (env === "cabin") return <AirplaneCabin night={night} />;
   if (env === "skyline") return <Skyline z={-360} night={night} tall />;
   if (env === "sky") {
     const spots: [number, number, number][] = [
@@ -428,6 +438,50 @@ function EnvFx({ env, night }: { env: EnvType; night: boolean }) {
     );
   }
   return null;
+}
+
+// 비행기 기내 인테리어 (천장/측벽+창문/오버헤드빈/좌석열)
+function AirplaneCabin({ night }: { night: boolean }) {
+  const rows = [180, 340, 500, 660, 820];
+  const seatZ = [200, 258, 512, 570];
+  return (
+    <group>
+      {/* 천장 */}
+      <mesh position={[WORLD_W / 2, 218, 370]}>
+        <boxGeometry args={[WORLD_W, 16, 540]} />
+        <meshStandardMaterial color="#d2d7df" />
+      </mesh>
+      {/* 측벽 (먼쪽 z=110, 가까운쪽 z=630) */}
+      {[110, 630].map((z, wi) => (
+        <group key={wi}>
+          <mesh position={[WORLD_W / 2, 108, z]} receiveShadow>
+            <boxGeometry args={[WORLD_W, 216, 16]} />
+            <meshStandardMaterial color="#dfe3ea" />
+          </mesh>
+          {/* 창문 */}
+          {[110, 290, 470, 650, 830].map((x, i) => (
+            <mesh key={i} position={[x, 132, z + (wi === 0 ? 9 : -9)]}>
+              <boxGeometry args={[58, 42, 2]} />
+              <meshStandardMaterial color="#bfe6f4" emissive="#9fd4ec" emissiveIntensity={night ? 0.45 : 0.85} />
+            </mesh>
+          ))}
+          {/* 오버헤드 빈 */}
+          <mesh position={[WORLD_W / 2, 176, z + (wi === 0 ? 24 : -24)]}>
+            <boxGeometry args={[WORLD_W, 30, 38]} />
+            <meshStandardMaterial color="#c6ccd6" />
+          </mesh>
+        </group>
+      ))}
+      {/* 좌석열 */}
+      {rows.flatMap((x) =>
+        seatZ.map((z) => (
+          <group key={`${x}-${z}`} position={[x, 0, z]} rotation={[0, z < 370 ? Math.PI / 2 : -Math.PI / 2, 0]} scale={0.85}>
+            <Decor3D kind="planeseat" />
+          </group>
+        ))
+      )}
+    </group>
+  );
 }
 
 function Skyline({ z, night, tall }: { z: number; night: boolean; tall?: boolean }) {

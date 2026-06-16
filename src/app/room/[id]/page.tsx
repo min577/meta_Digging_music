@@ -110,7 +110,7 @@ export default function RoomPage() {
     const p = getPlace(room.place);
     (async () => {
       if (mode === "party") {
-        setSpeakers([{ id: "stage", x: 700, y: 360, genre: roomGenre, label: "메인 무대" }]);
+        setSpeakers([{ id: "stage", x: 500, y: 220, genre: roomGenre, label: "메인 무대" }]);
         setNpcTracks({});
         return;
       }
@@ -139,8 +139,8 @@ export default function RoomPage() {
       id: m.userId,
       handle: m.handle,
       appearance: appearanceFromSeed(m.handle),
-      x: 200 + ((i * 317 + 120) % 1040),
-      y: 220 + ((i * 223 + 60) % 620),
+      x: 100 + ((i * 191 + 70) % 800),
+      y: 130 + ((i * 157 + 50) % 460),
       track: npcTracks[m.userId],
     }));
   }, [room, npcTracks]);

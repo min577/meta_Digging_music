@@ -1,6 +1,6 @@
 import type { GenreId } from "./genres";
 import type { DecorKind } from "@/components/DecorSprite";
-import type { Decor, FloorType } from "./scenes";
+import { WORLD_W, WORLD_H, type Decor, type FloorType } from "./scenes";
 
 // 실제 청취 "상황" 기반 장소. 각 장소는 고유 3D 환경 + 실제 음악(검색어)을 가진다.
 export type PlaceId = "gym" | "library" | "hanriver" | "airplane" | "city" | "cafe";
@@ -31,13 +31,15 @@ export interface Place {
 // 배경 소품 배치 좌표 (월드 1400x1000) — 격자+지터로 빽빽하게. 중앙 스폰 영역은 비움.
 const POS: [number, number][] = (() => {
   const out: [number, number][] = [];
-  for (let gx = 0; gx < 8; gx++) {
-    for (let gz = 0; gz < 6; gz++) {
-      const jx = Math.sin(gx * 12.9 + gz * 4.1) * 60;
-      const jz = Math.sin(gx * 3.7 + gz * 7.3) * 55;
-      const x = 120 + gx * (1160 / 7) + jx;
-      const y = 150 + gz * (720 / 5) + jz;
-      if (x > 540 && x < 860 && y > 430 && y < 700) continue; // 스폰 영역 회피
+  const cols = 6, rows = 5;
+  for (let gx = 0; gx < cols; gx++) {
+    for (let gz = 0; gz < rows; gz++) {
+      const jx = Math.sin(gx * 12.9 + gz * 4.1) * 45;
+      const jz = Math.sin(gx * 3.7 + gz * 7.3) * 40;
+      const x = 90 + gx * ((WORLD_W - 180) / (cols - 1)) + jx;
+      const y = 120 + gz * ((WORLD_H - 220) / (rows - 1)) + jz;
+      // 중앙 스폰 영역 회피
+      if (x > WORLD_W * 0.36 && x < WORLD_W * 0.64 && y > WORLD_H * 0.4 && y < WORLD_H * 0.72) continue;
       out.push([Math.round(x), Math.round(y)]);
     }
   }
@@ -113,8 +115,8 @@ const PLACES: Record<PlaceId, Place> = {
     wall: "#23262e",
     stage: "#5a6270",
     floorType: "tile",
-    env: "sky",
-    decorKinds: ["planeseat", "window", "planeseat", "cloud", "planeseat", "window", "planeseat", "counter", "planeseat", "cloud", "window", "planeseat", "planeseat", "cloud", "window", "planeseat"],
+    env: "cabin",
+    decorKinds: ["planeseat"],
     zones: [
       { label: "여행 팝", genre: "citypop", term: "travel pop summer" },
       { label: "세계음악", genre: "house", term: "world music tropical house" },
@@ -167,14 +169,76 @@ export function place(id: PlaceId): Place {
   return PLACES[id] ?? PLACES.cafe;
 }
 
+// ---- 구조적 레이아웃 헬퍼 (월드 1000x720) ----
+const W = WORLD_W, H = WORLD_H;
+const HALF = Math.PI / 2;
+type D = Decor;
+const rowX = (kind: DecorKind, x0: number, x1: number, y: number, n: number, size = 56, rot = 0): D[] =>
+  Array.from({ length: n }, (_, i) => ({ kind, x: Math.round(x0 + (x1 - x0) * (n <= 1 ? 0.5 : i / (n - 1))), y, size, rot }));
+const colY = (kind: DecorKind, y0: number, y1: number, x: number, n: number, size = 56, rot = 0): D[] =>
+  Array.from({ length: n }, (_, i) => ({ kind, x, y: Math.round(y0 + (y1 - y0) * (n <= 1 ? 0.5 : i / (n - 1))), size, rot }));
+const corners = (kind: DecorKind, size = 48): D[] =>
+  ([[80, 110], [W - 80, 110], [80, H - 110], [W - 80, H - 110]] as const).map(([x, y]) => ({ kind, x, y, size }));
+const tableSet = (x: number, y: number): D[] => [
+  { kind: "table", x, y, size: 54 },
+  { kind: "chair", x: x - 48, y, size: 46, rot: HALF },
+  { kind: "chair", x: x + 48, y, size: 46, rot: -HALF },
+];
+
+// 장소별 구조적 배치
+function layoutFor(id: PlaceId): D[] {
+  switch (id) {
+    case "cafe":
+      return [
+        ...rowX("counter", 270, 730, 95, 3, 70),
+        ...rowX("painting", 200, 800, 55, 3, 44),
+        ...tableSet(290, 320), ...tableSet(500, 320), ...tableSet(710, 320),
+        ...tableSet(390, 510), ...tableSet(610, 510),
+        ...corners("plant", 46),
+      ];
+    case "library":
+      return [
+        ...rowX("bookshelf", 170, 830, 80, 5, 78),
+        ...colY("bookshelf", 210, 540, 90, 3, 72, HALF),
+        ...colY("bookshelf", 210, 540, W - 90, 3, 72, -HALF),
+        ...tableSet(360, 340), ...tableSet(640, 340), ...tableSet(500, 520),
+        { kind: "lamp", x: 360, y: 300, size: 38 }, { kind: "lamp", x: 640, y: 300, size: 38 },
+        ...corners("plant", 44),
+      ];
+    case "gym":
+      return [
+        ...rowX("treadmill", 220, 780, 105, 4, 58),
+        ...colY("locker", 220, 520, W - 85, 3, 62, -HALF),
+        { kind: "mirror", x: 85, y: 360, size: 72, rot: HALF },
+        ...rowX("bench", 260, 740, 360, 3, 50),
+        { kind: "dumbbell", x: 300, y: 430, size: 38 }, { kind: "dumbbell", x: 500, y: 430, size: 38 }, { kind: "dumbbell", x: 700, y: 430, size: 38 },
+        ...rowX("plant", 160, 840, 640, 2, 44),
+      ];
+    case "hanriver":
+      return [
+        ...rowX("bench", 230, 770, 300, 3, 52),
+        ...rowX("streetlamp", 150, 850, 250, 4, 60),
+        { kind: "tree", x: 120, y: 470, size: 72 }, { kind: "tree", x: 880, y: 470, size: 72 },
+        { kind: "tree", x: 300, y: 560, size: 64 }, { kind: "tree", x: 700, y: 560, size: 64 },
+        { kind: "bicycle", x: 200, y: 380, size: 46 }, { kind: "tent", x: 820, y: 420, size: 60 },
+        ...rowX("plant", 160, 840, 640, 3, 42),
+      ];
+    case "city":
+      return [
+        ...rowX("building", 130, 870, 105, 4, 84),
+        ...rowX("streetlamp", 180, 820, 300, 4, 60),
+        { kind: "car", x: 300, y: 440, size: 60, rot: HALF }, { kind: "car", x: 700, y: 440, size: 60, rot: -HALF },
+        ...rowX("neon", 200, 800, 175, 3, 54), ...rowX("plant", 160, 840, 630, 3, 40),
+      ];
+    case "airplane":
+      return []; // 기내(cabin)는 RoomScene3D에서 좌석열로 렌더
+    default:
+      return [];
+  }
+}
+
 // 장소의 배경 씬(바닥/벽/소품) 생성
 export function placeScene(id: PlaceId) {
   const p = place(id);
-  const decor: Decor[] = POS.map(([x, y], i) => ({
-    x,
-    y,
-    size: 48 + ((i * 13) % 6) * 6, // 48~78 크기 변주
-    kind: p.decorKinds[i % p.decorKinds.length],
-  }));
-  return { floor: p.floor, wall: p.wall, stage: p.stage, floorType: p.floorType, env: p.env, decor };
+  return { floor: p.floor, wall: p.wall, stage: p.stage, floorType: p.floorType, env: p.env, decor: layoutFor(id) };
 }

@@ -1,9 +1,9 @@
 import type { GenreId } from "./genres";
 import type { DecorKind } from "@/components/DecorSprite";
 
-// 월드 좌표계 (RoomMap과 동일하게 유지) — 넓은 공간
-export const WORLD_W = 1400;
-export const WORLD_H = 1000;
+// 월드 좌표계 — 아담한 공간
+export const WORLD_W = 1000;
+export const WORLD_H = 720;
 
 export type FloorType = "wood" | "grass" | "tile" | "neon" | "dark";
 
@@ -12,6 +12,7 @@ export interface Decor {
   y: number;
   kind: DecorKind;
   size: number;
+  rot?: number; // y축 회전(라디안)
 }
 
 export interface Scene {

@@ -93,8 +93,8 @@ export function useRoomSession(
     baseType: myBase,
     topGenre: myGenre,
     appearance: myAppearance ?? defaultAppearance(),
-    x: 700,
-    y: 560,
+    x: 500,
+    y: 440,
   });
 
   // 초기 재생곡 + 큐 시드 — iTunes에서 룸 장르의 실제 곡(30초 미리듣기)을 가져온다.
