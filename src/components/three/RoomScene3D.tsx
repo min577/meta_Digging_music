@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useRef } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import * as THREE from "three";
@@ -84,7 +84,7 @@ export default function RoomScene3D(props: Props) {
         <span className="text-sm">{time.icon}</span> {time.clock} · {time.label}
       </div>
       <div className="absolute bottom-2 left-2 chip bg-black/40 text-white text-[10px] z-20">
-        WASD / 화살표로 이동
+        WASD 이동 · E 앉기
       </div>
       {props.editMode && (
         <div className="absolute top-2 right-2 chip bg-live text-white text-[10px] z-20">
@@ -102,8 +102,18 @@ function Scene({
   const { camera } = useThree();
   const scene = placeScene(place);
 
-  const me = useRef({ x: WORLD_W / 2, z: WORLD_H * 0.62, heading: Math.PI, walking: false });
+  const me = useRef({ x: WORLD_W / 2, z: WORLD_H * 0.62, heading: Math.PI, walking: false, seated: false });
   const keys = useRef<Set<string>>(new Set());
+
+  // 앉을 수 있는 좌석(의자/벤치) 위치
+  const seats = useMemo(
+    () => scene.decor.filter((d) => d.kind === "chair" || d.kind === "bench").map((d) => ({ x: d.x, z: d.y })),
+    [scene]
+  );
+  const seatsRef = useRef(seats); seatsRef.current = seats;
+  const nearSeatRef = useRef<{ x: number; z: number } | null>(null);
+  const lastPrompt = useRef("");
+  const [prompt, setPrompt] = useState<{ x: number; z: number; text: string } | null>(null);
   const playerRef = useRef<THREE.Group>(null);
   const npcRefs = useRef<Record<string, THREE.Group>>({});
   const npcState = useRef<Record<string, { x: number; z: number; tx: number; tz: number; next: number; heading: number; walking: boolean }>>({});
@@ -135,6 +145,19 @@ function Scene({
       if (["w", "a", "s", "d", "arrowup", "arrowdown", "arrowleft", "arrowright"].includes(k)) {
         keys.current.add(k); e.preventDefault();
       }
+      if (k === "e") {
+        e.preventDefault();
+        const m = me.current;
+        if (m.seated) {
+          m.seated = false;
+          m.z = Math.min(WORLD_H - PAD, m.z + 40); // 일어나 앞으로
+        } else if (nearSeatRef.current) {
+          m.seated = true;
+          m.x = nearSeatRef.current.x;
+          m.z = nearSeatRef.current.z;
+          keys.current.clear();
+        }
+      }
     };
     const up = (e: KeyboardEvent) => keys.current.delete(e.key.toLowerCase());
     window.addEventListener("keydown", down);
@@ -152,7 +175,7 @@ function Scene({
     if (k.has("a") || k.has("arrowleft")) dx -= 1;
     if (k.has("d") || k.has("arrowright")) dx += 1;
     const m = me.current;
-    m.walking = dx !== 0 || dz !== 0;
+    m.walking = !m.seated && (dx !== 0 || dz !== 0);
     if (m.walking) {
       const len = Math.hypot(dx, dz) || 1;
       m.x = clamp(m.x + (dx / len) * SPEED * dt, PAD, WORLD_W - PAD);
@@ -160,8 +183,27 @@ function Scene({
       m.heading = Math.atan2(dx, dz);
     }
     if (playerRef.current) {
-      playerRef.current.position.set(m.x, bob(now, m.walking), m.z);
+      const py = m.seated ? 22 : bob(now, m.walking); // 앉으면 좌석 높이
+      playerRef.current.position.set(m.x, py, m.z);
       playerRef.current.rotation.y = lerpAngle(playerRef.current.rotation.y, m.heading, 0.2);
+    }
+
+    // 근처 좌석 탐지 + 안내 프롬프트
+    if (!m.seated) {
+      let best: { x: number; z: number } | null = null;
+      let bd = 70;
+      for (const s of seatsRef.current) {
+        const d = Math.hypot(m.x - s.x, m.z - s.z);
+        if (d < bd) { bd = d; best = s; }
+      }
+      nearSeatRef.current = best;
+    }
+    const sig = m.seated ? `seat@${Math.round(m.x)}` : nearSeatRef.current ? `near@${nearSeatRef.current.x}` : "";
+    if (sig !== lastPrompt.current) {
+      lastPrompt.current = sig;
+      if (m.seated) setPrompt({ x: m.x, z: m.z, text: "일어서기 (E)" });
+      else if (nearSeatRef.current) setPrompt({ x: nearSeatRef.current.x, z: nearSeatRef.current.z, text: "앉기 (E)" });
+      else setPrompt(null);
     }
 
     // NPC
@@ -284,21 +326,28 @@ function Scene({
         <planeGeometry args={[WORLD_W, WORLD_H]} />
         <meshStandardMaterial color={adjust(scene.floor[0], 24)} />
       </mesh>
-      {/* 벽 (실내 장소: 뒤+좌우) */}
+      {/* 벽 (실내 장소: 뒤+좌우, 밝은 실내색 + 걸레받이) */}
       {scene.env === "indoor" && (
         <>
-          <mesh position={[WORLD_W / 2, 120, 0]} receiveShadow>
-            <boxGeometry args={[WORLD_W, 240, 12]} />
-            <meshStandardMaterial color={scene.wall} />
+          <mesh position={[WORLD_W / 2, 130, -4]} receiveShadow>
+            <boxGeometry args={[WORLD_W, 260, 12]} />
+            <meshStandardMaterial color={scene.wallColor} />
           </mesh>
-          <mesh position={[6, 120, WORLD_H / 2]} receiveShadow>
-            <boxGeometry args={[12, 240, WORLD_H]} />
-            <meshStandardMaterial color={adjust(scene.wall, 10)} />
+          <mesh position={[WORLD_W / 2, 14, 4]}>
+            <boxGeometry args={[WORLD_W, 28, 8]} />
+            <meshStandardMaterial color={adjust(scene.wallColor, -36)} />
           </mesh>
-          <mesh position={[WORLD_W - 6, 120, WORLD_H / 2]} receiveShadow>
-            <boxGeometry args={[12, 240, WORLD_H]} />
-            <meshStandardMaterial color={adjust(scene.wall, 10)} />
+          <mesh position={[2, 130, WORLD_H / 2]} receiveShadow>
+            <boxGeometry args={[12, 260, WORLD_H]} />
+            <meshStandardMaterial color={adjust(scene.wallColor, -14)} />
           </mesh>
+          <mesh position={[WORLD_W - 2, 130, WORLD_H / 2]} receiveShadow>
+            <boxGeometry args={[12, 260, WORLD_H]} />
+            <meshStandardMaterial color={adjust(scene.wallColor, -14)} />
+          </mesh>
+          {/* 따뜻한 실내 조명 */}
+          <pointLight position={[300, 150, 250]} intensity={0.55} color="#ffd9a0" distance={700} />
+          <pointLight position={[700, 150, 250]} intensity={0.55} color="#ffd9a0" distance={700} />
         </>
       )}
 
@@ -332,6 +381,13 @@ function Scene({
       {speakers.map((s) => (
         <MusicZone3D key={s.id} x={s.x} y={s.y} genre={s.genre} label={s.label} range={RANGE} meRef={me} />
       ))}
+
+      {/* 앉기 안내 */}
+      {prompt && (
+        <Html position={[prompt.x, 70, prompt.z]} center distanceFactor={500} style={{ pointerEvents: "none" }}>
+          <div className="chip bg-brand text-white text-[11px] whitespace-nowrap shadow-soft">⌨ {prompt.text}</div>
+        </Html>
+      )}
 
       {/* 나 */}
       <group ref={playerRef}>
@@ -457,11 +513,7 @@ function AirplaneCabin({ night }: { night: boolean }) {
   const seatZ = [200, 258, 512, 570];
   return (
     <group>
-      {/* 천장 */}
-      <mesh position={[WORLD_W / 2, 218, 370]}>
-        <boxGeometry args={[WORLD_W, 16, 540]} />
-        <meshStandardMaterial color="#d2d7df" />
-      </mesh>
+      {/* (천장은 탑다운 카메라 가림 방지로 생략) */}
       {/* 측벽 (먼쪽 z=110, 가까운쪽 z=630) */}
       {[110, 630].map((z, wi) => (
         <group key={wi}>

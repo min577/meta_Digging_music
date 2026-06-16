@@ -190,6 +190,7 @@ function layoutFor(id: PlaceId): D[] {
   switch (id) {
     case "cafe":
       return [
+        { kind: "rug", x: 400, y: 330, size: 56 }, { kind: "rug", x: 560, y: 510, size: 56 },
         ...rowX("counter", 270, 730, 95, 3, 70),
         ...rowX("painting", 200, 800, 55, 3, 44),
         ...tableSet(290, 320), ...tableSet(500, 320), ...tableSet(710, 320),
@@ -198,6 +199,7 @@ function layoutFor(id: PlaceId): D[] {
       ];
     case "library":
       return [
+        { kind: "rug", x: 500, y: 420, size: 56 },
         ...rowX("bookshelf", 170, 830, 80, 5, 78),
         ...colY("bookshelf", 210, 540, 90, 3, 72, HALF),
         ...colY("bookshelf", 210, 540, W - 90, 3, 72, -HALF),
@@ -238,7 +240,22 @@ function layoutFor(id: PlaceId): D[] {
 }
 
 // 장소의 배경 씬(바닥/벽/소품) 생성
+// 어두운 sky색에서 따뜻한 실내 벽색 도출
+function lighten(hex: string, amt: number) {
+  const n = parseInt(hex.replace("#", ""), 16);
+  const r = Math.min(255, (n >> 16) + amt), g = Math.min(255, ((n >> 8) & 0xff) + amt), b = Math.min(255, (n & 0xff) + amt);
+  return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, "0")}`;
+}
+
 export function placeScene(id: PlaceId) {
   const p = place(id);
-  return { floor: p.floor, wall: p.wall, stage: p.stage, floorType: p.floorType, env: p.env, decor: layoutFor(id) };
+  return {
+    floor: p.floor,
+    wall: p.wall,
+    wallColor: lighten(p.wall, 82), // 실내 벽(밝게)
+    stage: p.stage,
+    floorType: p.floorType,
+    env: p.env,
+    decor: layoutFor(id),
+  };
 }
