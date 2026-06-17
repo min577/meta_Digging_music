@@ -516,48 +516,31 @@ function AirplaneCabin({ night }: { night: boolean }) {
   const seatZ = [255, 312, 432, 489];
   return (
     <group>
-      {/* 주날개 (위에서 보면 비행기) */}
-      <mesh castShadow position={[470, 6, 70]} rotation={[0, 0.22, 0]}>
-        <boxGeometry args={[300, 12, 150]} />
-        <meshStandardMaterial color={hull} />
+      {/* 주날개 (바닥에 낮게, 동체 밖 멀리 — 위에서 보면 비행기) */}
+      <mesh castShadow position={[480, 1, -120]} rotation={[0, 0.28, 0]}>
+        <boxGeometry args={[200, 8, 130]} />
+        <meshStandardMaterial color={hullDk} />
       </mesh>
-      <mesh castShadow position={[470, 6, 670]} rotation={[0, -0.22, 0]}>
-        <boxGeometry args={[300, 12, 150]} />
-        <meshStandardMaterial color={hull} />
+      <mesh castShadow position={[480, 1, 840]} rotation={[0, -0.28, 0]}>
+        <boxGeometry args={[200, 8, 130]} />
+        <meshStandardMaterial color={hullDk} />
       </mesh>
-      {/* 엔진 */}
-      {[40, 700].map((z, i) => (
-        <mesh key={i} position={[450, 2, z]} rotation={[0, 0, Math.PI / 2]}>
-          <cylinderGeometry args={[18, 18, 60, 16]} />
-          <meshStandardMaterial color={hullDk} />
-        </mesh>
-      ))}
 
-      {/* 노즈(기수) — 왼쪽 끝 */}
-      <mesh castShadow position={[120, 55, cz]} rotation={[0, 0, Math.PI / 2]}>
-        <coneGeometry args={[150, 230, 28]} />
+      {/* 노즈(기수) — 왼쪽 끝, 작게/낮게 */}
+      <mesh castShadow position={[60, 40, cz]} rotation={[0, 0, Math.PI / 2]}>
+        <coneGeometry args={[120, 150, 24]} />
         <meshStandardMaterial color={hull} />
-      </mesh>
-      {/* 조종석 창 */}
-      <mesh position={[40, 70, cz]} rotation={[0, 0, Math.PI / 2]}>
-        <cylinderGeometry args={[28, 60, 30, 20, 1, true]} />
-        <meshStandardMaterial color="#2a3550" emissive="#16203a" emissiveIntensity={0.4} side={THREE.DoubleSide} />
       </mesh>
 
       {/* 꼬리 — 오른쪽 끝 */}
-      <mesh castShadow position={[900, 55, cz]} rotation={[0, 0, -Math.PI / 2]}>
-        <coneGeometry args={[150, 200, 28]} />
+      <mesh castShadow position={[955, 40, cz]} rotation={[0, 0, -Math.PI / 2]}>
+        <coneGeometry args={[120, 140, 24]} />
         <meshStandardMaterial color={hull} />
       </mesh>
-      {/* 수직 꼬리날개 */}
-      <mesh castShadow position={[955, 120, cz]} rotation={[0, 0, -0.35]}>
-        <boxGeometry args={[18, 150, 90]} />
+      {/* 수직 꼬리날개 (비행기 신호) */}
+      <mesh castShadow position={[980, 95, cz]} rotation={[0, 0, -0.32]}>
+        <boxGeometry args={[14, 120, 70]} />
         <meshStandardMaterial color="#6c8ae4" />
-      </mesh>
-      {/* 수평 꼬리날개 */}
-      <mesh castShadow position={[930, 30, cz]}>
-        <boxGeometry args={[70, 10, 200]} />
-        <meshStandardMaterial color={hull} />
       </mesh>
 
       {/* 동체 측벽(낮게) + 창문 + 치트라인 */}
