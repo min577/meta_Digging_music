@@ -64,8 +64,17 @@ const SKY: Record<string, string> = {
   day: "#bfe9fb", dawn: "#ffd9bc", dusk: "#f0a585", night: "#33406f",
 };
 
+// 시간대별 CC0 하늘 HDRI (Poly Haven) — 배경 스카이박스 + 환경광
+const SKY_HDRI: Record<string, string> = {
+  day: "/hdri/sky_day.hdr",
+  dawn: "/hdri/sky_dawn.hdr",
+  dusk: "/hdri/sky_dusk.hdr",
+  night: "/hdri/sky_night.hdr",
+};
+
 export default function RoomScene3D(props: Props) {
   const time = useTimePhase();
+  const outdoor = placeScene(props.place).env !== "indoor";
   return (
     <div className="relative w-full h-full rounded-2xl overflow-hidden shadow-soft">
       <Canvas
@@ -77,7 +86,13 @@ export default function RoomScene3D(props: Props) {
         <color attach="background" args={[SKY[time.phase]]} />
         <fog attach="fog" args={[SKY[time.phase], 1100, 2600]} />
         <Suspense fallback={null}>
-          <Environment files="/hdri/studio.hdr" environmentIntensity={time.isNight ? 0.4 : 0.95} />
+          {/* 야외 룸: 시간대별 하늘 HDRI를 배경+환경광으로. 실내: 환경광만(배경은 단색). */}
+          <Environment
+            files={SKY_HDRI[time.phase]}
+            background={outdoor}
+            backgroundBlurriness={0.02}
+            environmentIntensity={time.isNight ? 0.45 : 1.0}
+          />
           <Scene {...props} time={time} />
         </Suspense>
         <EffectComposer>
