@@ -98,7 +98,7 @@ const PLACES: Record<PlaceId, Place> = {
     theme: "감성 발라드와 함께하는 한강의 밤",
     situations: ["자기 전", "기분 전환"],
     vibeGenre: "rnb",
-    floor: ["#16402e", "#235640"],
+    floor: ["#4f9d56", "#62b56a"],
     wall: "#0e1c2a",
     stage: "#2f5a4a",
     floorType: "grass",

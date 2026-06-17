@@ -29,13 +29,13 @@ body {
 
 @layer components {
   .card {
-    @apply rounded-3xl bg-cream-50 shadow-card border border-cream-200;
+    @apply rounded-[26px] bg-cream-50 shadow-card border border-cream-200;
   }
   .btn-primary {
-    @apply rounded-2xl bg-brand text-white font-semibold py-3 px-5 shadow-soft transition active:scale-[0.98] hover:bg-brand-dark disabled:opacity-40 disabled:active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40;
+    @apply rounded-full bg-brand text-white font-bold py-3 px-6 shadow-soft transition active:scale-[0.97] hover:bg-brand-dark disabled:opacity-40 disabled:active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40;
   }
   .btn-ghost {
-    @apply rounded-2xl bg-cream-100 text-ink-800 font-semibold py-3 px-5 border border-cream-200 transition active:scale-[0.98] hover:bg-cream-200;
+    @apply rounded-full bg-cream-100 text-ink-800 font-bold py-3 px-6 border border-cream-200 transition active:scale-[0.97] hover:bg-cream-200;
   }
   .chip {
     @apply rounded-full px-3 py-1 text-xs font-semibold;

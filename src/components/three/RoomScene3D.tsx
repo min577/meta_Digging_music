@@ -61,7 +61,7 @@ interface Props {
 }
 
 const SKY: Record<string, string> = {
-  day: "#aedcf0", dawn: "#f6cdb0", dusk: "#e89a78", night: "#2b3666",
+  day: "#bfe9fb", dawn: "#ffd9bc", dusk: "#f0a585", night: "#33406f",
 };
 
 export default function RoomScene3D(props: Props) {
@@ -77,7 +77,7 @@ export default function RoomScene3D(props: Props) {
         <color attach="background" args={[SKY[time.phase]]} />
         <fog attach="fog" args={[SKY[time.phase], 1100, 2600]} />
         <Suspense fallback={null}>
-          <Environment files="/hdri/studio.hdr" environmentIntensity={time.isNight ? 0.35 : 0.7} />
+          <Environment files="/hdri/studio.hdr" environmentIntensity={time.isNight ? 0.4 : 0.95} />
           <Scene {...props} time={time} />
         </Suspense>
         <EffectComposer>
@@ -251,8 +251,8 @@ function Scene({
     }
 
     // 카메라 추적
-    const target = new THREE.Vector3(m.x, 55, m.z - 40);
-    const camPos = new THREE.Vector3(m.x, 320, m.z + 380);
+    const target = new THREE.Vector3(m.x, 50, m.z - 25);
+    const camPos = new THREE.Vector3(m.x, 280, m.z + 340);
     camera.position.lerp(camPos, 0.12);
     camera.lookAt(target);
 
@@ -659,8 +659,8 @@ function lightCfg(t: TimePhase) {
   switch (t.phase) {
     case "dawn": return { amb: 0.55, ambColor: "#ffd8c0", dir: 0.95, dirColor: "#ffd0a0" };
     case "dusk": return { amb: 0.5, ambColor: "#ffc0a0", dir: 0.85, dirColor: "#ff9a6a" };
-    case "night": return { amb: 0.72, ambColor: "#a6b2e0", dir: 0.82, dirColor: "#c2cdf2" };
-    default: return { amb: 0.78, ambColor: "#ffffff", dir: 1.15, dirColor: "#fff6e0" };
+    case "night": return { amb: 0.74, ambColor: "#aab6e6", dir: 0.85, dirColor: "#c6d0f4" };
+    default: return { amb: 0.92, ambColor: "#fff8ee", dir: 1.3, dirColor: "#fff2d2" };
   }
 }
 function clamp(v: number, lo: number, hi: number) { return Math.max(lo, Math.min(hi, v)); }
