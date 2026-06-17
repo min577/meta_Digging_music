@@ -47,6 +47,11 @@ export default function Avatar3D({ a }: { a: Appearance }) {
         {skinMat}
         <Outlines thickness={2.6} color={OUT} />
       </mesh>
+      {/* 투톤 얼굴 패치 (밝은 머즐) — 주민 스타일 */}
+      <mesh position={[0, 43, 8]} scale={[0.92, 0.82, 0.6]}>
+        <sphereGeometry args={[16, 28, 28]} />
+        <meshStandardMaterial color="#f5ede1" roughness={0.7} />
+      </mesh>
 
       {/* 볼터치 */}
       {[-9.5, 9.5].map((x) => (
@@ -184,17 +189,17 @@ function Face({ a }: { a: Appearance }) {
         <meshStandardMaterial color="#2a251d" />
       </mesh>
     ) : (
-      <group position={[x, 46.5, 13.4]}>
-        <mesh>
-          <sphereGeometry args={[3.1, 16, 16]} />
+      <group position={[x, 46.5, 13]}>
+        <mesh scale={[0.85, 1.1, 0.7]}>
+          <sphereGeometry args={[3.7, 18, 18]} />
           <meshStandardMaterial color="#ffffff" />
         </mesh>
-        <mesh position={[0.3, -0.2, 2]}>
-          <sphereGeometry args={[2, 14, 14]} />
+        <mesh position={[0.2, -0.4, 2.4]}>
+          <sphereGeometry args={[2.4, 16, 16]} />
           <meshStandardMaterial color="#2a251d" />
         </mesh>
-        <mesh position={[-0.6, 0.8, 3]}>
-          <sphereGeometry args={[0.7, 10, 10]} />
+        <mesh position={[-0.7, 0.9, 3.4]}>
+          <sphereGeometry args={[0.8, 10, 10]} />
           <meshStandardMaterial color="#ffffff" />
         </mesh>
       </group>
