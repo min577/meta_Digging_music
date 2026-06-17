@@ -238,10 +238,11 @@ function layoutFor(id: PlaceId): D[] {
       ];
     case "city":
       return [
-        ...rowX("building", 130, 870, 105, 4, 84),
+        ...rowX(["building", "building2", "building3"], 120, 880, 110, 5, 92),
         ...rowX("streetlamp", 180, 820, 300, 4, 60),
-        { kind: "car", x: 300, y: 440, size: 60, rot: HALF }, { kind: "car", x: 700, y: 440, size: 60, rot: -HALF },
-        ...rowX("neon", 200, 800, 175, 3, 54), ...rowX("plant", 160, 840, 630, 3, 40),
+        { kind: "car", x: 300, y: 450, size: 60, rot: HALF }, { kind: "car2", x: 700, y: 450, size: 60, rot: -HALF },
+        ...rowX("neon", 220, 780, 180, 3, 54),
+        ...rowX(["tree2", "plant"], 160, 840, 640, 3, 56),
       ];
     case "airplane":
       return []; // 기내(cabin)는 RoomScene3D에서 좌석열로 렌더

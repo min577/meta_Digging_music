@@ -6,34 +6,43 @@ import * as THREE from "three";
 import type { DecorKind } from "@/components/DecorSprite";
 
 // CC0 KayKit 가구 GLTF 매핑 (있으면 실제 모델, 없으면 프리미티브 폴백)
-const GLB: Partial<Record<DecorKind, { file: string; h: number; flat?: boolean }>> = {
-  sofa: { file: "couch_pillows", h: 34 },
-  chair: { file: "chair_A", h: 36 },
-  table: { file: "table_medium", h: 34 },
-  bed: { file: "bed_double_A", h: 30 },
-  bookshelf: { file: "shelf_B_large_decorated", h: 78 },
-  lamp: { file: "lamp_table", h: 40 },
-  floorlamp: { file: "lamp_standing", h: 66 },
-  plant: { file: "cactus_medium_A", h: 44 },
-  painting: { file: "pictureframe_standing_A", h: 48 },
-  cushion: { file: "pillow_A", h: 14 },
-  counter: { file: "cabinet_medium_decorated", h: 44 },
-  rug: { file: "rug_rectangle_A", h: 180, flat: true },
-  // 변형(반복감 완화)
-  chair2: { file: "armchair", h: 38 },
-  chair3: { file: "chair_stool", h: 30 },
-  table2: { file: "table_small", h: 30 },
-  plant2: { file: "cactus_small_A", h: 30 },
-  shelf2: { file: "shelf_A_big", h: 70 },
-  painting2: { file: "pictureframe_large_A", h: 52 },
-  books: { file: "book_set", h: 16 },
+const kk = (f: string) => `/models/kaykit/${f}.gltf`;
+const kn = (f: string) => `/models/kenney/${f}.glb`;
+const GLB: Partial<Record<DecorKind, { url: string; h: number; flat?: boolean }>> = {
+  // KayKit (CC0) — 가구
+  sofa: { url: kk("couch_pillows"), h: 34 },
+  chair: { url: kk("chair_A"), h: 36 },
+  table: { url: kk("table_medium"), h: 34 },
+  bed: { url: kk("bed_double_A"), h: 30 },
+  bookshelf: { url: kk("shelf_B_large_decorated"), h: 78 },
+  lamp: { url: kk("lamp_table"), h: 40 },
+  floorlamp: { url: kk("lamp_standing"), h: 66 },
+  plant: { url: kk("cactus_medium_A"), h: 44 },
+  painting: { url: kk("pictureframe_standing_A"), h: 48 },
+  cushion: { url: kk("pillow_A"), h: 14 },
+  counter: { url: kk("cabinet_medium_decorated"), h: 44 },
+  rug: { url: kk("rug_rectangle_A"), h: 180, flat: true },
+  chair2: { url: kk("armchair"), h: 38 },
+  chair3: { url: kk("chair_stool"), h: 30 },
+  table2: { url: kk("table_small"), h: 30 },
+  plant2: { url: kk("cactus_small_A"), h: 30 },
+  shelf2: { url: kk("shelf_A_big"), h: 70 },
+  painting2: { url: kk("pictureframe_large_A"), h: 52 },
+  books: { url: kk("book_set"), h: 16 },
+  // Kenney (CC0) — 도시/야외
+  building: { url: kn("building-small-a"), h: 130 },
+  building2: { url: kn("building-small-c"), h: 150 },
+  building3: { url: kn("building-small-d"), h: 115 },
+  car: { url: kn("vehicle-truck-red"), h: 30 },
+  car2: { url: kn("vehicle-truck-yellow"), h: 30 },
+  fountain: { url: kn("pavement-fountain"), h: 44 },
+  tree2: { url: kn("grass-trees"), h: 86 },
 };
-const glbUrl = (f: string) => `/models/kaykit/${f}.gltf`;
-Object.values(GLB).forEach((v) => v && useGLTF.preload(glbUrl(v.file)));
+Object.values(GLB).forEach((v) => v && useGLTF.preload(v.url));
 
 // 로드한 GLTF 정규화(세움=높이, 평면=가로폭) + 바닥 안착 + 그림자
-function GlbProp({ file, targetH, flat }: { file: string; targetH: number; flat?: boolean }) {
-  const { scene } = useGLTF(glbUrl(file));
+function GlbProp({ url, targetH, flat }: { url: string; targetH: number; flat?: boolean }) {
+  const { scene } = useGLTF(url);
   const obj = useMemo(() => {
     const c = scene.clone(true);
     const box = new THREE.Box3().setFromObject(c);
@@ -60,7 +69,7 @@ function GlbProp({ file, targetH, flat }: { file: string; targetH: number; flat?
 // DecorKind를 3D로. KayKit 가구가 있으면 실제 모델, 없으면 프리미티브.
 export default function Decor3D({ kind }: { kind: DecorKind }) {
   const g = GLB[kind];
-  if (g) return <GlbProp file={g.file} targetH={g.h} flat={g.flat} />;
+  if (g) return <GlbProp url={g.url} targetH={g.h} flat={g.flat} />;
   return <group>{render(kind)}</group>;
 }
 
