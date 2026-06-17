@@ -217,17 +217,19 @@ function layoutFor(id: PlaceId): D[] {
         ...corners(["plant", "plant2"], 46),
       ];
     case "library":
+      // 책장 모델이 가로로 넓어(W/H≈2.45) 높이 정규화 시 폭이 큼 → 실제 폭만큼 간격 확보(겹침 방지).
       return [
-        { kind: "rug", x: 500, y: 430, size: 58 },
-        // 벽면을 가득 채우는 책장 (뒤+좌우)
-        ...rowX(["bookshelf", "shelf2"], 90, 910, 64, 8, 66),
-        ...colY(["bookshelf", "shelf2"], 150, 600, 78, 5, 62, HALF),
-        ...colY(["shelf2", "bookshelf"], 150, 600, W - 78, 5, 62, -HALF),
+        { kind: "rug", x: 500, y: 440, size: 58 },
+        // 벽면 책장 — 뒷벽 4 + 좌우 3씩, 벽에 붙이고 코너는 비움
+        ...rowX("bookshelf", 175, 825, 40, 4, 48),
+        ...colY("bookshelf", 185, 545, 60, 3, 48, HALF),
+        ...colY("bookshelf", 185, 545, W - 60, 3, 48, -HALF),
         // 열람 책상 + 초록 뱅커 램프
-        ...tableSet(330, 330), { kind: "desklamp", x: 330, y: 318, size: 30 },
-        ...tableSet(670, 330), { kind: "desklamp", x: 670, y: 318, size: 30 },
-        ...tableSet(500, 520), { kind: "desklamp", x: 500, y: 508, size: 30 },
-        ...corners(["plant", "plant2"], 44),
+        ...tableSet(330, 340), { kind: "desklamp", x: 330, y: 328, size: 30 },
+        ...tableSet(670, 340), { kind: "desklamp", x: 670, y: 328, size: 30 },
+        ...tableSet(500, 540), { kind: "desklamp", x: 500, y: 528, size: 30 },
+        // 화분(벽 책장과 안 겹치게 앞쪽 코너에)
+        { kind: "plant", x: 95, y: 655, size: 46 }, { kind: "plant2", x: 905, y: 655, size: 46 },
       ];
     case "gym":
       return [

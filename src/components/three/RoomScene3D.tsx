@@ -20,6 +20,8 @@ import { useTimePhase, type TimePhase } from "@/hooks/useTimePhase";
 
 const PAD = 48;
 const SPEED = 210;
+const JUMP_V = 300; // 점프 초기 속도
+const GRAVITY = 900; // 중력
 const RANGE = 220; // 파티 중앙 무대
 const PERSON_RANGE = 150; // 사람-대-사람 근접 청취 거리
 
@@ -105,7 +107,7 @@ export default function RoomScene3D(props: Props) {
         <span className="text-sm">{time.icon}</span> {time.clock} · {time.label}
       </div>
       <div className="absolute bottom-2 left-2 chip bg-black/40 text-white text-[10px] z-20">
-        WASD 이동 · E 앉기
+        WASD 이동 · Space 점프 · E 앉기
       </div>
       {props.editMode && (
         <div className="absolute top-2 right-2 chip bg-live text-white text-[10px] z-20">
@@ -123,7 +125,7 @@ function Scene({
   const { camera } = useThree();
   const scene = placeScene(place);
 
-  const me = useRef({ x: WORLD_W / 2, z: WORLD_H * 0.62, heading: Math.PI, walking: false, seated: false });
+  const me = useRef({ x: WORLD_W / 2, z: WORLD_H * 0.62, heading: Math.PI, walking: false, seated: false, jy: 0, vy: 0, air: false });
   const keys = useRef<Set<string>>(new Set());
 
   // 앉을 수 있는 좌석(의자/벤치) 위치
@@ -166,6 +168,15 @@ function Scene({
       if (["w", "a", "s", "d", "arrowup", "arrowdown", "arrowleft", "arrowright"].includes(k)) {
         keys.current.add(k); e.preventDefault();
       }
+      if (k === " " || k === "spacebar") {
+        e.preventDefault();
+        const m = me.current;
+        // 지면에 있고 앉지 않았을 때만 점프
+        if (!m.seated && !m.air) {
+          m.vy = JUMP_V;
+          m.air = true;
+        }
+      }
       if (k === "e") {
         e.preventDefault();
         const m = me.current;
@@ -203,9 +214,15 @@ function Scene({
       m.z = clamp(m.z + (dz / len) * SPEED * dt, PAD, WORLD_H - PAD);
       m.heading = Math.atan2(dx, dz);
     }
+    // 점프 적분 (포물선)
+    if (m.air) {
+      m.jy += m.vy * dt;
+      m.vy -= GRAVITY * dt;
+      if (m.jy <= 0) { m.jy = 0; m.vy = 0; m.air = false; }
+    }
     if (playerRef.current) {
-      const py = m.seated ? 22 : bob(now, m.walking); // 앉으면 좌석 높이
-      playerRef.current.position.set(m.x, py, m.z);
+      const base = m.seated ? 22 : bob(now, m.walking); // 앉으면 좌석 높이
+      playerRef.current.position.set(m.x, base + m.jy, m.z);
       playerRef.current.rotation.y = lerpAngle(playerRef.current.rotation.y, m.heading, 0.2);
     }
 
