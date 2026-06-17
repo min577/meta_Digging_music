@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
-import { Html } from "@react-three/drei";
+import { Html, useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import Avatar3D from "./Avatar3D";
 import Decor3D from "./Decor3D";
@@ -485,7 +485,7 @@ function EnvFx({ env, night }: { env: EnvType; night: boolean }) {
       </>
     );
   }
-  if (env === "cabin") return <AirplaneCabin night={night} />;
+  if (env === "cabin") return <AirplaneScene />;
   if (env === "skyline") return <Skyline z={-360} night={night} tall />;
   if (env === "sky") {
     const spots: [number, number, number][] = [
@@ -507,7 +507,35 @@ function EnvFx({ env, night }: { env: EnvType; night: boolean }) {
   return null;
 }
 
-// 비행기 인테리어 + 외형(노즈/꼬리날개/주날개) — 위에서 봐도 비행기.
+// 실제 GLB 모델을 최대 치수 기준으로 스케일해 바닥에 배치
+useGLTF.preload("/models/poly/airplane.glb");
+function EnvModel({ url, targetMax, position, rotationY = 0 }: { url: string; targetMax: number; position: [number, number, number]; rotationY?: number }) {
+  const { scene } = useGLTF(url);
+  const obj = useMemo(() => {
+    const c = scene.clone(true);
+    const box = new THREE.Box3().setFromObject(c);
+    const sz = new THREE.Vector3();
+    box.getSize(sz);
+    const m = Math.max(sz.x, sz.y, sz.z) || 1;
+    c.scale.setScalar(targetMax / m);
+    const b2 = new THREE.Box3().setFromObject(c);
+    c.position.y = -b2.min.y;
+    c.traverse((o: any) => { if (o.isMesh) o.castShadow = true; });
+    return c;
+  }, [scene, targetMax]);
+  return (
+    <group position={position} rotation={[0, rotationY, 0]}>
+      <primitive object={obj} />
+    </group>
+  );
+}
+
+// 비행기 룸: 실제 비행기 모델(Poly Pizza, CC-BY)을 배경 히어로로
+function AirplaneScene() {
+  return <EnvModel url="/models/poly/airplane.glb" targetMax={820} position={[WORLD_W / 2, 6, 330]} rotationY={Math.PI / 2} />;
+}
+
+// (구) 절차적 기내 — 미사용
 function AirplaneCabin({ night }: { night: boolean }) {
   const cz = 370; // 동체 중심
   const hull = "#e7eaf0";
