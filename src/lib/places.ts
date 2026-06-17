@@ -218,12 +218,15 @@ function layoutFor(id: PlaceId): D[] {
       ];
     case "library":
       return [
-        { kind: "rug", x: 500, y: 430, size: 56 },
-        ...rowX(["bookshelf", "shelf2"], 160, 840, 80, 6, 78),
-        ...colY(["bookshelf", "shelf2"], 210, 540, 88, 3, 72, HALF),
-        ...colY(["shelf2", "bookshelf"], 210, 540, W - 88, 3, 72, -HALF),
-        ...tableSet(360, 340), ...tableSet(640, 340), ...tableSet(500, 520),
-        { kind: "lamp", x: 360, y: 304, size: 36 }, { kind: "floorlamp", x: 640, y: 304, size: 60 },
+        { kind: "rug", x: 500, y: 430, size: 58 },
+        // 벽면을 가득 채우는 책장 (뒤+좌우)
+        ...rowX(["bookshelf", "shelf2"], 90, 910, 64, 8, 66),
+        ...colY(["bookshelf", "shelf2"], 150, 600, 78, 5, 62, HALF),
+        ...colY(["shelf2", "bookshelf"], 150, 600, W - 78, 5, 62, -HALF),
+        // 열람 책상 + 초록 뱅커 램프
+        ...tableSet(330, 330), { kind: "desklamp", x: 330, y: 318, size: 30 },
+        ...tableSet(670, 330), { kind: "desklamp", x: 670, y: 318, size: 30 },
+        ...tableSet(500, 520), { kind: "desklamp", x: 500, y: 508, size: 30 },
         ...corners(["plant", "plant2"], 44),
       ];
     case "gym":

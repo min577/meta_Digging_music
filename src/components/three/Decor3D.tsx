@@ -406,6 +406,15 @@ function render(kind: DecorKind): React.ReactNode {
         {box(70, 5, 30, 30, "#7a5234")}
         {box(60, 2, 1, 14, "#caa46e", [0, 0, 13.5])}
       </>);
+    case "desklamp": // 초록 뱅커 램프
+      return (<>
+        {box(12, 3, 9, 0, "#3a2a1a")}
+        {cyl(1.4, 13, 3, "#caa46e")}
+        <mesh castShadow position={[0, 14, 1]} rotation={[0.35, 0, 0]}>
+          <sphereGeometry args={[7.5, 18, 18, 0, Math.PI * 2, 0, Math.PI / 2]} />
+          <meshStandardMaterial color="#1f7a3a" emissive="#37b85f" emissiveIntensity={0.7} />
+        </mesh>
+      </>);
     default:
       return box(20, 24, 20, 0, "#9aa0b5");
   }

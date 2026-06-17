@@ -353,6 +353,7 @@ function Scene({
 
       {/* 장소별 특수 환경 */}
       <EnvFx env={scene.env} night={time.isNight} />
+      {place === "library" && <LibraryWindows />}
 
       {/* 씬 소품 (정렬 배치) */}
       {scene.decor.map((d, i) => (
@@ -599,6 +600,35 @@ function AirplaneCabin({ night }: { night: boolean }) {
           </group>
         ))
       )}
+    </group>
+  );
+}
+
+// 도서관 뒷벽 아치 창문 (따뜻한 빛) — 책장 위로 보임
+function LibraryWindows() {
+  const xs = [120, 290, 460, 630, 800, 950];
+  return (
+    <group>
+      {xs.map((x, i) => (
+        <group key={i} position={[x, 128, 3]}>
+          <mesh position={[0, 0, -3]}>
+            <boxGeometry args={[120, 168, 6]} />
+            <meshStandardMaterial color="#6e4a2c" />
+          </mesh>
+          <mesh>
+            <boxGeometry args={[104, 140, 3]} />
+            <meshStandardMaterial color="#ffe6b0" emissive="#ffcf80" emissiveIntensity={0.75} />
+          </mesh>
+          <mesh position={[0, 70, 0]} rotation={[0, 0, 0]}>
+            <circleGeometry args={[52, 24, 0, Math.PI]} />
+            <meshStandardMaterial color="#ffe6b0" emissive="#ffcf80" emissiveIntensity={0.75} />
+          </mesh>
+          <mesh position={[0, 0, 1]}>
+            <boxGeometry args={[6, 140, 1]} />
+            <meshStandardMaterial color="#6e4a2c" />
+          </mesh>
+        </group>
+      ))}
     </group>
   );
 }
