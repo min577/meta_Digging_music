@@ -2,7 +2,8 @@
 
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
-import { Html, useGLTF } from "@react-three/drei";
+import { Html, useGLTF, Environment } from "@react-three/drei";
+import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import * as THREE from "three";
 import Avatar3D from "./Avatar3D";
 import Decor3D from "./Decor3D";
@@ -69,14 +70,19 @@ export default function RoomScene3D(props: Props) {
     <div className="relative w-full h-full rounded-2xl overflow-hidden shadow-soft">
       <Canvas
         shadows
-        dpr={[1, 1.6]}
+        dpr={[1, 1.7]}
+        gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.08 }}
         camera={{ fov: 46, near: 1, far: 4000, position: [500, 320, 820] }}
       >
         <color attach="background" args={[SKY[time.phase]]} />
         <fog attach="fog" args={[SKY[time.phase], 1100, 2600]} />
         <Suspense fallback={null}>
+          <Environment files="/hdri/studio.hdr" environmentIntensity={time.isNight ? 0.35 : 0.7} />
           <Scene {...props} time={time} />
         </Suspense>
+        <EffectComposer>
+          <Bloom intensity={0.55} luminanceThreshold={0.72} luminanceSmoothing={0.22} mipmapBlur />
+        </EffectComposer>
       </Canvas>
 
       {/* DOM 오버레이 */}
