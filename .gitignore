@@ -33,3 +33,6 @@ yarn-error.log*
 
 # npm cache redirect
 /.npm-cache
+
+# avatar sprite assets (replace with licensed/original art before deploy)
+/public/avatars

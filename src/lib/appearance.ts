@@ -1,5 +1,7 @@
 // 아바타 페이퍼돌 외형 모델 + 선택 옵션 (동물의 숲 느낌 커스터마이징)
 
+import { spriteFromSeed } from "./avatarSprites";
+
 export type HairStyle =
   | "short"
   | "bob"
@@ -25,6 +27,8 @@ export interface Appearance {
   hat: HatStyle;
   face: FaceStyle;
   glasses: GlassesStyle;
+  /** 프리셋 스프라이트 id (있으면 절차적 외형 대신 이미지로 렌더) — avatarSprites.ts */
+  sprite?: string;
 }
 
 export const ANIMALS: AnimalType[] = ["cat", "rabbit", "bear", "dog", "fox", "frog", "bird", "hamster"];
@@ -136,12 +140,14 @@ export function defaultAppearance(): Appearance {
   };
 }
 
-// 핸들(닉네임) 기반 결정적 외형 — NPC/다른 유저용
+// 핸들(닉네임) 기반 결정적 외형 — NPC/다른 유저용.
+// 스프라이트 프리셋을 기본 배정해 마을 전체가 동일한 룩을 갖도록 한다.
 export function appearanceFromSeed(seed: string): Appearance {
   let h = 0;
   for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
   const pick = <T,>(arr: T[], salt: number) => arr[(h + salt) % arr.length];
   return {
+    sprite: spriteFromSeed(seed),
     animal: pick(ANIMALS, 0),
     skin: pick(SKIN_TONES, 1),
     hair: pick(HAIR_STYLES.filter((s) => s !== "bald"), 2),

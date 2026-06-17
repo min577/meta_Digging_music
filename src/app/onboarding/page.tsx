@@ -28,6 +28,7 @@ import {
   ANIMAL_LABEL,
   type Appearance,
 } from "@/lib/appearance";
+import { AVATAR_SPRITES, spriteUrl } from "@/lib/avatarSprites";
 
 const SITUATIONS = [
   "공부할 때",
@@ -40,8 +41,9 @@ const SITUATIONS = [
   "파티",
 ];
 
-type Part = "animal" | "hair" | "hairColor" | "skin" | "face" | "glasses" | "outfit" | "pants" | "hat";
+type Part = "preset" | "animal" | "hair" | "hairColor" | "skin" | "face" | "glasses" | "outfit" | "pants" | "hat";
 const PARTS: { id: Part; label: string }[] = [
+  { id: "preset", label: "캐릭터" },
   { id: "animal", label: "동물" },
   { id: "skin", label: "털색" },
   { id: "hair", label: "헤어" },
@@ -60,7 +62,7 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(0);
   const [handle, setHandle] = useState("");
   const [look, setLook] = useState<Appearance>(defaultAppearance());
-  const [part, setPart] = useState<Part>("hair");
+  const [part, setPart] = useState<Part>("preset");
   const [situations, setSituations] = useState<string[]>([]);
   const [seeds, setSeeds] = useState<Track[]>([]);
 
@@ -179,6 +181,38 @@ export default function OnboardingPage() {
 
               {/* 옵션 그리드 */}
               <div className="mt-3 card p-3 flex-1 min-h-0 overflow-y-auto no-scrollbar">
+                {part === "preset" && (
+                  <div className="grid grid-cols-4 gap-2">
+                    {/* 직접 꾸미기 — 스프라이트 해제 */}
+                    <button
+                      onClick={() => set({ sprite: undefined })}
+                      className={`aspect-square rounded-xl flex flex-col items-center justify-center text-center bg-cream-50 border border-cream-200 ${
+                        !look.sprite ? "ring-2 ring-brand" : ""
+                      }`}
+                    >
+                      <span className="text-xl">🎨</span>
+                      <span className="text-[9px] text-ink-700/60 leading-tight">직접<br />꾸미기</span>
+                    </button>
+                    {AVATAR_SPRITES.map((id) => (
+                      <button
+                        key={id}
+                        onClick={() => set({ sprite: id })}
+                        className={`aspect-square rounded-xl p-1 bg-cream-50 ${
+                          look.sprite === id ? "ring-2 ring-brand bg-brand/5" : ""
+                        }`}
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={spriteUrl(id)}
+                          alt=""
+                          draggable={false}
+                          className="w-full h-full object-contain"
+                          style={{ objectPosition: "bottom" }}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                )}
                 {part === "hair" && (
                   <div className="grid grid-cols-4 gap-2">
                     {HAIR_STYLES.map((h) => (

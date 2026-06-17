@@ -7,6 +7,7 @@ import type {
   FaceStyle,
   GlassesStyle,
 } from "@/lib/appearance";
+import { isSpriteId, spriteUrl } from "@/lib/avatarSprites";
 
 export type Dir = "down" | "up" | "left" | "right";
 
@@ -27,6 +28,55 @@ export default function Avatar({
   const a = appearance;
   const flip = dir === "left";
   const back = dir === "up"; // 뒤돌면 얼굴 숨김
+
+  // 프리셋 스프라이트 — 이미지로 렌더 (절차적 외형 대체)
+  if (isSpriteId(a.sprite)) {
+    return (
+      <div
+        style={{
+          width: size,
+          height: size * 1.2,
+          transform: flip ? "scaleX(-1)" : undefined,
+          animation: walking
+            ? "avatarWalk 0.5s ease-in-out infinite"
+            : bob
+            ? "avatarIdle 2.6s ease-in-out infinite"
+            : undefined,
+        }}
+        className="relative select-none"
+        aria-label="아바타"
+      >
+        {/* 바닥 그림자 */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: size * 0.02,
+            left: "50%",
+            width: size * 0.5,
+            height: size * 0.09,
+            transform: "translateX(-50%)",
+            borderRadius: "50%",
+            background: "rgba(0,0,0,0.18)",
+            filter: "blur(1px)",
+          }}
+        />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={spriteUrl(a.sprite)}
+          alt=""
+          draggable={false}
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "contain",
+            objectPosition: "bottom",
+          }}
+        />
+      </div>
+    );
+  }
   // SVG id에 #가 들어가면 무효 → 색에서 # 제거한 안전한 id
   const oid = `o${a.outfit.replace("#", "")}`;
   const sid = `s${a.skin.replace("#", "")}`;

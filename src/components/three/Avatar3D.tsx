@@ -2,6 +2,8 @@
 
 import { RoundedBox, Outlines } from "@react-three/drei";
 import type { Appearance } from "@/lib/appearance";
+import { isSpriteId } from "@/lib/avatarSprites";
+import AvatarSprite3D from "./AvatarSprite3D";
 
 const OUT = "#2e241c";
 function dark(hex: string, a = 34) {
@@ -12,6 +14,9 @@ function dark(hex: string, a = 34) {
 
 // 동물의 숲풍 큰머리 라운드 캐릭터 + 툰 외곽선. 발끝 y=0, 키 ~62. 부모가 이동/회전.
 export default function Avatar3D({ a }: { a: Appearance }) {
+  // 프리셋 스프라이트는 빌보드 standee로 렌더
+  if (isSpriteId(a.sprite)) return <AvatarSprite3D id={a.sprite} />;
+
   const skinMat = <meshStandardMaterial color={a.skin} roughness={0.7} />;
   return (
     <group>
