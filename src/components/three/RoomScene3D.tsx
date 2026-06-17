@@ -324,7 +324,7 @@ function Scene({
         onPointerDown={onGroundDown}
       >
         <planeGeometry args={[WORLD_W, WORLD_H]} />
-        <meshStandardMaterial color={adjust(scene.floor[0], 24)} />
+        <meshStandardMaterial color={adjust(scene.floor[0], scene.floorTint)} />
       </mesh>
       {/* 벽 (실내 장소: 뒤+좌우, 밝은 실내색 + 걸레받이) */}
       {scene.env === "indoor" && (

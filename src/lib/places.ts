@@ -22,6 +22,8 @@ export interface Place {
   floor: [string, string];
   wall: string;
   stage: string;
+  wallColor?: string; // 실내 벽색(지정 없으면 sky에서 도출)
+  floorTint?: number; // 실내 바닥 밝기 보정
   floorType: FloorType;
   env: EnvType;
   decorKinds: DecorKind[]; // 배경 소품 (POS에 매핑)
@@ -57,6 +59,8 @@ const PLACES: Record<PlaceId, Place> = {
     floor: ["#23272f", "#333a45"],
     wall: "#171a20",
     stage: "#46505e",
+    wallColor: "#8b94a6",
+    floorTint: 44,
     floorType: "tile",
     env: "indoor",
     decorKinds: ["treadmill", "dumbbell", "bench", "locker", "mirror", "plant", "treadmill", "dumbbell", "bench", "speaker", "locker", "mirror", "dumbbell", "treadmill", "bench", "plant"],
@@ -76,6 +80,8 @@ const PLACES: Record<PlaceId, Place> = {
     floor: ["#3a2e22", "#54402e"],
     wall: "#241b12",
     stage: "#6e5234",
+    wallColor: "#d8c8a6",
+    floorTint: 64,
     floorType: "wood",
     env: "indoor",
     decorKinds: ["bookshelf", "desk", "globe", "bookshelf", "lamp", "plant", "bookshelf", "desk", "candle", "bookshelf", "painting", "desk", "bookshelf", "lamp", "globe", "bookshelf"],
@@ -152,6 +158,8 @@ const PLACES: Record<PlaceId, Place> = {
     floor: ["#2e241a", "#473522"],
     wall: "#201810",
     stage: "#6e5234",
+    wallColor: "#caa982",
+    floorTint: 52,
     floorType: "wood",
     env: "indoor",
     decorKinds: ["table", "chair", "counter", "plant", "table", "chair", "painting", "candle", "table", "chair", "bookshelf", "plant", "table", "chair", "candle", "counter"],
@@ -264,7 +272,8 @@ export function placeScene(id: PlaceId) {
   return {
     floor: p.floor,
     wall: p.wall,
-    wallColor: lighten(p.wall, 104), // 실내 벽(밝게)
+    wallColor: p.wallColor ?? lighten(p.wall, 104), // 실내 벽(밝게)
+    floorTint: p.floorTint ?? 28,
     stage: p.stage,
     floorType: p.floorType,
     env: p.env,
