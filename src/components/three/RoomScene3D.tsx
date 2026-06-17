@@ -507,38 +507,83 @@ function EnvFx({ env, night }: { env: EnvType; night: boolean }) {
   return null;
 }
 
-// 비행기 기내 인테리어 (천장/측벽+창문/오버헤드빈/좌석열)
+// 비행기 인테리어 + 외형(노즈/꼬리날개/주날개) — 위에서 봐도 비행기.
 function AirplaneCabin({ night }: { night: boolean }) {
-  const rows = [180, 340, 500, 660, 820];
-  const seatZ = [200, 258, 512, 570];
+  const cz = 370; // 동체 중심
+  const hull = "#e7eaf0";
+  const hullDk = "#c7ccd6";
+  const rows = [230, 400, 570, 740];
+  const seatZ = [255, 312, 432, 489];
   return (
     <group>
-      {/* (천장은 탑다운 카메라 가림 방지로 생략) */}
-      {/* 측벽 (먼쪽 z=110, 가까운쪽 z=630) */}
-      {[110, 630].map((z, wi) => (
+      {/* 주날개 (위에서 보면 비행기) */}
+      <mesh castShadow position={[470, 6, 70]} rotation={[0, 0.22, 0]}>
+        <boxGeometry args={[300, 12, 150]} />
+        <meshStandardMaterial color={hull} />
+      </mesh>
+      <mesh castShadow position={[470, 6, 670]} rotation={[0, -0.22, 0]}>
+        <boxGeometry args={[300, 12, 150]} />
+        <meshStandardMaterial color={hull} />
+      </mesh>
+      {/* 엔진 */}
+      {[40, 700].map((z, i) => (
+        <mesh key={i} position={[450, 2, z]} rotation={[0, 0, Math.PI / 2]}>
+          <cylinderGeometry args={[18, 18, 60, 16]} />
+          <meshStandardMaterial color={hullDk} />
+        </mesh>
+      ))}
+
+      {/* 노즈(기수) — 왼쪽 끝 */}
+      <mesh castShadow position={[120, 55, cz]} rotation={[0, 0, Math.PI / 2]}>
+        <coneGeometry args={[150, 230, 28]} />
+        <meshStandardMaterial color={hull} />
+      </mesh>
+      {/* 조종석 창 */}
+      <mesh position={[40, 70, cz]} rotation={[0, 0, Math.PI / 2]}>
+        <cylinderGeometry args={[28, 60, 30, 20, 1, true]} />
+        <meshStandardMaterial color="#2a3550" emissive="#16203a" emissiveIntensity={0.4} side={THREE.DoubleSide} />
+      </mesh>
+
+      {/* 꼬리 — 오른쪽 끝 */}
+      <mesh castShadow position={[900, 55, cz]} rotation={[0, 0, -Math.PI / 2]}>
+        <coneGeometry args={[150, 200, 28]} />
+        <meshStandardMaterial color={hull} />
+      </mesh>
+      {/* 수직 꼬리날개 */}
+      <mesh castShadow position={[955, 120, cz]} rotation={[0, 0, -0.35]}>
+        <boxGeometry args={[18, 150, 90]} />
+        <meshStandardMaterial color="#6c8ae4" />
+      </mesh>
+      {/* 수평 꼬리날개 */}
+      <mesh castShadow position={[930, 30, cz]}>
+        <boxGeometry args={[70, 10, 200]} />
+        <meshStandardMaterial color={hull} />
+      </mesh>
+
+      {/* 동체 측벽(낮게) + 창문 + 치트라인 */}
+      {[150, 590].map((z, wi) => (
         <group key={wi}>
-          <mesh position={[WORLD_W / 2, 108, z]} receiveShadow>
-            <boxGeometry args={[WORLD_W, 216, 16]} />
-            <meshStandardMaterial color="#dfe3ea" />
+          <mesh position={[510, 56, z]} receiveShadow>
+            <boxGeometry args={[760, 112, 18]} />
+            <meshStandardMaterial color={hull} />
           </mesh>
-          {/* 창문 */}
-          {[110, 290, 470, 650, 830].map((x, i) => (
-            <mesh key={i} position={[x, 132, z + (wi === 0 ? 9 : -9)]}>
-              <boxGeometry args={[58, 42, 2]} />
-              <meshStandardMaterial color="#bfe6f4" emissive="#9fd4ec" emissiveIntensity={night ? 0.45 : 0.85} />
+          <mesh position={[510, 86, z + (wi === 0 ? 9 : -9)]}>
+            <boxGeometry args={[760, 8, 2]} />
+            <meshStandardMaterial color="#6c8ae4" />
+          </mesh>
+          {[210, 330, 450, 570, 690, 810].map((x, i) => (
+            <mesh key={i} position={[x, 64, z + (wi === 0 ? 10 : -10)]}>
+              <boxGeometry args={[42, 34, 2]} />
+              <meshStandardMaterial color="#bfe6f4" emissive="#9fd4ec" emissiveIntensity={night ? 0.5 : 0.9} />
             </mesh>
           ))}
-          {/* 오버헤드 빈 */}
-          <mesh position={[WORLD_W / 2, 176, z + (wi === 0 ? 24 : -24)]}>
-            <boxGeometry args={[WORLD_W, 30, 38]} />
-            <meshStandardMaterial color="#c6ccd6" />
-          </mesh>
         </group>
       ))}
-      {/* 좌석열 */}
+
+      {/* 좌석열 (통로 양쪽) */}
       {rows.flatMap((x) =>
         seatZ.map((z) => (
-          <group key={`${x}-${z}`} position={[x, 0, z]} rotation={[0, z < 370 ? Math.PI / 2 : -Math.PI / 2, 0]} scale={0.85}>
+          <group key={`${x}-${z}`} position={[x, 0, z]} rotation={[0, z < cz ? Math.PI / 2 : -Math.PI / 2, 0]} scale={0.8}>
             <Decor3D kind="planeseat" />
           </group>
         ))

@@ -56,7 +56,13 @@ export default function Avatar3D({ a }: { a: Appearance }) {
         </mesh>
       ))}
 
-      <Animal type={a.animal} fur={a.skin} />
+      <Animal type={a.animal ?? "cat"} fur={a.skin} />
+      {["cat", "dog", "bear", "fox", "hamster", "rabbit"].includes(a.animal ?? "cat") && (
+        <mesh position={[0, 43.5, 15.4]}>
+          <sphereGeometry args={[2, 12, 12]} />
+          <meshStandardMaterial color="#3a2a26" />
+        </mesh>
+      )}
       <Face a={a} />
       <Glasses kind={a.glasses} />
       <Hair style={a.hair} color={a.hairColor} />
