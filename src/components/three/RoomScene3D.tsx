@@ -56,6 +56,8 @@ interface Props {
   speakers?: Speaker3D[];
   placed?: PlacedItem[];
   editMode?: boolean;
+  /** 같이 듣기로 연결한 소스 id ("npc_<uid>" | "player_<id>") — 풀볼륨 고정 + NPC 동행 */
+  lockedId?: string | null;
   onMove?: (x: number, y: number, dir: "down" | "up" | "left" | "right") => void;
   onAudio?: (vols: AudioVol[]) => void;
   onPlaceAt?: (x: number, y: number) => void;
@@ -120,7 +122,7 @@ export default function RoomScene3D(props: Props) {
 
 function Scene({
   meAppearance, meHandle, meTrack, place, npcs, remote = [], speakers = [],
-  placed = [], editMode, onMove, onAudio, onPlaceAt, onRemovePlaced, time,
+  placed = [], editMode, lockedId, onMove, onAudio, onPlaceAt, onRemovePlaced, time,
 }: Props & { time: TimePhase }) {
   const { camera } = useThree();
   const scene = placeScene(place);
@@ -149,6 +151,7 @@ function Scene({
   const remoteR = useRef(remote); remoteR.current = remote;
   const speakersR = useRef(speakers); speakersR.current = speakers;
   const npcsR = useRef(npcs); npcsR.current = npcs;
+  const lockedR = useRef(lockedId); lockedR.current = lockedId;
   const cbR = useRef({ onMove, onAudio }); cbR.current = { onMove, onAudio };
 
   // NPC 상태 초기화
@@ -247,21 +250,29 @@ function Scene({
     // NPC
     for (const id in npcState.current) {
       const v = npcState.current[id];
-      v.next -= dt;
-      if (v.next <= 0 || Math.hypot(v.tx - v.x, v.tz - v.z) < 10) {
-        if (v.next <= 0) {
-          const s = hashStr(id) + now * 0.0003;
-          v.tx = PAD + rand(s) * (WORLD_W - 2 * PAD);
-          v.tz = PAD + rand(s + 9.1) * (WORLD_H - 2 * PAD);
-          v.next = 2 + rand(s + 3.3) * 4;
+      const locked = lockedR.current === `npc_${id}`;
+      if (locked) {
+        // 같이 듣기: 내 옆(우측)으로 와서 함께 머무름
+        v.tx = clamp(m.x + 55, PAD, WORLD_W - PAD);
+        v.tz = m.z;
+      } else {
+        v.next -= dt;
+        if (v.next <= 0 || Math.hypot(v.tx - v.x, v.tz - v.z) < 10) {
+          if (v.next <= 0) {
+            const s = hashStr(id) + now * 0.0003;
+            v.tx = PAD + rand(s) * (WORLD_W - 2 * PAD);
+            v.tz = PAD + rand(s + 9.1) * (WORLD_H - 2 * PAD);
+            v.next = 2 + rand(s + 3.3) * 4;
+          }
         }
       }
       const ddx = v.tx - v.x, ddz = v.tz - v.z;
       const d = Math.hypot(ddx, ddz);
       v.walking = d > 6;
       if (v.walking) {
-        v.x += (ddx / d) * SPEED * 0.5 * dt;
-        v.z += (ddz / d) * SPEED * 0.5 * dt;
+        const spd = locked ? 0.98 : 0.5; // 동행 NPC는 빠르게 따라옴
+        v.x += (ddx / d) * SPEED * spd * dt;
+        v.z += (ddz / d) * SPEED * spd * dt;
         v.heading = Math.atan2(ddx, ddz);
       }
       const g = npcRefs.current[id];
@@ -297,15 +308,19 @@ function Scene({
       }
       for (const r of remoteR.current) {
         if (!r.track) continue;
-        const v = 1 - Math.hypot(m.x - r.x, m.z - r.y) / PERSON_RANGE;
-        if (v > 0.03) out.push({ id: `player_${r.id}`, volume: +v.toFixed(2) });
+        const id = `player_${r.id}`;
+        const raw = 1 - Math.hypot(m.x - r.x, m.z - r.y) / PERSON_RANGE;
+        const v = lockedR.current === id ? 1 : raw;
+        if (v > 0.03) out.push({ id, volume: +v.toFixed(2) });
       }
       for (const n of npcsR.current) {
         if (!n.track) continue;
+        const id = `npc_${n.id}`;
         const st = npcState.current[n.id];
         const nx = st?.x ?? n.x, nz = st?.z ?? n.y;
-        const v = 1 - Math.hypot(m.x - nx, m.z - nz) / PERSON_RANGE;
-        if (v > 0.03) out.push({ id: `npc_${n.id}`, volume: +v.toFixed(2) });
+        const raw = 1 - Math.hypot(m.x - nx, m.z - nz) / PERSON_RANGE;
+        const v = lockedR.current === id ? 1 : raw;
+        if (v > 0.03) out.push({ id, volume: +v.toFixed(2) });
       }
       const sig = out.map((o) => `${o.id}:${o.volume}`).join("|");
       if (sig !== lastAudio.current) {

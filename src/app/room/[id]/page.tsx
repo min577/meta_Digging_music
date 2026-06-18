@@ -80,6 +80,7 @@ export default function RoomPage() {
   const [npcTracks, setNpcTracks] = useState<Record<string, Track>>({});
   const [editMode, setEditMode] = useState(false);
   const [selectedItem, setSelectedItem] = useState(FURNITURE[0]);
+  const [lockedId, setLockedId] = useState<string | null>(null); // 같이 듣기 연결 대상
   const listenAccum = useRef(0);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
@@ -98,6 +99,9 @@ export default function RoomPage() {
   useEffect(() => {
     setTab(mode === "party" && room?.queueMode === "collab" ? "queue" : "chat");
   }, [mode, room?.queueMode]);
+  useEffect(() => {
+    if (mode !== "free") setLockedId(null); // 파티모드 전환 시 동행 해제
+  }, [mode]);
 
   const roomGenre = room ? topGenre(room.tasteVector) : "pop";
 
@@ -167,6 +171,17 @@ export default function RoomPage() {
   const sortedVols = [...vols].sort((a, b) => b.volume - a.volume);
   const loudest = sortedVols[0];
   const loudestTrack = loudest ? sourceTrack[loudest.id] : undefined;
+
+  // 같이 듣기: 소스 id → 핸들, 가까이서 음악을 틀고 있는 사람
+  const handleForSource = (sid: string | null): string => {
+    if (!sid) return "";
+    if (sid.startsWith("npc_")) return npcs.find((n) => n.id === sid.slice(4))?.handle ?? "디깅러";
+    if (sid.startsWith("player_")) return session.remotePlayers.find((p) => p.id === sid.slice(7))?.handle ?? "디깅러";
+    return "";
+  };
+  const nearbyPerson = sortedVols.find(
+    (v) => (v.id.startsWith("npc_") || v.id.startsWith("player_")) && sourceTrack[v.id]
+  );
 
   // 현재 들리는 곡: party=동기화 곡 / free=내 송출곡 우선, 없으면 가장 큰 주변 음악
   const track =
@@ -408,12 +423,34 @@ export default function RoomPage() {
           speakers={mode === "free" ? speakers : []}
           placed={[...myDecor, ...session.othersDecor]}
           editMode={editMode}
+          lockedId={mode === "free" ? lockedId : null}
           onMove={session.broadcastMove}
           onAudio={(v) => setVols(v)}
           onPlaceAt={placeAt}
           onRemovePlaced={removePlaced}
         />
       </div>
+
+      {/* 같이 듣기 (자유모드: 근처 사람과 연결 → 풀볼륨 유지 + 동행) */}
+      {mode === "free" && (lockedId || nearbyPerson) && (
+        <div className="px-4 mt-2 flex justify-center">
+          {lockedId ? (
+            <button
+              onClick={() => setLockedId(null)}
+              className="chip bg-live text-white font-bold py-2 px-4 flex items-center gap-1.5 shadow-soft"
+            >
+              🎧 {handleForSource(lockedId)}님과 함께 듣는 중 · 연결 끊기
+            </button>
+          ) : (
+            <button
+              onClick={() => setLockedId(nearbyPerson!.id)}
+              className="chip bg-brand text-white font-bold py-2 px-4 flex items-center gap-1.5 shadow-soft animate-bob"
+            >
+              🎧 {handleForSource(nearbyPerson!.id)}님과 같이 듣기
+            </button>
+          )}
+        </div>
+      )}
 
       {/* 반응 버튼 */}
       <div className="px-4 mt-2 flex gap-2 justify-center">
