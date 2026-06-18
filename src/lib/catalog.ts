@@ -11,18 +11,20 @@ const t = (
 ): Track => ({ id, title, artist, genre, durationSec: 30, previewUrl: "", artwork: "" });
 
 export const CATALOG: Track[] = [
-  t("c_lofi_1", "Lofi Beats", "Lofi Girl", "lofi"),
-  t("c_lofi_2", "Rainy Study", "Chillhop", "lofi"),
+  t("c_kpop_1", "Hype Boy", "NewJeans", "kpop"),
+  t("c_kpop_2", "Magnetic", "ILLIT", "kpop"),
+  t("c_hiphop_1", "VVS", "MIRANI", "hiphop"),
+  t("c_hiphop_2", "Sino", "BIG Naughty", "hiphop"),
+  t("c_rnb_1", "Drowning", "WOODZ", "rnb"),
+  t("c_rnb_2", "Eung Eung", "DEAN", "rnb"),
+  t("c_ballad_1", "사랑은 늘 도망가", "임영웅", "ballad"),
+  t("c_ballad_2", "이별 후회", "임한별", "ballad"),
+  t("c_indie_1", "주저하는 연인들을 위해", "잔나비", "indie"),
+  t("c_indie_2", "사랑인가 봐", "멜로망스", "indie"),
+  t("c_pop_1", "As It Was", "Harry Styles", "pop"),
+  t("c_pop_2", "Espresso", "Sabrina Carpenter", "pop"),
+  t("c_edm_1", "One More Time", "Daft Punk", "edm"),
   t("c_citypop_1", "Plastic Love", "Mariya Takeuchi", "citypop"),
-  t("c_citypop_2", "Stay With Me", "Miki Matsubara", "citypop"),
-  t("c_jazz_1", "Take Five", "Dave Brubeck", "jazz"),
-  t("c_jazz_2", "Smooth Night Jazz", "Jazz Cafe", "jazz"),
-  t("c_metal_1", "Enter Sandman", "Metallica", "metal"),
-  t("c_kpop_1", "Dynamite", "BTS", "kpop"),
-  t("c_kpop_2", "Hype Boy", "NewJeans", "kpop"),
-  t("c_rnb_1", "Happy", "Pharrell Williams", "rnb"),
-  t("c_house_1", "One More Time", "Daft Punk", "house"),
-  t("c_classical_1", "Clair de Lune", "Claude Debussy", "classical"),
 ];
 
 export function searchCatalog(q: string): Track[] {

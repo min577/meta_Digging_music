@@ -1,15 +1,16 @@
 // 장르 정의 — 캐릭터 외형, 무드 색, 취향 벡터의 차원이 모두 여기서 파생된다.
 // 기획서 4.3: Jazz→중절모/세피아, City Pop→네온/선글라스, Lo-fi→후드/빗방울, Metal→가죽자켓/번개
 
+// MZ(20대) 실청취 기준 8장르
 export type GenreId =
-  | "jazz"
-  | "citypop"
-  | "lofi"
-  | "metal"
   | "kpop"
+  | "hiphop"
   | "rnb"
-  | "house"
-  | "classical";
+  | "ballad"
+  | "indie"
+  | "pop"
+  | "edm"
+  | "citypop";
 
 export interface Genre {
   id: GenreId;
@@ -26,14 +27,68 @@ export interface Genre {
 }
 
 export const GENRES: Record<GenreId, Genre> = {
-  jazz: {
-    id: "jazz",
-    label: "재즈",
-    emoji: "🎷",
-    color: "#8A6D3B",
-    bg: ["#3a2f23", "#6b5333"],
-    look: "중절모 · 세피아 톤",
+  kpop: {
+    id: "kpop",
+    label: "K-팝",
+    emoji: "💖",
+    color: "#FF5FA2",
+    bg: ["#3d1f3a", "#e0568f"],
+    look: "글리터 · 응원봉",
+    bpm: 124,
+  },
+  hiphop: {
+    id: "hiphop",
+    label: "힙합",
+    emoji: "🎤",
+    color: "#F0A93A",
+    bg: ["#241c12", "#8a5a1e"],
+    look: "스냅백 · 골드체인",
+    bpm: 90,
+  },
+  rnb: {
+    id: "rnb",
+    label: "R&B",
+    emoji: "🍸",
+    color: "#B07CC6",
+    bg: ["#2d1b3d", "#6b4a82"],
+    look: "실키 · 무드등",
     bpm: 92,
+  },
+  ballad: {
+    id: "ballad",
+    label: "발라드",
+    emoji: "🎙️",
+    color: "#6C8AE4",
+    bg: ["#22304d", "#4a5a86"],
+    look: "스탠드 마이크 · 스포트라이트",
+    bpm: 70,
+  },
+  indie: {
+    id: "indie",
+    label: "인디",
+    emoji: "🎸",
+    color: "#5BB073",
+    bg: ["#1f3a2a", "#3f7a52"],
+    look: "어쿠스틱 · 카디건",
+    bpm: 104,
+  },
+  pop: {
+    id: "pop",
+    label: "팝",
+    emoji: "✨",
+    color: "#FF8A5B",
+    bg: ["#3a2030", "#d65a6e"],
+    look: "팝 컬러 · 헤드폰",
+    bpm: 118,
+  },
+  edm: {
+    id: "edm",
+    label: "EDM",
+    emoji: "🔊",
+    color: "#46D8C5",
+    bg: ["#10303a", "#1f7a72"],
+    look: "디스코볼 · 형광",
+    bpm: 128,
   },
   citypop: {
     id: "citypop",
@@ -43,60 +98,6 @@ export const GENRES: Record<GenreId, Genre> = {
     bg: ["#2a1f4d", "#c2479b"],
     look: "네온 · 선글라스",
     bpm: 116,
-  },
-  lofi: {
-    id: "lofi",
-    label: "로파이",
-    emoji: "🌧️",
-    color: "#7C83FD",
-    bg: ["#23304d", "#4a5a86"],
-    look: "후드 · 빗방울",
-    bpm: 78,
-  },
-  metal: {
-    id: "metal",
-    label: "메탈",
-    emoji: "🤘",
-    color: "#9aa0b5",
-    bg: ["#161620", "#3a3a4d"],
-    look: "가죽자켓 · 번개",
-    bpm: 150,
-  },
-  kpop: {
-    id: "kpop",
-    label: "K-팝",
-    emoji: "💖",
-    color: "#FF8FB1",
-    bg: ["#3d1f3a", "#d65a8e"],
-    look: "글리터 · 하트 이펙트",
-    bpm: 124,
-  },
-  rnb: {
-    id: "rnb",
-    label: "R&B",
-    emoji: "🍷",
-    color: "#B07CC6",
-    bg: ["#2d1b3d", "#6b4a82"],
-    look: "실키 · 보랏빛 무드",
-    bpm: 88,
-  },
-  house: {
-    id: "house",
-    label: "하우스",
-    emoji: "🪩",
-    color: "#46D8C5",
-    bg: ["#10303a", "#1f7a72"],
-    look: "디스코볼 · 형광",
-    bpm: 126,
-  },
-  classical: {
-    id: "classical",
-    label: "클래식",
-    emoji: "🎻",
-    color: "#C9A24B",
-    bg: ["#2b2620", "#5e503a"],
-    look: "앤틱 · 금테",
-    bpm: 72,
   },
 };
 

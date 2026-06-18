@@ -94,12 +94,55 @@ export default function Character({
 
 function Accessory({ genre }: { genre: GenreId }) {
   switch (genre) {
-    case "jazz": // 중절모
+    case "kpop": // 글리터 하트 + 반짝
       return (
         <g>
-          <rect x="28" y="20" width="44" height="5" rx="2.5" fill="#3a2f23" />
-          <rect x="36" y="8" width="28" height="14" rx="4" fill="#4a3a2a" />
-          <rect x="36" y="17" width="28" height="3" fill="#7a5c33" />
+          <text x="22" y="24" fontSize="10">💖</text>
+          <text x="68" y="20" fontSize="8">✨</text>
+        </g>
+      );
+    case "hiphop": // 스냅백 + 골드체인
+      return (
+        <g>
+          <path d="M28 26 Q50 8 72 26 L72 30 L28 30 Z" fill="#1c1c24" />
+          <path d="M68 28 Q84 27 82 34 L70 33 Z" fill="#1c1c24" />
+          <rect x="30" y="22" width="40" height="3" fill="#F0A93A" />
+          <path d="M40 58 Q50 66 60 58" stroke="#F0A93A" strokeWidth="2.4" fill="none" />
+        </g>
+      );
+    case "rnb": // 무드등 + 칵테일
+      return <text x="66" y="22" fontSize="11">🍸</text>;
+    case "ballad": // 스탠드 마이크 + 스포트라이트
+      return (
+        <g>
+          <path d="M30 8 L70 8 L60 20 L40 20 Z" fill="#ffe9a8" opacity="0.4" />
+          <circle cx="32" cy="40" r="4" fill="#2A251D" />
+          <rect x="31" y="40" width="2" height="16" fill="#555" />
+        </g>
+      );
+    case "indie": // 어쿠스틱 기타 헤드 + 비니톤
+      return (
+        <g>
+          <rect x="64" y="40" width="6" height="20" rx="2" fill="#9a6b3c" transform="rotate(18 67 50)" />
+          <circle cx="70" cy="58" r="6" fill="#b5824a" transform="rotate(18 70 58)" />
+          <path d="M30 30 Q50 16 70 30" stroke="#5BB073" strokeWidth="2" fill="none" opacity="0.7" />
+        </g>
+      );
+    case "pop": // 헤드폰 + 별
+      return (
+        <g>
+          <path d="M30 38 Q30 18 50 18 Q70 18 70 38" stroke="#FF8A5B" strokeWidth="4" fill="none" />
+          <rect x="26" y="36" width="8" height="12" rx="3" fill="#FF8A5B" />
+          <rect x="66" y="36" width="8" height="12" rx="3" fill="#FF8A5B" />
+          <text x="68" y="18" fontSize="8">✨</text>
+        </g>
+      );
+    case "edm": // 디스코 형광
+      return (
+        <g>
+          <circle cx="50" cy="12" r="6" fill="#46D8C5" />
+          <circle cx="50" cy="12" r="6" fill="none" stroke="#fff" strokeOpacity="0.6" />
+          <line x1="50" y1="18" x2="50" y2="22" stroke="#46D8C5" strokeWidth="2" />
         </g>
       );
     case "citypop": // 선글라스 + 네온
@@ -109,46 +152,6 @@ function Accessory({ genre }: { genre: GenreId }) {
           <rect x="53" y="34" width="11" height="7" rx="2" fill="#1a1a2e" />
           <rect x="47" y="36" width="6" height="2" fill="#1a1a2e" />
           <rect x="30" y="6" width="40" height="3" rx="1.5" fill="#FF6EC7" opacity="0.8" />
-        </g>
-      );
-    case "lofi": // 후드 + 빗방울
-      return (
-        <g>
-          <path d="M30 34 Q50 14 70 34 L70 44 L30 44 Z" fill="#5a6699" opacity="0.55" />
-          <circle cx="24" cy="20" r="1.6" fill="#8fa7ff" />
-          <circle cx="78" cy="28" r="1.6" fill="#8fa7ff" />
-          <circle cx="20" cy="40" r="1.4" fill="#8fa7ff" />
-        </g>
-      );
-    case "metal": // 번개 + 가죽
-      return (
-        <g>
-          <path d="M20 10 L30 10 L24 22 L32 22 L18 40 L24 26 L16 26 Z" fill="#ffd93b" />
-          <rect x="34" y="58" width="32" height="6" fill="#1c1c24" />
-        </g>
-      );
-    case "kpop": // 글리터 하트
-      return (
-        <g>
-          <text x="22" y="24" fontSize="10">💖</text>
-          <text x="68" y="20" fontSize="8">✨</text>
-        </g>
-      );
-    case "house": // 디스코 형광
-      return (
-        <g>
-          <circle cx="50" cy="12" r="6" fill="#46D8C5" />
-          <circle cx="50" cy="12" r="6" fill="none" stroke="#fff" strokeOpacity="0.6" />
-          <line x1="50" y1="18" x2="50" y2="22" stroke="#46D8C5" strokeWidth="2" />
-        </g>
-      );
-    case "rnb": // 와인빛 무드
-      return <text x="68" y="22" fontSize="10">🍷</text>;
-    case "classical": // 금테
-      return (
-        <g>
-          <rect x="30" y="20" width="40" height="3" rx="1.5" fill="#C9A24B" />
-          <text x="66" y="20" fontSize="9">🎵</text>
         </g>
       );
     default:

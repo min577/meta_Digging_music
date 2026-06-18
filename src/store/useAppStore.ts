@@ -310,5 +310,5 @@ export const useAppStore = create<AppState>()(
 /** 내 대표 장르 (없으면 lofi) */
 export function useMyTopGenre(): GenreId {
   const user = useAppStore((s) => s.user);
-  return user ? topGenre(user.tasteVector) : "lofi";
+  return user ? topGenre(user.tasteVector) : "pop";
 }

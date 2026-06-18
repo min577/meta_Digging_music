@@ -28,14 +28,14 @@ export interface Achievement {
 
 // 장르 마스터 (장르별 청취/디깅 누적 → 관련 아이템 해금)
 const GENRE_ACHV: { g: GenreId; title: string; icon: string; reward: Reward }[] = [
-  { g: "jazz", title: "재즈 디깅러", icon: "🎷", reward: { slot: "hat", value: "fedora" } },
-  { g: "citypop", title: "네온 시티", icon: "🌃", reward: { slot: "glasses", value: "sun" } },
-  { g: "lofi", title: "로파이 마스터", icon: "🌧️", reward: { slot: "hat", value: "beanie" } },
-  { g: "house", title: "댄스 플로어", icon: "🪩", reward: { slot: "glasses", value: "star" } },
   { g: "kpop", title: "최애 덕질", icon: "💖", reward: { slot: "hat", value: "flower" } },
-  { g: "classical", title: "클래식 애호가", icon: "🎻", reward: { slot: "glasses", value: "round" } },
-  { g: "metal", title: "헤드뱅어", icon: "🤘", reward: { slot: "hat", value: "headphones" } },
-  { g: "rnb", title: "소울풀", icon: "🍷", reward: { slot: "hat", value: "cap" } },
+  { g: "hiphop", title: "스웩 디깅러", icon: "🎤", reward: { slot: "hat", value: "cap" } },
+  { g: "rnb", title: "소울풀", icon: "🍸", reward: { slot: "glasses", value: "round" } },
+  { g: "ballad", title: "감성 보컬", icon: "🎙️", reward: { slot: "hat", value: "fedora" } },
+  { g: "indie", title: "인디 감성", icon: "🎸", reward: { slot: "hat", value: "beanie" } },
+  { g: "pop", title: "팝 러버", icon: "✨", reward: { slot: "glasses", value: "star" } },
+  { g: "edm", title: "댄스 플로어", icon: "🔊", reward: { slot: "hat", value: "headphones" } },
+  { g: "citypop", title: "네온 시티", icon: "🌃", reward: { slot: "glasses", value: "sun" } },
 ];
 
 export const ACHIEVEMENTS: Achievement[] = [

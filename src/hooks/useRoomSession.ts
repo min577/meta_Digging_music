@@ -265,7 +265,7 @@ export function useRoomSession(
         return rest;
       }
       // 큐가 비면 라디오 모드: iTunes에서 같은 장르 곡으로 보충
-      const genre = play?.track.genre ?? "lofi";
+      const genre = play?.track.genre ?? "pop";
       tracksByGenre(genre, 5).then((tracks) => {
         if (tracks.length === 0) return;
         const startedAt = Date.now();

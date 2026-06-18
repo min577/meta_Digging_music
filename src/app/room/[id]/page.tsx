@@ -99,7 +99,7 @@ export default function RoomPage() {
     setTab(mode === "party" && room?.queueMode === "collab" ? "queue" : "chat");
   }, [mode, room?.queueMode]);
 
-  const roomGenre = room ? topGenre(room.tasteVector) : "lofi";
+  const roomGenre = room ? topGenre(room.tasteVector) : "pop";
 
   // 음악 소스 구성
   // - 파티모드: 중앙 무대 1개(글로벌 동기화)

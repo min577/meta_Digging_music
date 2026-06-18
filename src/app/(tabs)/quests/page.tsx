@@ -22,9 +22,9 @@ const MOOD_TREE: Node = {
       next: {
         q: "혼자만의 시간엔?",
         options: [
-          { label: "빗소리와 공부", emoji: "🌧️", next: { result: "lofi" } },
-          { label: "와인 한 잔의 무드", emoji: "🍷", next: { result: "rnb" } },
-          { label: "사색의 클래식", emoji: "🎻", next: { result: "classical" } },
+          { label: "잔잔한 인디", emoji: "🎸", next: { result: "indie" } },
+          { label: "무드 있는 R&B", emoji: "🍸", next: { result: "rnb" } },
+          { label: "감성 발라드", emoji: "🎙️", next: { result: "ballad" } },
         ],
       },
     },
@@ -45,9 +45,9 @@ const MOOD_TREE: Node = {
       next: {
         q: "어떤 에너지?",
         options: [
-          { label: "춤추는 루프탑", emoji: "🪩", next: { result: "house" } },
-          { label: "헤드뱅잉 메탈", emoji: "🤘", next: { result: "metal" } },
-          { label: "한밤의 재즈", emoji: "🎷", next: { result: "jazz" } },
+          { label: "춤추는 루프탑", emoji: "🔊", next: { result: "edm" } },
+          { label: "쿵쾅 힙합", emoji: "🎤", next: { result: "hiphop" } },
+          { label: "기분 좋은 팝", emoji: "✨", next: { result: "pop" } },
         ],
       },
     },
@@ -176,7 +176,7 @@ export default function QuestsPage() {
         <div className="space-y-2">
           {[
             { t: "오늘 밤 22:00", title: "시티팝 야간열차 디깅", g: "citypop" as GenreId, h: "yuki" },
-            { t: "내일 09:00", title: "출근길 로파이", g: "lofi" as GenreId, h: "rain" },
+            { t: "내일 09:00", title: "출근길 K-pop", g: "kpop" as GenreId, h: "rain" },
           ].map((p, i) => (
             <div key={i} className="card px-4 py-3 flex items-center gap-3">
               <span className="text-2xl">{GENRES[p.g].emoji}</span>

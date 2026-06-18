@@ -48,34 +48,6 @@ interface Cfg {
 }
 
 const CFG: Record<GenreId, Cfg> = {
-  jazz: {
-    floor: ["#2a2018", "#3f3024"],
-    wall: "#1c1610",
-    stage: "#4a3826",
-    floorType: "wood",
-    kinds: ["piano", "mic", "cocktail", "chair", "candle", "sofa", "lamp", "painting", "vinyl", "lantern", "table", "floorlamp"],
-  },
-  citypop: {
-    floor: ["#241a40", "#3d2a63"],
-    wall: "#160f2b",
-    stage: "#5a2f7a",
-    floorType: "neon",
-    kinds: ["building", "neon", "palm", "tv", "speaker", "crystal", "vinyl", "balloon", "building", "neon", "star", "cocktail"],
-  },
-  lofi: {
-    floor: ["#22304d", "#33456b"],
-    wall: "#18233a",
-    stage: "#3a4f7a",
-    floorType: "wood",
-    kinds: ["window", "plant", "bookshelf", "table", "sofa", "lamp", "cushion", "tv", "candle", "plant", "floorlamp", "painting"],
-  },
-  house: {
-    floor: ["#0f2a33", "#15414a"],
-    wall: "#0a1c22",
-    stage: "#1f6f68",
-    floorType: "neon",
-    kinds: ["disco", "speaker", "speaker", "cocktail", "crystal", "star", "vinyl", "balloon", "disco", "speaker", "star", "cocktail"],
-  },
   kpop: {
     floor: ["#3a1838", "#5e2752"],
     wall: "#260f24",
@@ -83,19 +55,12 @@ const CFG: Record<GenreId, Cfg> = {
     floorType: "tile",
     kinds: ["mic", "star", "balloon", "speaker", "painting", "star", "balloon", "mic", "crystal", "star", "balloon", "mic"],
   },
-  classical: {
-    floor: ["#2b2620", "#473d2c"],
-    wall: "#1e1a14",
-    stage: "#6e5a36",
-    floorType: "tile",
-    kinds: ["column", "column", "piano", "candle", "painting", "fountain", "lamp", "column", "candle", "painting", "lantern", "column"],
-  },
-  metal: {
-    floor: ["#161620", "#28283a"],
-    wall: "#0e0e16",
-    stage: "#3a3a52",
-    floorType: "dark",
-    kinds: ["guitar", "drum", "speaker", "star", "mic", "guitar", "drum", "crystal", "speaker", "star", "guitar", "drum"],
+  hiphop: {
+    floor: ["#241c12", "#3f3220"],
+    wall: "#16110a",
+    stage: "#6a4a1e",
+    floorType: "neon",
+    kinds: ["speaker", "vinyl", "mic", "crystal", "sofa", "star", "speaker", "vinyl", "neon", "mic", "cocktail", "star"],
   },
   rnb: {
     floor: ["#2d1b3d", "#492c63"],
@@ -104,10 +69,45 @@ const CFG: Record<GenreId, Cfg> = {
     floorType: "tile",
     kinds: ["mic", "cocktail", "sofa", "candle", "lamp", "painting", "vinyl", "crystal", "sofa", "candle", "lamp", "mic"],
   },
+  ballad: {
+    floor: ["#22304d", "#33456b"],
+    wall: "#18233a",
+    stage: "#3a4f7a",
+    floorType: "tile",
+    kinds: ["mic", "sofa", "lamp", "candle", "painting", "floorlamp", "plant", "cushion", "window", "lamp", "candle", "mic"],
+  },
+  indie: {
+    floor: ["#1f3a2a", "#2f5a40"],
+    wall: "#15291d",
+    stage: "#3f7a52",
+    floorType: "wood",
+    kinds: ["guitar", "plant", "sofa", "lamp", "vinyl", "painting", "table", "cushion", "plant", "floorlamp", "candle", "guitar"],
+  },
+  pop: {
+    floor: ["#3a2030", "#5e2f44"],
+    wall: "#260f1c",
+    stage: "#a8455e",
+    floorType: "tile",
+    kinds: ["speaker", "star", "balloon", "mic", "tv", "crystal", "star", "balloon", "speaker", "mic", "star", "balloon"],
+  },
+  edm: {
+    floor: ["#0f2a33", "#15414a"],
+    wall: "#0a1c22",
+    stage: "#1f6f68",
+    floorType: "neon",
+    kinds: ["disco", "speaker", "speaker", "cocktail", "crystal", "star", "vinyl", "balloon", "disco", "speaker", "star", "cocktail"],
+  },
+  citypop: {
+    floor: ["#241a40", "#3d2a63"],
+    wall: "#160f2b",
+    stage: "#5a2f7a",
+    floorType: "neon",
+    kinds: ["building", "neon", "palm", "tv", "speaker", "crystal", "vinyl", "balloon", "building", "neon", "star", "cocktail"],
+  },
 };
 
 export function sceneFor(genre: GenreId): Scene {
-  const c = CFG[genre] ?? CFG.lofi;
+  const c = CFG[genre] ?? CFG.pop;
   return {
     floor: c.floor,
     wall: c.wall,

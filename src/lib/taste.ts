@@ -64,7 +64,7 @@ export function updateVector(
 
 /** 벡터의 대표(최상위) 장르 */
 export function topGenre(vec: TasteVector): GenreId {
-  let best: GenreId = "lofi";
+  let best: GenreId = "pop";
   let max = -1;
   for (const [g, v] of Object.entries(vec)) {
     if ((v ?? 0) > max) {

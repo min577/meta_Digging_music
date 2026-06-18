@@ -63,51 +63,51 @@ function room(
 
 export const ROOMS: Room[] = [
   room("room_gym_1", "gym", "오운완 하고 가실 분 💪", "도윤", [
-    { handle: "도윤", genre: "house" }, { handle: "run_minji", genre: "kpop" },
-    { handle: "태현", genre: "house" }, { handle: "soyeon_", genre: "rnb" },
-    { handle: "헬스왕준", genre: "kpop" }, { handle: "yuna.fit", genre: "house" },
+    { handle: "도윤", genre: "edm" }, { handle: "run_minji", genre: "kpop" },
+    { handle: "태현", genre: "edm" }, { handle: "soyeon_", genre: "rnb" },
+    { handle: "헬스왕준", genre: "kpop" }, { handle: "yuna.fit", genre: "edm" },
     { handle: "지호", genre: "rnb" },
   ]),
   room("room_library_1", "library", "같이 공부할 사람 (ASMR)", "서연", [
-    { handle: "서연", genre: "lofi" }, { handle: "책읽는하준", genre: "lofi" },
-    { handle: "jisoo_study", genre: "classical" }, { handle: "민준", genre: "lofi" },
-    { handle: "공부중", genre: "classical" }, { handle: "yejin0", genre: "lofi" },
+    { handle: "서연", genre: "indie" }, { handle: "책읽는하준", genre: "indie" },
+    { handle: "jisoo_study", genre: "ballad" }, { handle: "민준", genre: "indie" },
+    { handle: "공부중", genre: "ballad" }, { handle: "yejin0", genre: "indie" },
   ]),
   room("room_hanriver_1", "hanriver", "한강에서 발라드 들을래요 🍃", "강민", [
     { handle: "강민", genre: "rnb" }, { handle: "새벽감성", genre: "rnb" },
-    { handle: "soohyun", genre: "lofi" }, { handle: "지우", genre: "rnb" },
-    { handle: "한강러버", genre: "rnb" }, { handle: "민서", genre: "lofi" },
+    { handle: "soohyun", genre: "indie" }, { handle: "지우", genre: "rnb" },
+    { handle: "한강러버", genre: "rnb" }, { handle: "민서", genre: "indie" },
   ]),
   room("room_airplane_1", "airplane", "여행 가는 기분 내는 방 ✈️", "여행가다", [
-    { handle: "여행가다", genre: "citypop" }, { handle: "jun_trip", genre: "house" },
+    { handle: "여행가다", genre: "citypop" }, { handle: "jun_trip", genre: "edm" },
     { handle: "윈도우석", genre: "kpop" }, { handle: "하늘", genre: "citypop" },
-    { handle: "gate_7", genre: "house" }, { handle: "수민_", genre: "kpop" },
+    { handle: "gate_7", genre: "edm" }, { handle: "수민_", genre: "kpop" },
   ]),
   room("room_city_1", "city", "야경 보면서 드라이브 🌃", "현우", [
-    { handle: "현우", genre: "citypop" }, { handle: "seoul_drive", genre: "house" },
+    { handle: "현우", genre: "citypop" }, { handle: "seoul_drive", genre: "edm" },
     { handle: "지민", genre: "rnb" }, { handle: "네온", genre: "citypop" },
-    { handle: "홍대밤", genre: "house" }, { handle: "yerin.0", genre: "rnb" },
+    { handle: "홍대밤", genre: "edm" }, { handle: "yerin.0", genre: "rnb" },
     { handle: "taxi_night", genre: "citypop" },
   ]),
   room("room_cafe_1", "cafe", "주말 오후 카페 음악 ☕", "바리스타준", [
-    { handle: "바리스타준", genre: "jazz" }, { handle: "latte_su", genre: "lofi" },
-    { handle: "보사노바", genre: "jazz" }, { handle: "오후세시", genre: "jazz" },
-    { handle: "모카", genre: "lofi" }, { handle: "재즈러", genre: "jazz" },
+    { handle: "바리스타준", genre: "rnb" }, { handle: "latte_su", genre: "indie" },
+    { handle: "보사노바", genre: "rnb" }, { handle: "오후세시", genre: "rnb" },
+    { handle: "모카", genre: "indie" }, { handle: "재즈러", genre: "rnb" },
   ]),
   // 리스닝 파티 (호스트가 진행)
   room("room_city_party", "city", "🎧 시티팝 같이 들어요 (호스트)", "유진", [
     { handle: "유진", genre: "citypop" }, { handle: "리나", genre: "citypop" },
-    { handle: "준호", genre: "house" }, { handle: "다은", genre: "citypop" },
+    { handle: "준호", genre: "edm" }, { handle: "다은", genre: "citypop" },
   ], { roomMode: "party", queueMode: "dj", capacity: 200 }),
 ];
 
 export const SHOP_ITEMS: ShopItem[] = [
-  { id: "s1", category: "costume", name: "재즈 중절모", emoji: "🎩", price: 320, desc: "재즈를 들으면 세피아 톤이 진해져요" },
+  { id: "s1", category: "costume", name: "스냅백 + 골드체인", emoji: "🧢", price: 320, desc: "힙합 스웩 룩 해금" },
   { id: "s2", category: "costume", name: "네온 선글라스", emoji: "🕶️", price: 280, desc: "시티팝 무드 전용 액세서리" },
-  { id: "s3", category: "costume", name: "비 오는 후드", emoji: "🧥", price: 250, desc: "로파이 빗방울 이펙트 강화", discountPct: 20 },
-  { id: "s4", category: "costume", name: "가죽 자켓", emoji: "🧥", price: 360, desc: "메탈 번개 이펙트 해금" },
-  { id: "s5", category: "theme", name: "Late Night Jazz 테마", emoji: "🎷", price: 600, desc: "내 룸 배경을 재즈 바로" },
-  { id: "s6", category: "theme", name: "Disco Rooftop 테마", emoji: "🪩", price: 600, desc: "디스코볼 룸 배경", discountPct: 15 },
+  { id: "s3", category: "costume", name: "응원봉", emoji: "💖", price: 250, desc: "K-팝 글리터 이펙트 강화", discountPct: 20 },
+  { id: "s4", category: "costume", name: "어쿠스틱 기타", emoji: "🎸", price: 360, desc: "인디 감성 룩 해금" },
+  { id: "s5", category: "theme", name: "Neon City 테마", emoji: "🌃", price: 600, desc: "내 룸 배경을 시티팝 야경으로" },
+  { id: "s6", category: "theme", name: "Club Rooftop 테마", emoji: "🔊", price: 600, desc: "EDM 디스코볼 룸 배경", discountPct: 15 },
   { id: "s7", category: "boost", name: "랭킹 부스트 (24h)", emoji: "⚡", price: 150, desc: "청취 경험치 2배" },
   { id: "s8", category: "boost", name: "디깅 포인트 부스트", emoji: "💎", price: 180, desc: "발견 보상 1.5배 (24h)" },
   { id: "s9", category: "evolution", name: "진화의 음표", emoji: "🎵", price: 800, desc: "캐릭터를 다음 단계로 진화" },
@@ -129,9 +129,9 @@ export function defaultBadges(): Badge[] {
 }
 
 export const DEMO_FRIENDS: Friend[] = [
-  { userId: "u_seoyeon", handle: "서연", topGenre: "jazz", status: "accepted", matchPct: 0 },
+  { userId: "u_seoyeon", handle: "서연", topGenre: "rnb", status: "accepted", matchPct: 0 },
   { userId: "u_hyunwoo", handle: "현우", topGenre: "citypop", status: "accepted", matchPct: 0 },
-  { userId: "u_soohyun", handle: "soohyun", topGenre: "lofi", status: "pending", matchPct: 0 },
+  { userId: "u_soohyun", handle: "soohyun", topGenre: "indie", status: "pending", matchPct: 0 },
 ];
 
 /** 데모 모드 기본 유저 (Supabase 미연동 시) */
@@ -140,7 +140,7 @@ export function demoUser(): UserProfile {
     id: "demo-user",
     handle: "디깅러",
     country: "KR",
-    tasteVector: { lofi: 0.5, citypop: 0.3, jazz: 0.2 },
+    tasteVector: { kpop: 0.4, hiphop: 0.3, rnb: 0.3 },
     coins: 1200,
     diggPoints: 340,
     level: 3,

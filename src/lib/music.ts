@@ -8,28 +8,28 @@ const ENDPOINT = "https://itunes.apple.com/search";
 
 // 룸/장르별로 곡을 가져올 때 쓰는 검색어
 const GENRE_TERM: Record<GenreId, string> = {
-  jazz: "jazz",
-  citypop: "city pop",
-  lofi: "lofi hip hop",
-  metal: "heavy metal",
   kpop: "k-pop",
-  rnb: "r&b soul",
-  house: "house dance",
-  classical: "classical piano",
+  hiphop: "korean hip hop",
+  rnb: "korean r&b",
+  ballad: "korean ballad",
+  indie: "korean indie",
+  pop: "pop hits",
+  edm: "edm dance",
+  citypop: "city pop",
 };
 
-// iTunes primaryGenreName + 텍스트로 우리 GenreId 추정
+// iTunes primaryGenreName + 텍스트로 우리 GenreId 추정 (구체 장르 → 일반 장르 순)
 function guessGenre(text: string): GenreId {
   const s = text.toLowerCase();
-  if (/(jazz|재즈)/.test(s)) return "jazz";
-  if (/(k-?pop|케이팝)/.test(s)) return "kpop";
-  if (/(metal|메탈|hard ?rock)/.test(s)) return "metal";
-  if (/(classical|클래식|piano|orchestr)/.test(s)) return "classical";
-  if (/(r&b|r ?and ?b|soul|소울)/.test(s)) return "rnb";
-  if (/(house|dance|electronic|edm|techno|하우스)/.test(s)) return "house";
   if (/(city ?pop|시티팝|シティ)/.test(s)) return "citypop";
-  if (/(lo-?fi|lofi|chill|로파이)/.test(s)) return "lofi";
-  return "lofi";
+  if (/(k-?pop|케이팝|아이돌)/.test(s)) return "kpop";
+  if (/(hip ?hop|hip-hop|\brap\b|랩|힙합)/.test(s)) return "hiphop";
+  if (/(ballad|발라드)/.test(s)) return "ballad";
+  if (/(r&b|r ?and ?b|soul|소울|알앤비)/.test(s)) return "rnb";
+  if (/(indie|인디|acoustic|어쿠스틱|밴드|\bband\b|folk)/.test(s)) return "indie";
+  if (/(edm|house|electronic|electro|techno|dance|하우스|일렉)/.test(s)) return "edm";
+  if (/(pop|팝)/.test(s)) return "pop";
+  return "pop";
 }
 
 function mapItem(it: any, genreHint?: GenreId): Track | null {
@@ -59,7 +59,7 @@ async function fetchITunes(term: string, limit: number): Promise<any[]> {
 
 /** 곡 검색 (온보딩 취향 3곡 · 룸 곡 제안) */
 export async function searchTracks(q: string): Promise<Track[]> {
-  const term = q.trim() || "lofi";
+  const term = q.trim() || "pop hits";
   try {
     const items = await fetchITunes(term, 14);
     const tracks = items.map((it) => mapItem(it)).filter(Boolean) as Track[];
