@@ -103,6 +103,22 @@ export const GENRES: Record<GenreId, Genre> = {
 
 export const GENRE_LIST: Genre[] = Object.values(GENRES);
 
-export function genre(id: GenreId): Genre {
-  return GENRES[id];
+// 안전 접근자 — 구버전/알 수 없는 id면 pop으로 폴백 (런타임 크래시 방지)
+export function genre(id: string): Genre {
+  return GENRES[id as GenreId] ?? GENRES.pop;
+}
+
+// 구버전 장르 id → 신 장르 id 매핑 (localStorage 마이그레이션)
+export const LEGACY_GENRE: Record<string, GenreId> = {
+  jazz: "rnb",
+  lofi: "indie",
+  classical: "ballad",
+  metal: "hiphop",
+  house: "edm",
+};
+
+/** 임의 문자열을 유효 GenreId로 정규화 (구버전 데이터 방어) */
+export function normalizeGenre(g: string): GenreId {
+  if (GENRES[g as GenreId]) return g as GenreId;
+  return LEGACY_GENRE[g] ?? "pop";
 }

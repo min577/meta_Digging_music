@@ -20,7 +20,7 @@ const RoomScene3D = dynamic(() => import("@/components/three/RoomScene3D"), {
 import TrackSearch from "@/components/TrackSearch";
 import { useRoomSession } from "@/hooks/useRoomSession";
 import { useAppStore, useMyTopGenre } from "@/store/useAppStore";
-import { GENRES, GENRE_LIST } from "@/lib/genres";
+import { GENRES, GENRE_LIST, genre as genreOf } from "@/lib/genres";
 import { topGenre } from "@/lib/taste";
 import { tracksByTerm } from "@/lib/music";
 import { place as getPlace } from "@/lib/places";
@@ -172,7 +172,7 @@ export default function RoomPage() {
   const track =
     mode === "free" ? myTrack ?? loudestTrack : session.play?.track;
   const headerVol = myTrack ? 1 : loudest?.volume ?? 0;
-  const g = GENRES[track ? track.genre : roomGenre];
+  const g = genreOf(track ? track.genre : roomGenre);
   const pct = progress.dur > 0 ? (progress.cur / progress.dur) * 100 : 0;
   const isHost = room.queueMode === "dj";
 
@@ -483,7 +483,7 @@ export default function RoomPage() {
                 </p>
               )}
               {session.queue.map((item, idx) => {
-                const ig = GENRES[item.track.genre];
+                const ig = genreOf(item.track.genre);
                 return (
                   <div key={item.id} className="flex items-center gap-3 card px-3 py-2">
                     <span className="text-xs font-bold text-ink-700/40 w-4">{idx + 1}</span>

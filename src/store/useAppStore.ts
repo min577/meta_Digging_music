@@ -14,6 +14,7 @@ import type {
   PlacedItem,
 } from "@/lib/types";
 import type { GenreId } from "@/lib/genres";
+import { normalizeGenre } from "@/lib/genres";
 import { defaultQuests, defaultBadges, DEMO_FRIENDS } from "@/lib/mock";
 import { updateVector, vectorFromTracks, topGenre } from "@/lib/taste";
 import { defaultAppearance, type Appearance } from "@/lib/appearance";
@@ -291,6 +292,42 @@ export const useAppStore = create<AppState>()(
     }),
     {
       name: "digtown-store",
+      version: 2, // v2: MZ 장르 체계 (구 장르 id 마이그레이션)
+      migrate: (persisted: any, version) => {
+        if (!persisted || version >= 2) return persisted;
+        const remapVec = (vec: any) => {
+          if (!vec) return vec;
+          const out: Record<string, number> = {};
+          for (const [k, v] of Object.entries(vec)) {
+            const ng = normalizeGenre(k);
+            out[ng] = (out[ng] ?? 0) + (v as number);
+          }
+          return out;
+        };
+        if (persisted.user?.tasteVector)
+          persisted.user.tasteVector = remapVec(persisted.user.tasteVector);
+        persisted.friends = (persisted.friends ?? []).map((f: any) => ({
+          ...f,
+          topGenre: normalizeGenre(f.topGenre),
+        }));
+        persisted.customRooms = (persisted.customRooms ?? []).map((r: any) => ({
+          ...r,
+          tasteVector: remapVec(r.tasteVector),
+          members: (r.members ?? []).map((m: any) => ({ ...m, topGenre: m.topGenre ? normalizeGenre(m.topGenre) : m.topGenre })),
+          currentTrack: r.currentTrack
+            ? { ...r.currentTrack, track: { ...r.currentTrack.track, genre: normalizeGenre(r.currentTrack.track.genre) } }
+            : r.currentTrack,
+        }));
+        persisted.diggs = (persisted.diggs ?? []).map((d: any) => ({
+          ...d,
+          track: { ...d.track, genre: normalizeGenre(d.track.genre) },
+        }));
+        persisted.listenEvents = (persisted.listenEvents ?? []).map((e: any) => ({
+          ...e,
+          genre: normalizeGenre(e.genre),
+        }));
+        return persisted;
+      },
       partialize: (s) => ({
         onboarded: s.onboarded,
         user: s.user,

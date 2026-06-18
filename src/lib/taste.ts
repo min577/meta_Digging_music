@@ -62,11 +62,13 @@ export function updateVector(
   return next;
 }
 
-/** 벡터의 대표(최상위) 장르 */
+/** 벡터의 대표(최상위) 장르 — 유효 장르만 고려(구버전 데이터 방어) */
 export function topGenre(vec: TasteVector): GenreId {
+  const valid = new Set(GENRE_LIST.map((g) => g.id));
   let best: GenreId = "pop";
   let max = -1;
   for (const [g, v] of Object.entries(vec)) {
+    if (!valid.has(g as GenreId)) continue;
     if ((v ?? 0) > max) {
       max = v!;
       best = g as GenreId;

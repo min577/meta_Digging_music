@@ -5,7 +5,7 @@ import Link from "next/link";
 import TopBar from "@/components/TopBar";
 import Avatar from "@/components/Avatar";
 import { useAppStore, useMyTopGenre } from "@/store/useAppStore";
-import { GENRES, GENRE_LIST } from "@/lib/genres";
+import { GENRES, GENRE_LIST, genre as genreOf } from "@/lib/genres";
 import { sortedGenres } from "@/lib/taste";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { signInWithGoogle } from "@/lib/profile";
@@ -235,10 +235,10 @@ export default function ProfilePage() {
                       <div
                         className="h-20 flex items-center justify-center text-3xl"
                         style={{
-                          background: `linear-gradient(135deg, ${GENRES[d.track.genre].bg[0]}, ${GENRES[d.track.genre].bg[1]})`,
+                          background: `linear-gradient(135deg, ${genreOf(d.track.genre).bg[0]}, ${genreOf(d.track.genre).bg[1]})`,
                         }}
                       >
-                        {GENRES[d.track.genre].emoji}
+                        {genreOf(d.track.genre).emoji}
                       </div>
                     )}
                     <div className="p-2">

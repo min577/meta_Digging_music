@@ -5,7 +5,7 @@ import TopBar from "@/components/TopBar";
 import Avatar from "@/components/Avatar";
 import { appearanceFromSeed } from "@/lib/appearance";
 import { useAppStore } from "@/store/useAppStore";
-import { GENRES } from "@/lib/genres";
+import { genre as genreOf } from "@/lib/genres";
 import { matchPercent } from "@/lib/taste";
 import { ROOMS } from "@/lib/mock";
 import type { Friend } from "@/lib/types";
@@ -110,7 +110,7 @@ export default function FriendsPage() {
                 <Avatar appearance={appearanceFromSeed(s.handle)} size={56} bob={false} />
                 <p className="font-bold text-sm mt-1 truncate">{s.handle}</p>
                 <p className="text-[11px] text-ink-700/50">
-                  {GENRES[s.topGenre].emoji} {s.matchPct}% 일치
+                  {genreOf(s.topGenre).emoji} {s.matchPct}% 일치
                 </p>
                 <button
                   onClick={() => addFriend(s)}
@@ -134,7 +134,7 @@ export default function FriendsPage() {
               <div className="flex-1 min-w-0">
                 <p className="font-bold text-sm truncate">{f.handle}</p>
                 <p className="text-[11px] text-ink-700/50">
-                  {GENRES[f.topGenre].emoji} {GENRES[f.topGenre].label} ·{" "}
+                  {genreOf(f.topGenre).emoji} {genreOf(f.topGenre).label} ·{" "}
                   {f.status === "pending" ? "요청 보냄" : "친구"}
                 </p>
               </div>
