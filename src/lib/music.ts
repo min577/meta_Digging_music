@@ -80,6 +80,80 @@ export async function tracksByTerm(term: string, limit = 4): Promise<Track[]> {
   }
 }
 
+export type ChartCountry = "kr" | "us";
+
+// trackId 다건을 lookup으로 조회 → previewUrl/artwork 매핑
+async function lookupPreviews(
+  ids: (string | number)[],
+  country: ChartCountry
+): Promise<Record<string, { previewUrl: string; artwork: string }>> {
+  const out: Record<string, { previewUrl: string; artwork: string }> = {};
+  const CH = 100; // lookup은 콤마구분 다건 지원
+  for (let i = 0; i < ids.length; i += CH) {
+    const slice = ids.slice(i, i + CH).join(",");
+    try {
+      const res = await fetch(
+        `${"https://itunes.apple.com/lookup"}?id=${slice}&country=${country.toUpperCase()}&entity=song`
+      );
+      if (!res.ok) continue;
+      const data = await res.json();
+      for (const it of data.results ?? []) {
+        if (it.previewUrl)
+          out[String(it.trackId)] = {
+            previewUrl: it.previewUrl,
+            artwork: it.artworkUrl100 ?? "",
+          };
+      }
+    } catch {
+      /* 무시하고 다음 청크 */
+    }
+  }
+  return out;
+}
+
+/**
+ * 인기차트 (most-played) — 현재 차트 순서.
+ * 1) Apple Marketing Tools 피드로 최신 차트 순서+메타 → 2) lookup으로 30초 미리듣기 결합.
+ * 실패 시 Search API 폴백(재생은 되나 진짜 차트 순서는 아님).
+ */
+export async function topChart(
+  limit = 30,
+  country: ChartCountry = "kr"
+): Promise<Track[]> {
+  try {
+    const feed = `https://rss.applemarketingtools.com/api/v2/${country}/music/most-played/${limit}/songs.json`;
+    const res = await fetch(feed);
+    if (res.ok) {
+      const data = await res.json();
+      const results: any[] = data?.feed?.results ?? [];
+      if (results.length) {
+        const ids = results.map((r) => r.id).filter(Boolean);
+        const previews = await lookupPreviews(ids, country);
+        const tracks = results
+          .map((r) => {
+            const pv = previews[String(r.id)];
+            const art = (r.artworkUrl100 ?? pv?.artwork ?? "").replace("100x100", "300x300");
+            return {
+              id: String(r.id),
+              title: r.name ?? "Unknown",
+              artist: r.artistName ?? "Unknown",
+              genre: guessGenre(`${r.genres?.[0]?.name ?? ""} ${r.name ?? ""}`),
+              durationSec: 30,
+              previewUrl: pv?.previewUrl ?? "",
+              artwork: art,
+            } as Track;
+          })
+          .filter((t) => t.previewUrl); // 재생 가능한 곡만(순위 유지)
+        if (tracks.length) return tracks;
+      }
+    }
+  } catch {
+    /* 폴백으로 */
+  }
+  // 폴백: 인기 검색어 기반(차트 피드 차단/오프라인 시)
+  return tracksByTerm(country === "kr" ? "korea top hits" : "top hits", limit);
+}
+
 /** 장르별 재생 목록 (룸 입장 시 초기 곡 + 큐 시드) */
 export async function tracksByGenre(
   genre: GenreId,
