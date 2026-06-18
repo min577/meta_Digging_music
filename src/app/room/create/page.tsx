@@ -95,7 +95,7 @@ export default function CreateRoomPage() {
               loc.id === l.id ? "ring-2 ring-brand" : "opacity-80"
             }`}
           >
-            <MoodBuilding genre={l.primaryGenre} emoji={l.emoji} size={72} float={false} />
+            <MoodBuilding place={l.place} emoji={l.emoji} size={96} float={false} />
             <span className="text-[11px] font-bold mt-1 text-center">{l.name}</span>
           </button>
         ))}

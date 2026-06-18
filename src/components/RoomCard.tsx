@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Avatar from "./Avatar";
+import PlaceScene from "./PlaceScene";
 import { appearanceFromSeed } from "@/lib/appearance";
 import { GENRES } from "@/lib/genres";
 import { topGenre } from "@/lib/taste";
@@ -27,13 +28,14 @@ export default function RoomCard({
   return (
     <Link href={`/room/${room.id}`} className="block">
       <div className="card overflow-hidden active:scale-[0.99] transition">
-        {/* 배너: 무드 그라데이션 + 캐릭터들 */}
-        <div
-          className="relative h-28 flex items-end px-4 pb-2"
-          style={{
-            background: `linear-gradient(135deg, ${g.bg[0]}, ${g.bg[1]})`,
-          }}
-        >
+        {/* 배너: 장소 일러스트 배경 + 캐릭터들 */}
+        <div className="relative h-28 flex items-end px-4 pb-2 overflow-hidden">
+          {/* 장소별 배경 */}
+          <div className="absolute inset-0">
+            <PlaceScene place={room.place} />
+          </div>
+          {/* 하단 스크림(아바타·칩 가독성) */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/5 to-black/10" />
           {room.isLive && (
             <span className="absolute top-3 left-3 chip bg-live text-white flex items-center gap-1">
               <span className="live-dot bg-white" /> LIVE
@@ -42,7 +44,7 @@ export default function RoomCard({
           <span className="absolute top-3 right-3 chip bg-black/30 text-white">
             {MODE_LABEL[room.queueMode]}
           </span>
-          <div className="flex -space-x-3">
+          <div className="relative z-10 flex -space-x-3">
             {shown.map((m) => (
               <div key={m.userId} className="drop-shadow">
                 <Avatar appearance={appearanceFromSeed(m.handle)} size={44} bob={false} />

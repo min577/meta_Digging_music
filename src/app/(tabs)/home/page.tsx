@@ -73,7 +73,7 @@ export default function HomePage() {
                   background: `linear-gradient(160deg, ${GENRES[loc.primaryGenre].bg[0]}22, #FFFDF7)`,
                 }}
               >
-                <MoodBuilding genre={loc.primaryGenre} emoji={loc.emoji} size={96} />
+                <MoodBuilding place={loc.place} emoji={loc.emoji} size={120} />
                 <span className="mt-1 font-bold text-sm text-ink-900">{loc.name}</span>
                 <span className="text-[11px] text-ink-700/55 text-center leading-tight mt-0.5">
                   {loc.theme}
