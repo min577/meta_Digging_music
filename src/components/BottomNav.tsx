@@ -8,6 +8,7 @@ const TABS: { href: string; label: string; icon: IconName }[] = [
   { href: "/world", label: "월드", icon: "compass" },
   { href: "/home", label: "홈", icon: "home" },
   { href: "/friends", label: "친구", icon: "friends" },
+  { href: "/shop", label: "상점", icon: "shop" },
   { href: "/profile", label: "프로필", icon: "user" },
 ];
 

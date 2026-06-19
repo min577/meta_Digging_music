@@ -42,10 +42,12 @@ export default function HomePage() {
   const topRoom = ranked[0];
 
   // 무드 공간 카드 → 해당 장소 룸으로 입장
+  const roomForPlace = (place: string) => [...customRooms, ...ROOMS].find((x) => x.place === place);
   const enterPlace = (loc: (typeof LOCATIONS)[number]) => {
-    const r = [...customRooms, ...ROOMS].find((x) => x.place === loc.place);
+    const r = roomForPlace(loc.place);
     router.push(r ? `/room/${r.id}` : "/room/create");
   };
+  const MODE_BADGE: Record<string, string> = { dj: "🎙 DJ", collab: "🤝 협업 큐", radio: "📻 라디오" };
 
   return (
     <div>
@@ -75,9 +77,11 @@ export default function HomePage() {
               >
                 <MoodBuilding place={loc.place} emoji={loc.emoji} size={120} />
                 <span className="mt-1 font-bold text-sm text-ink-900">{loc.name}</span>
-                <span className="text-[11px] text-ink-700/55 text-center leading-tight mt-0.5">
-                  {loc.theme}
-                </span>
+                {(() => {
+                  const r = roomForPlace(loc.place);
+                  const label = r ? (r.roomMode === "free" ? "🎐 자유모드" : MODE_BADGE[r.queueMode]) : "✨ 새 룸";
+                  return <span className="mt-1 chip bg-cream-100 text-ink-700 text-[10px] font-bold py-0.5 px-2">{label}</span>;
+                })()}
                 <span className="mt-1 text-[10px] font-bold text-brand">입장하기 →</span>
               </button>
             ))}

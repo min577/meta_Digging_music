@@ -28,6 +28,7 @@ import { appearanceFromSeed, defaultAppearance } from "@/lib/appearance";
 import type { Track } from "@/lib/types";
 
 const REACTIONS = ["❤️", "🔥", "🎶", "😭", "🕺", "👏"];
+const QUEUE_LABEL: Record<string, string> = { dj: "🎙 DJ", collab: "🤝 협업 큐", radio: "📻 라디오" };
 // 음악 존 배치 (월드 1400x1000 기준)
 const SPOTS = [
   { x: 380, y: 350 },
@@ -82,6 +83,7 @@ export default function RoomPage() {
   const [selectedItem, setSelectedItem] = useState(FURNITURE[0]);
   const [lockedId, setLockedId] = useState<string | null>(null); // 같이 듣기 연결 대상
   const [myBubble, setMyBubble] = useState<{ text: string; at: number } | null>(null); // 머리 위 말풍선
+  const [inviteCopied, setInviteCopied] = useState(false);
   const listenAccum = useRef(0);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
@@ -240,6 +242,17 @@ export default function RoomPage() {
     progressQuest("q_daily_3", 1);
   };
 
+  const invite = async () => {
+    const url = `${window.location.origin}/room/${id}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setInviteCopied(true);
+      setTimeout(() => setInviteCopied(false), 1800);
+    } catch {
+      window.prompt("이 링크를 친구에게 공유하세요", url);
+    }
+  };
+
   const sendChat = () => {
     const v = chatInput.trim();
     if (!v) return;
@@ -259,23 +272,35 @@ export default function RoomPage() {
       <header className="flex items-center justify-between px-4 pt-5 pb-2 text-white">
         <button
           onClick={() => router.push("/home")}
-          className="w-9 h-9 rounded-full bg-black/25 grid place-items-center"
+          className="w-9 h-9 rounded-full bg-black/25 grid place-items-center shrink-0"
         >
           ←
         </button>
-        <div className="text-center">
-          <p className="font-bold text-sm truncate max-w-[200px]">{room.title}</p>
-          <p className="text-[11px] text-white/70">
-            {mode === "free" ? "🎐 자유모드" : "🎙 리스닝 파티"} · 👥 {session.online} ·{" "}
+        <div className="text-center min-w-0">
+          <div className="flex items-center justify-center gap-1.5">
+            {mode === "party" && (
+              <span className="chip bg-live text-white text-[10px] font-bold flex items-center gap-1 px-2 py-0.5">
+                <span className="live-dot bg-white" /> LIVE
+              </span>
+            )}
+            <p className="font-bold text-sm truncate max-w-[170px]">{room.title}</p>
+          </div>
+          <p className="text-[11px] text-white/75">
+            {mode === "free" ? "🎐 자유모드" : QUEUE_LABEL[room.queueMode]} · 👥 {session.online} ·{" "}
             {session.connected === "realtime" ? "🟢 동기화" : "🟡 데모"}
           </p>
         </div>
-        <button
-          onClick={() => setMuted((m) => !m)}
-          className="w-9 h-9 rounded-full bg-black/25 grid place-items-center"
-        >
-          {muted ? "🔇" : "🔊"}
-        </button>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <button onClick={invite} className="w-9 h-9 rounded-full bg-black/25 grid place-items-center" title="친구 초대">
+            ＋
+          </button>
+          <button
+            onClick={() => setMuted((m) => !m)}
+            className="w-9 h-9 rounded-full bg-black/25 grid place-items-center"
+          >
+            {muted ? "🔇" : "🔊"}
+          </button>
+        </div>
       </header>
 
       {/* Now Playing 바 */}
@@ -603,6 +628,20 @@ export default function RoomPage() {
             className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-ink-900 text-cream-50 px-5 py-3 rounded-2xl shadow-soft text-sm font-bold"
           >
             💾 디깅함에 저장했어요! (+10 💎)
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 친구 초대 링크 복사 토스트 */}
+      <AnimatePresence>
+        {inviteCopied && (
+          <motion.div
+            initial={{ y: 40, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-brand text-white px-5 py-3 rounded-2xl shadow-soft text-sm font-bold"
+          >
+            🔗 초대 링크 복사됨 · 친구에게 공유하세요!
           </motion.div>
         )}
       </AnimatePresence>

@@ -1,40 +1,65 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import TopBar from "@/components/TopBar";
-import { SHOP_ITEMS } from "@/lib/mock";
+import Avatar from "@/components/Avatar";
 import { useAppStore } from "@/store/useAppStore";
-import type { ShopItem } from "@/lib/types";
+import { FACES, FACE_LABEL, defaultAppearance, type Appearance, type FaceStyle } from "@/lib/appearance";
 
-const CATS: { id: ShopItem["category"] | "all"; label: string }[] = [
-  { id: "all", label: "전체" },
-  { id: "costume", label: "의상" },
-  { id: "theme", label: "룸 테마" },
-  { id: "boost", label: "부스트" },
-  { id: "evolution", label: "진화" },
+// Bean 마스코트 커스터마이즈 상점 — 본체색/목도리/안테나/표정
+type Slot = "outfit" | "pants" | "hairColor" | "face";
+type CosItem = { id: string; slot: Slot; value: string; name: string; price: number };
+
+const PREMIUM_BODY = ["#5B7CFA", "#1ABC9C", "#E84393", "#9B59B6", "#FF7675", "#00B894", "#2D3436", "#F5A623"];
+const PREMIUM_ACCENT = ["#FFE27A", "#FF6EC7", "#7CF5C8", "#FF8A5B", "#B388FF", "#FF5252", "#40C4FF", "#FFD23A"];
+
+const ITEMS: CosItem[] = [
+  ...PREMIUM_BODY.map((c, i) => ({ id: `body_${i}`, slot: "outfit" as Slot, value: c, name: "본체 컬러", price: 120 })),
+  ...PREMIUM_ACCENT.map((c, i) => ({ id: `scarf_${i}`, slot: "pants" as Slot, value: c, name: "목도리", price: 100 })),
+  ...PREMIUM_ACCENT.map((c, i) => ({ id: `ant_${i}`, slot: "hairColor" as Slot, value: c, name: "안테나 글로우", price: 90 })),
+  ...FACES.map((f) => ({ id: `face_${f}`, slot: "face" as Slot, value: f, name: FACE_LABEL[f], price: 150 })),
+];
+
+const TABS: { id: Slot; label: string }[] = [
+  { id: "outfit", label: "본체색" },
+  { id: "pants", label: "목도리" },
+  { id: "hairColor", label: "안테나" },
+  { id: "face", label: "표정" },
 ];
 
 export default function ShopPage() {
-  const coins = useAppStore((s) => s.user?.coins ?? 0);
+  const user = useAppStore((s) => s.user);
+  const coins = user?.coins ?? 0;
   const spend = useAppStore((s) => s.spendCoins);
-  const [cat, setCat] = useState<ShopItem["category"] | "all">("all");
-  const [confirm, setConfirm] = useState<ShopItem | null>(null);
+  const setAppearance = useAppStore((s) => s.setAppearance);
+  const ap = user?.character.appearance ?? defaultAppearance();
+
+  const [tab, setTab] = useState<Slot>("outfit");
   const [owned, setOwned] = useState<string[]>([]);
+  const [confirm, setConfirm] = useState<CosItem | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
-  const items =
-    cat === "all" ? SHOP_ITEMS : SHOP_ITEMS.filter((i) => i.category === cat);
-  const deals = SHOP_ITEMS.filter((i) => i.discountPct);
+  const items = useMemo(() => ITEMS.filter((i) => i.slot === tab), [tab]);
 
-  const priceOf = (i: ShopItem) =>
-    i.discountPct ? Math.round(i.price * (1 - i.discountPct / 100)) : i.price;
+  const equip = (i: CosItem) => setAppearance({ ...ap, [i.slot]: i.value } as Appearance);
+  const isEquipped = (i: CosItem) => (ap as any)[i.slot] === i.value;
 
-  const buy = (i: ShopItem) => {
-    const ok = spend(priceOf(i));
-    if (ok) {
+  const act = (i: CosItem) => {
+    if (owned.includes(i.id)) {
+      equip(i);
+      setToast(`착용 완료! ✨`);
+      setTimeout(() => setToast(null), 1300);
+      return;
+    }
+    setConfirm(i);
+  };
+
+  const buy = (i: CosItem) => {
+    if (spend(i.price)) {
       setOwned((o) => [...o, i.id]);
-      setToast(`${i.name} 구매 완료! 🎉`);
+      equip(i);
+      setToast(`${i.name} 구매·착용! 🎉`);
     } else {
       setToast("코인이 부족해요 🪙");
     }
@@ -42,79 +67,67 @@ export default function ShopPage() {
     setTimeout(() => setToast(null), 1600);
   };
 
+  const preview = (i: CosItem): Appearance => ({ ...ap, [i.slot]: i.value } as Appearance);
+
   return (
     <div>
-      <TopBar title="상점" sub="아바타를 꾸미고 룸을 단장해요" />
+      <TopBar title="상점" sub="나의 Bean을 꾸며보세요" />
 
-      {/* 오늘의 할인 */}
-      {deals.length > 0 && (
-        <section className="px-5">
-          <p className="font-bold text-ink-900 mb-2">🔥 오늘의 할인</p>
-          <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1">
-            {deals.map((i) => (
-              <button
-                key={i.id}
-                onClick={() => setConfirm(i)}
-                className="card shrink-0 w-36 p-3 text-left relative"
-              >
-                <span className="absolute top-2 right-2 chip bg-live text-white">
-                  -{i.discountPct}%
-                </span>
-                <div className="text-3xl">{i.emoji}</div>
-                <p className="font-bold text-sm mt-2">{i.name}</p>
-                <p className="text-[11px] text-ink-700/50 line-through">
-                  🪙 {i.price}
-                </p>
-                <p className="text-sm font-bold text-brand-dark">🪙 {priceOf(i)}</p>
-              </button>
-            ))}
-          </div>
-        </section>
-      )}
+      {/* 미리보기 + 코인 */}
+      <div className="px-5 flex items-center gap-4">
+        <div className="rounded-3xl bg-cream-50 border border-cream-200 px-6 py-3 shadow-card">
+          <Avatar appearance={ap} size={96} />
+        </div>
+        <div className="flex-1">
+          <p className="text-sm text-ink-700/60">보유 코인</p>
+          <p className="text-2xl font-extrabold text-ink-900">🪙 {coins}</p>
+          <p className="text-[11px] text-ink-700/45 mt-1">디깅·퀘스트로 코인을 모아요</p>
+        </div>
+      </div>
 
-      {/* 카테고리 */}
+      {/* 슬롯 탭 */}
       <div className="px-5 mt-4 flex gap-2 overflow-x-auto no-scrollbar">
-        {CATS.map((c) => (
+        {TABS.map((t) => (
           <button
-            key={c.id}
-            onClick={() => setCat(c.id)}
+            key={t.id}
+            onClick={() => setTab(t.id)}
             className={`chip py-1.5 px-4 shrink-0 ${
-              cat === c.id ? "bg-brand text-white" : "bg-cream-100 text-ink-700"
+              tab === t.id ? "bg-brand text-white" : "bg-cream-100 text-ink-700"
             }`}
           >
-            {c.label}
+            {t.label}
           </button>
         ))}
       </div>
 
       {/* 그리드 */}
-      <section className="px-5 mt-3 grid grid-cols-2 gap-3">
+      <section className="px-5 mt-3 grid grid-cols-3 gap-3 pb-4">
         {items.map((i) => {
-          const isOwned = owned.includes(i.id);
+          const eq = isEquipped(i);
+          const own = owned.includes(i.id);
           return (
-            <div key={i.id} className="card p-4 flex flex-col">
-              <div className="text-3xl">{i.emoji}</div>
-              <p className="font-bold text-sm mt-2">{i.name}</p>
-              <p className="text-[11px] text-ink-700/50 flex-1 leading-snug mt-0.5">
-                {i.desc}
-              </p>
-              <button
-                onClick={() => !isOwned && setConfirm(i)}
-                disabled={isOwned}
-                className={`mt-3 rounded-2xl py-2 text-sm font-bold transition ${
-                  isOwned
-                    ? "bg-cream-200 text-ink-700/50"
-                    : "bg-brand text-white active:scale-[0.98]"
+            <button
+              key={i.id}
+              onClick={() => act(i)}
+              className={`card p-2 flex flex-col items-center transition active:scale-[0.98] ${
+                eq ? "ring-2 ring-brand" : ""
+              }`}
+            >
+              <Avatar appearance={preview(i)} size={62} bob={false} />
+              <span className="text-[10px] text-ink-700/60 mt-1">{i.name}</span>
+              <span
+                className={`mt-1 chip py-0.5 px-2 text-[11px] font-bold ${
+                  eq ? "bg-brand/15 text-brand-dark" : own ? "bg-cream-200 text-ink-700" : "bg-brand text-white"
                 }`}
               >
-                {isOwned ? "보유 중" : `🪙 ${priceOf(i)}`}
-              </button>
-            </div>
+                {eq ? "착용 중" : own ? "착용" : `🪙 ${i.price}`}
+              </span>
+            </button>
           );
         })}
       </section>
 
-      {/* 구매 확인 모달 */}
+      {/* 구매 확인 */}
       <AnimatePresence>
         {confirm && (
           <motion.div
@@ -131,21 +144,19 @@ export default function ShopPage() {
               onClick={(e) => e.stopPropagation()}
               className="card p-6 w-full max-w-[320px] text-center"
             >
-              <div className="text-5xl">{confirm.emoji}</div>
-              <p className="font-extrabold text-lg mt-3">{confirm.name}</p>
-              <p className="text-sm text-ink-700/55 mt-1">{confirm.desc}</p>
-              <p className="mt-3 font-bold text-brand-dark">
-                🪙 {priceOf(confirm)}{" "}
-                <span className="text-xs text-ink-700/40">
-                  (보유 {coins})
-                </span>
+              <div className="flex justify-center">
+                <Avatar appearance={preview(confirm)} size={110} />
+              </div>
+              <p className="font-extrabold text-lg mt-2">{confirm.name}</p>
+              <p className="mt-2 font-bold text-brand-dark">
+                🪙 {confirm.price} <span className="text-xs text-ink-700/40">(보유 {coins})</span>
               </p>
               <div className="flex gap-2 mt-4">
                 <button onClick={() => setConfirm(null)} className="btn-ghost flex-1">
                   취소
                 </button>
                 <button onClick={() => buy(confirm)} className="btn-primary flex-1">
-                  구매
+                  구매·착용
                 </button>
               </div>
             </motion.div>
@@ -153,7 +164,6 @@ export default function ShopPage() {
         )}
       </AnimatePresence>
 
-      {/* 토스트 */}
       <AnimatePresence>
         {toast && (
           <motion.div
