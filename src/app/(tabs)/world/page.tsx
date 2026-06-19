@@ -66,18 +66,18 @@ export default function WorldPage() {
 
       {/* 상단 HUD */}
       <div className="absolute top-3 left-3 right-3 flex items-center justify-between z-10 pointer-events-none">
-        <span className="chip bg-black/45 text-white text-[11px]">🎧 디깅 월드 · WASD 이동</span>
+        <span className="chip bg-black/45 text-white text-[11px]">🎧 디깅 월드 · WASD/터치 이동 · 🦘 방방이</span>
         <span className="chip bg-white/90 text-ink-900 text-[11px] font-bold flex items-center gap-1">
           <Icon name="music" size={13} /> 디깅함 {diggs.length}
         </span>
       </div>
 
-      {/* 근접 디깅 버튼 */}
+      {/* 근접 디깅 버튼 (화면 중앙) */}
       {near && !result && (
         <button
           onClick={() => dig(near)}
           disabled={busy}
-          className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 btn-primary shadow-soft animate-bob whitespace-nowrap"
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-[230%] z-10 btn-primary shadow-soft animate-bob whitespace-nowrap"
         >
           {busy ? "디깅 중…" : `🎧 ${near.label}에서 디깅하기`}
         </button>

@@ -32,8 +32,9 @@ export default function MapScene2D({
   onDig: (s: Spot) => void;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const me = useRef({ x: PLAZA.x, y: PLAZA.y + 60, dir: 1, t: 0, walking: false });
+  const me = useRef({ x: PLAZA.x, y: PLAZA.y + 60, dir: 1, t: 0, walking: false, bounce: 0 });
   const keys = useRef<Set<string>>(new Set());
+  const joy = useRef({ active: false, id: -1, ox: 0, oy: 0, dx: 0, dy: 0 });
   const nearRef = useRef<Spot | null>(null);
   const cb = useRef({ onNear, onDig, spots, bodyColor, accentColor });
   cb.current = { onNear, onDig, spots, bodyColor, accentColor };
@@ -57,6 +58,42 @@ export default function MapScene2D({
     return () => {
       window.removeEventListener("keydown", down);
       window.removeEventListener("keyup", up);
+    };
+  }, []);
+
+  // 터치 가상 조이스틱
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const R = 52;
+    const onDown = (e: PointerEvent) => {
+      if (e.pointerType === "mouse") return; // 터치/펜만
+      const r = canvas.getBoundingClientRect();
+      joy.current = { active: true, id: e.pointerId, ox: e.clientX - r.left, oy: e.clientY - r.top, dx: 0, dy: 0 };
+    };
+    const onMove = (e: PointerEvent) => {
+      const j = joy.current;
+      if (!j.active || e.pointerId !== j.id) return;
+      const r = canvas.getBoundingClientRect();
+      const ddx = e.clientX - r.left - j.ox;
+      const ddy = e.clientY - r.top - j.oy;
+      const len = Math.hypot(ddx, ddy) || 1;
+      const m = Math.min(R, len) / R;
+      j.dx = (ddx / len) * m;
+      j.dy = (ddy / len) * m;
+    };
+    const onUp = (e: PointerEvent) => {
+      if (joy.current.id === e.pointerId) joy.current = { active: false, id: -1, ox: 0, oy: 0, dx: 0, dy: 0 };
+    };
+    canvas.addEventListener("pointerdown", onDown);
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
+    return () => {
+      canvas.removeEventListener("pointerdown", onDown);
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
     };
   }, []);
 
@@ -91,14 +128,29 @@ export default function MapScene2D({
       if (k.has("s") || k.has("arrowdown")) dy += 1;
       if (k.has("a") || k.has("arrowleft")) dx -= 1;
       if (k.has("d") || k.has("arrowright")) dx += 1;
-      st.walking = !!(dx || dy);
+      if (joy.current.active) {
+        dx = joy.current.dx;
+        dy = joy.current.dy;
+      }
+      const mag = Math.min(1, Math.hypot(dx, dy));
+      st.walking = mag > 0.1;
       if (st.walking) {
         const l = Math.hypot(dx, dy) || 1;
-        st.x = clamp(st.x + (dx / l) * SPEED * dt, 28, WORLD.w - 28);
-        st.y = clamp(st.y + (dy / l) * SPEED * dt, 28, WORLD.h - 28);
-        if (dx) st.dir = dx < 0 ? -1 : 1;
-        st.t += dt * 9;
+        st.x = clamp(st.x + (dx / l) * SPEED * mag * dt, 28, WORLD.w - 28);
+        st.y = clamp(st.y + (dy / l) * SPEED * mag * dt, 28, WORLD.h - 28);
+        if (Math.abs(dx) > 0.05) st.dir = dx < 0 ? -1 : 1;
+        st.t += dt * 9 * mag;
       }
+      // 트램폴린(방방이) 위에 있으면 바운스
+      let onTramp = false;
+      for (const [tx, ty] of TRAMPS) {
+        if (Math.hypot(tx - st.x, ty - st.y) < 32) {
+          onTramp = true;
+          break;
+        }
+      }
+      st.bounce = onTramp ? Math.min(1, st.bounce + dt * 4) : Math.max(0, st.bounce - dt * 3);
+
       let near: Spot | null = null;
       let bd = 74;
       for (const s of cb.current.spots) {
@@ -112,7 +164,7 @@ export default function MapScene2D({
         nearRef.current = near;
         cb.current.onNear(near);
       }
-      draw(ctx, canvas, dpr, now, st, cb.current.spots, cb.current.bodyColor, cb.current.accentColor, near);
+      draw(ctx, canvas, dpr, now, st, cb.current.spots, cb.current.bodyColor, cb.current.accentColor, near, joy.current);
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
@@ -152,6 +204,16 @@ const LAMPS: [number, number][] = [
   [PLAZA.x - 130, PLAZA.y - 70], [PLAZA.x + 130, PLAZA.y - 70],
   [PLAZA.x - 130, PLAZA.y + 90], [PLAZA.x + 130, PLAZA.y + 90],
 ];
+// 상호작용 요소
+const TRAMPS: [number, number][] = [
+  [PLAZA.x + 280, PLAZA.y - 30],
+  [PLAZA.x - 320, PLAZA.y + 150],
+];
+const BENCHES: [number, number][] = [
+  [PLAZA.x - 96, PLAZA.y + 150],
+  [PLAZA.x + 96, PLAZA.y + 150],
+];
+const FOUNTAIN: [number, number] = [PLAZA.x, PLAZA.y - 200];
 const FLOWER_COLORS = ["#ff6ea0", "#ffd23a", "#ff8a5b", "#b07cc6"];
 
 // ---- 렌더 ----
@@ -160,11 +222,12 @@ function draw(
   canvas: HTMLCanvasElement,
   dpr: number,
   now: number,
-  st: { x: number; y: number; dir: number; t: number; walking: boolean },
+  st: { x: number; y: number; dir: number; t: number; walking: boolean; bounce: number },
   spots: Spot[],
   body: string,
   accent: string,
-  near: Spot | null
+  near: Spot | null,
+  joy: { active: boolean; ox: number; oy: number; dx: number; dy: number }
 ) {
   const vw = canvas.width / dpr;
   const vh = canvas.height / dpr;
@@ -231,6 +294,13 @@ function draw(
     if (inView(x, y, 60)) lamp(ctx, x, y, now);
   }
 
+  // 분수 (상호작용/장식)
+  if (inView(FOUNTAIN[0], FOUNTAIN[1], 80)) fountain(ctx, FOUNTAIN[0], FOUNTAIN[1], now);
+  // 벤치
+  for (const [x, y] of BENCHES) if (inView(x, y, 40)) bench(ctx, x, y);
+  // 방방이(트램폴린)
+  for (const [x, y] of TRAMPS) if (inView(x, y, 60)) trampoline(ctx, x, y, now);
+
   // 나무
   for (const [x, y, sc] of TREES) {
     if (inView(x, y, 60)) tree(ctx, x, y, sc);
@@ -252,6 +322,22 @@ function draw(
   vg.addColorStop(1, "rgba(20,40,20,0.22)");
   ctx.fillStyle = vg;
   ctx.fillRect(0, 0, vw, vh);
+
+  // 터치 조이스틱 (화면 좌표)
+  if (joy.active) {
+    const R = 52;
+    ctx.fillStyle = "rgba(255,255,255,0.18)";
+    ctx.beginPath();
+    ctx.arc(joy.ox, joy.oy, R, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "rgba(255,255,255,0.5)";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.fillStyle = "rgba(255,255,255,0.85)";
+    ctx.beginPath();
+    ctx.arc(joy.ox + joy.dx * R, joy.oy + joy.dy * R, 20, 0, Math.PI * 2);
+    ctx.fill();
+  }
 }
 
 function clamp(v: number, lo: number, hi: number) {
@@ -503,14 +589,15 @@ function spot(ctx: CanvasRenderingContext2D, s: Spot, active: boolean, now: numb
 
 function player(
   ctx: CanvasRenderingContext2D,
-  st: { x: number; y: number; dir: number; t: number; walking: boolean },
+  st: { x: number; y: number; dir: number; t: number; walking: boolean; bounce: number },
   body: string,
   accent: string,
   now: number
 ) {
   const x = st.x;
   const bob = st.walking ? Math.abs(Math.sin(st.t)) * 3 : Math.sin(now / 600) * 1;
-  const y = st.y - bob;
+  const tramp = st.bounce > 0 ? Math.abs(Math.sin(now / 140)) * 32 * st.bounce : 0;
+  const y = st.y - bob - tramp;
   // 그림자
   ctx.fillStyle = "rgba(0,0,0,0.22)";
   ctx.beginPath();
@@ -570,6 +657,94 @@ function player(
   ctx.beginPath();
   ctx.arc(x + ex, y, 3, 0.15 * Math.PI, 0.85 * Math.PI);
   ctx.stroke();
+}
+
+function trampoline(ctx: CanvasRenderingContext2D, x: number, y: number, now: number) {
+  // 그림자
+  ctx.fillStyle = "rgba(0,0,0,0.16)";
+  ctx.beginPath();
+  ctx.ellipse(x, y + 18, 36, 12, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // 다리
+  ctx.strokeStyle = "#2a8f86";
+  ctx.lineWidth = 4;
+  [-26, 26].forEach((ox) => {
+    ctx.beginPath();
+    ctx.moveTo(x + ox, y + 4);
+    ctx.lineTo(x + ox * 0.7, y + 18);
+    ctx.stroke();
+  });
+  // 프레임
+  ctx.fillStyle = "#46d8c5";
+  ctx.beginPath();
+  ctx.ellipse(x, y, 38, 16, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // 매트
+  const squash = 1 + 0.12 * Math.sin(now / 140);
+  ctx.fillStyle = "#1f2933";
+  ctx.beginPath();
+  ctx.ellipse(x, y, 30, 11 * squash, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // 격자
+  ctx.strokeStyle = "rgba(120,200,210,0.35)";
+  ctx.lineWidth = 1;
+  for (let i = -2; i <= 2; i++) {
+    ctx.beginPath();
+    ctx.moveTo(x + i * 10, y - 9);
+    ctx.lineTo(x + i * 10, y + 9);
+    ctx.stroke();
+  }
+  // 라벨
+  ctx.font = "13px sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText("🦘", x, y - 22);
+}
+
+function fountain(ctx: CanvasRenderingContext2D, x: number, y: number, now: number) {
+  ctx.fillStyle = "rgba(0,0,0,0.16)";
+  ctx.beginPath();
+  ctx.ellipse(x, y + 16, 40, 14, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#bfc6cc";
+  ctx.beginPath();
+  ctx.ellipse(x, y + 6, 40, 18, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#7cc3e6";
+  ctx.beginPath();
+  ctx.ellipse(x, y + 4, 33, 13, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#cfd6da";
+  ctx.fillRect(x - 4, y - 18, 8, 22);
+  // 물줄기
+  ctx.strokeStyle = "rgba(160,220,245,0.8)";
+  ctx.lineWidth = 2;
+  for (let i = 0; i < 6; i++) {
+    const a = (i / 6) * Math.PI * 2;
+    const ph = (now / 500 + i / 6) % 1;
+    const r = 4 + ph * 16;
+    ctx.beginPath();
+    ctx.moveTo(x, y - 18);
+    ctx.lineTo(x + Math.cos(a) * r, y - 18 + Math.sin(a) * 4 + ph * 16);
+    ctx.stroke();
+  }
+  ctx.fillStyle = "#9fd9ef";
+  circle(ctx, x, y - 20, 3);
+}
+
+function bench(ctx: CanvasRenderingContext2D, x: number, y: number) {
+  ctx.fillStyle = "rgba(0,0,0,0.14)";
+  ctx.beginPath();
+  ctx.ellipse(x, y + 10, 22, 6, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#9a6b3c";
+  roundRect(ctx, x - 20, y - 2, 40, 7, 2);
+  ctx.fill();
+  ctx.fillStyle = "#8a5e34";
+  roundRect(ctx, x - 20, y - 14, 40, 6, 2);
+  ctx.fill();
+  ctx.fillStyle = "#6a4628";
+  ctx.fillRect(x - 17, y + 4, 4, 8);
+  ctx.fillRect(x + 13, y + 4, 4, 8);
 }
 
 // ---- 헬퍼 ----
