@@ -279,7 +279,7 @@ export default function RoomPage() {
 
   return (
     <div
-      className="phone-shell min-h-[100dvh] flex flex-col"
+      className="phone-shell min-h-[100dvh] flex flex-col md:h-[100dvh] md:min-h-0 md:overflow-hidden"
       style={{ background: `linear-gradient(180deg, ${g.bg[0]}, ${g.bg[1]})` }}
     >
       {/* 헤더 */}
@@ -429,8 +429,8 @@ export default function RoomPage() {
         })}
 
       {/* 본문: 웹(md+)에서 맵 꽉 채우고 채팅은 우측 오버레이, 모바일은 세로 스택 */}
-      <div className="md:relative">
-      <div className="flex flex-col">
+      <div className="md:relative md:flex-1 md:min-h-0 flex flex-col">
+      <div className="flex flex-col md:flex-1 md:min-h-0">
 
       {/* 맵 툴바 */}
       <div className="px-4 mt-2 flex items-center justify-between">
@@ -470,7 +470,7 @@ export default function RoomPage() {
       )}
 
       {/* 맵 */}
-      <div ref={mapWrapRef} className="px-4 mt-2 h-[52vh] md:h-[74vh]">
+      <div ref={mapWrapRef} className="px-4 mt-2 h-[52vh] md:h-auto md:flex-1 md:min-h-0">
         <RoomScene3D
           meAppearance={user?.character.appearance ?? defaultAppearance()}
           meHandle={user?.handle ?? "나"}

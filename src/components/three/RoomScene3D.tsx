@@ -131,7 +131,7 @@ function Scene({
   const { camera } = useThree();
   const scene = placeScene(place);
 
-  const me = useRef({ x: WORLD_W / 2, z: WORLD_H * 0.62, heading: Math.PI, walking: false, seated: false, jy: 0, vy: 0, air: false });
+  const me = useRef({ x: WORLD_W / 2, z: WORLD_H * 0.62, heading: Math.PI, walking: false, seated: false, jy: 0, vy: 0, air: false, vx: 0, vz: 0 });
   const keys = useRef<Set<string>>(new Set());
 
   // 앉을 수 있는 좌석(의자/벤치) 위치
@@ -252,13 +252,18 @@ function Scene({
       m.heading = Math.atan2(lockPos.x - m.x, lockPos.z - m.z);
       m.walking = Math.hypot(sx - m.x, sz - m.z) > 3;
     } else {
-      m.walking = !m.seated && (dx !== 0 || dz !== 0);
-      if (m.walking) {
-        const len = Math.hypot(dx, dz) || 1;
-        m.x = clamp(m.x + (dx / len) * SPEED * dt, PAD, WORLD_W - PAD);
-        m.z = clamp(m.z + (dz / len) * SPEED * dt, PAD, WORLD_H - PAD);
-        m.heading = Math.atan2(dx, dz);
-      }
+      // 가속/감속 스무딩 (부드러운 이동)
+      const len = Math.hypot(dx, dz) || 1;
+      const tvx = !m.seated && (dx || dz) ? (dx / len) * SPEED : 0;
+      const tvz = !m.seated && (dx || dz) ? (dz / len) * SPEED : 0;
+      const k = Math.min(1, dt * 9);
+      m.vx += (tvx - m.vx) * k;
+      m.vz += (tvz - m.vz) * k;
+      m.x = clamp(m.x + m.vx * dt, PAD, WORLD_W - PAD);
+      m.z = clamp(m.z + m.vz * dt, PAD, WORLD_H - PAD);
+      const sp = Math.hypot(m.vx, m.vz);
+      m.walking = sp > 8;
+      if (sp > 8) m.heading = Math.atan2(m.vx, m.vz);
     }
     // 점프 적분 (포물선)
     if (m.air) {

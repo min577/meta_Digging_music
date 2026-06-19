@@ -126,7 +126,7 @@ export default function HomePage() {
           </span>
         </div>
 
-        <div className="mt-3 space-y-3.5">
+        <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3.5">
           {ranked.length === 0 && (
             <p className="text-center text-ink-700/40 text-sm py-8">
               이 무드의 라이브 룸이 아직 없어요. 직접 만들어볼까요?

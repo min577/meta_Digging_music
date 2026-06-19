@@ -34,7 +34,7 @@ export default function MapScene2D({
   onReady?: (canvas: HTMLCanvasElement) => void;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const me = useRef({ x: PLAZA.x, y: PLAZA.y + 60, dir: 1, t: 0, walking: false, bounce: 0 });
+  const me = useRef({ x: PLAZA.x, y: PLAZA.y + 60, dir: 1, t: 0, walking: false, bounce: 0, vx: 0, vy: 0 });
   const keys = useRef<Set<string>>(new Set());
   const joy = useRef({ active: false, id: -1, ox: 0, oy: 0, dx: 0, dy: 0 });
   const nearRef = useRef<Spot | null>(null);
@@ -136,14 +136,19 @@ export default function MapScene2D({
         dy = joy.current.dy;
       }
       const mag = Math.min(1, Math.hypot(dx, dy));
-      st.walking = mag > 0.1;
-      if (st.walking) {
-        const l = Math.hypot(dx, dy) || 1;
-        st.x = clamp(st.x + (dx / l) * SPEED * mag * dt, 28, WORLD.w - 28);
-        st.y = clamp(st.y + (dy / l) * SPEED * mag * dt, 28, WORLD.h - 28);
-        if (Math.abs(dx) > 0.05) st.dir = dx < 0 ? -1 : 1;
-        st.t += dt * 9 * mag;
-      }
+      // 가속/감속 스무딩 (부드러운 이동)
+      const l = Math.hypot(dx, dy) || 1;
+      const tvx = mag > 0.08 ? (dx / l) * SPEED * mag : 0;
+      const tvy = mag > 0.08 ? (dy / l) * SPEED * mag : 0;
+      const kk = Math.min(1, dt * 10);
+      st.vx += (tvx - st.vx) * kk;
+      st.vy += (tvy - st.vy) * kk;
+      st.x = clamp(st.x + st.vx * dt, 28, WORLD.w - 28);
+      st.y = clamp(st.y + st.vy * dt, 28, WORLD.h - 28);
+      const sp = Math.hypot(st.vx, st.vy);
+      st.walking = sp > 10;
+      if (Math.abs(st.vx) > 5) st.dir = st.vx < 0 ? -1 : 1;
+      st.t += dt * 9 * (sp / SPEED);
       // 트램폴린(방방이) 위에 있으면 바운스
       let onTramp = false;
       for (const [tx, ty] of TRAMPS) {

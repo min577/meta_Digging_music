@@ -75,12 +75,12 @@ export default function OnboardingPage() {
     router.replace("/world");
   };
 
-  const canNext = [true, true, situations.length > 0, seeds.length === 3][step];
+  const canNext = [true, true, situations.length > 0, seeds.length === 3, true][step];
 
   return (
     <div className="phone-shell min-h-[100dvh] flex flex-col px-5 pt-10 pb-6 bg-gradient-to-b from-cream-100 to-cream-200">
       <div className="flex gap-2 justify-center mb-6">
-        {[0, 1, 2, 3].map((i) => (
+        {[0, 1, 2, 3, 4].map((i) => (
           <div
             key={i}
             className={`h-1.5 rounded-full transition-all ${
@@ -290,6 +290,30 @@ export default function OnboardingPage() {
               )}
             </div>
           )}
+
+          {step === 4 && (
+            <div className="flex-1 flex flex-col min-h-0">
+              <h2 className="text-xl font-extrabold text-ink-900">플레이 가이드 🎮</h2>
+              <p className="text-ink-700/60 text-sm mt-1">이렇게 즐기면 돼요!</p>
+              <div className="mt-4 space-y-2.5 overflow-y-auto no-scrollbar">
+                {([
+                  ["🕹️", "이동", "WASD·방향키 또는 화면을 끌어서(모바일) 디깅 월드를 돌아다녀요."],
+                  ["🎧", "디깅", "음악 스팟에 다가가 '디깅하기'로 곡을 발견하고 디깅함에 담아요."],
+                  ["🤝", "같이 듣기", "룸에서 친구 곁으로 가 '같이 듣기'를 누르면 손잡고 같은 곡을 함께 들어요."],
+                  ["🦘", "상호작용", "방방이에서 점프하고, 룸을 꾸미고, 📷로 순간을 캡쳐해요."],
+                  ["🪙", "성장", "디깅·퀘스트로 코인을 모아 상점에서 나의 Bean을 꾸며요."],
+                ] as const).map(([e, t, d]) => (
+                  <div key={t} className="card p-3 flex items-start gap-3">
+                    <span className="text-2xl shrink-0">{e}</span>
+                    <div>
+                      <p className="font-bold text-sm text-ink-900">{t}</p>
+                      <p className="text-[12px] text-ink-700/60 leading-snug">{d}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </motion.div>
       </AnimatePresence>
 
@@ -299,7 +323,7 @@ export default function OnboardingPage() {
             이전
           </button>
         )}
-        {step < 3 ? (
+        {step < 4 ? (
           <button
             onClick={() => setStep((s) => s + 1)}
             disabled={!canNext}
