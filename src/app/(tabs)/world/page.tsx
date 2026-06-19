@@ -55,7 +55,7 @@ export default function WorldPage() {
   };
 
   return (
-    <div className="relative h-[calc(100dvh-96px)] overflow-hidden bg-[#7cc96b]">
+    <div className="relative h-[calc(100dvh_-_120px)] overflow-hidden bg-[#7cc96b]">
       <MapScene2D
         bodyColor={ap.outfit}
         accentColor={ap.hairColor}

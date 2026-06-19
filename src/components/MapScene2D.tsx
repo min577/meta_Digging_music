@@ -68,17 +68,22 @@ export default function MapScene2D({
     let raf = 0;
     let last = performance.now();
     const dpr = Math.min(2, window.devicePixelRatio || 1);
-    const resize = () => {
+    const fit = () => {
       const r = canvas.getBoundingClientRect();
-      canvas.width = r.width * dpr;
-      canvas.height = r.height * dpr;
+      const w = Math.max(1, Math.round(r.width * dpr));
+      const h = Math.max(1, Math.round(r.height * dpr));
+      if (canvas.width !== w || canvas.height !== h) {
+        canvas.width = w;
+        canvas.height = h;
+      }
     };
-    resize();
-    window.addEventListener("resize", resize);
+    fit();
+    window.addEventListener("resize", fit);
 
     const loop = (now: number) => {
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
+      fit(); // 레이아웃 늦게 잡히는 경우까지 매 프레임 보정
       const st = me.current;
       const k = keys.current;
       let dx = 0,
@@ -115,7 +120,7 @@ export default function MapScene2D({
     raf = requestAnimationFrame(loop);
     return () => {
       cancelAnimationFrame(raf);
-      window.removeEventListener("resize", resize);
+      window.removeEventListener("resize", fit);
     };
   }, []);
 
