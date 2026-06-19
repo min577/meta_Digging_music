@@ -12,20 +12,10 @@ import { vectorFromTracks, sortedGenres } from "@/lib/taste";
 import { GENRES } from "@/lib/genres";
 import {
   defaultAppearance,
-  SKIN_TONES,
   HAIR_COLORS,
-  HAIR_STYLES,
   OUTFIT_COLORS,
-  PANTS_COLORS,
-  HATS,
   FACES,
-  GLASSES,
-  ANIMALS,
-  HAIR_LABEL,
-  HAT_LABEL,
   FACE_LABEL,
-  GLASSES_LABEL,
-  ANIMAL_LABEL,
   type Appearance,
 } from "@/lib/appearance";
 
@@ -40,17 +30,12 @@ const SITUATIONS = [
   "파티",
 ];
 
-type Part = "animal" | "hair" | "hairColor" | "skin" | "face" | "glasses" | "outfit" | "pants" | "hat";
+type Part = "body" | "scarf" | "antenna" | "face";
 const PARTS: { id: Part; label: string }[] = [
-  { id: "animal", label: "동물" },
-  { id: "skin", label: "털색" },
-  { id: "hair", label: "헤어" },
-  { id: "hairColor", label: "머리색" },
+  { id: "body", label: "본체 색" },
+  { id: "scarf", label: "목도리" },
+  { id: "antenna", label: "안테나" },
   { id: "face", label: "표정" },
-  { id: "glasses", label: "안경" },
-  { id: "outfit", label: "상의" },
-  { id: "pants", label: "하의" },
-  { id: "hat", label: "모자" },
 ];
 
 export default function OnboardingPage() {
@@ -60,7 +45,7 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(0);
   const [handle, setHandle] = useState("");
   const [look, setLook] = useState<Appearance>(defaultAppearance());
-  const [part, setPart] = useState<Part>("animal");
+  const [part, setPart] = useState<Part>("body");
   const [situations, setSituations] = useState<string[]>([]);
   const [seeds, setSeeds] = useState<Track[]>([]);
 
@@ -150,7 +135,7 @@ export default function OnboardingPage() {
                 나만의 캐릭터 만들기
               </h2>
               <p className="text-ink-700/60 text-sm mt-1">
-                헤어부터 옷까지 자유롭게 꾸며보세요.
+본체 색·목도리·안테나·표정으로 나만의 Bean을 꾸며보세요.
               </p>
 
               {/* 미리보기 */}
@@ -179,89 +164,26 @@ export default function OnboardingPage() {
 
               {/* 옵션 그리드 */}
               <div className="mt-3 card p-3 flex-1 min-h-0 overflow-y-auto no-scrollbar">
-                {part === "hair" && (
-                  <div className="grid grid-cols-4 gap-2">
-                    {HAIR_STYLES.map((h) => (
-                      <button
-                        key={h}
-                        onClick={() => set({ hair: h })}
-                        className={`rounded-xl p-1 flex flex-col items-center ${
-                          look.hair === h ? "ring-2 ring-brand bg-brand/5" : ""
-                        }`}
-                      >
-                        <Avatar
-                          appearance={{ ...look, hair: h }}
-                          size={44}
-                          bob={false}
-                        />
-                        <span className="text-[10px] text-ink-700/60">
-                          {HAIR_LABEL[h]}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-                {part === "hat" && (
-                  <div className="grid grid-cols-3 gap-2">
-                    {HATS.map((h) => (
-                      <button
-                        key={h}
-                        onClick={() => set({ hat: h })}
-                        className={`rounded-xl p-1 flex flex-col items-center ${
-                          look.hat === h ? "ring-2 ring-brand bg-brand/5" : ""
-                        }`}
-                      >
-                        <Avatar appearance={{ ...look, hat: h }} size={48} bob={false} />
-                        <span className="text-[10px] text-ink-700/60">
-                          {HAT_LABEL[h]}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-                {part === "hairColor" && (
-                  <Swatches
-                    colors={HAIR_COLORS}
-                    value={look.hairColor}
-                    onPick={(c) => set({ hairColor: c })}
-                  />
-                )}
-                {part === "skin" && (
-                  <Swatches
-                    colors={SKIN_TONES}
-                    value={look.skin}
-                    onPick={(c) => set({ skin: c })}
-                  />
-                )}
-                {part === "outfit" && (
+                {part === "body" && (
                   <Swatches
                     colors={OUTFIT_COLORS}
                     value={look.outfit}
                     onPick={(c) => set({ outfit: c })}
                   />
                 )}
-                {part === "pants" && (
+                {part === "scarf" && (
                   <Swatches
-                    colors={PANTS_COLORS}
+                    colors={HAIR_COLORS}
                     value={look.pants}
                     onPick={(c) => set({ pants: c })}
                   />
                 )}
-                {part === "animal" && (
-                  <div className="grid grid-cols-4 gap-2">
-                    {ANIMALS.map((an) => (
-                      <button
-                        key={an}
-                        onClick={() => set({ animal: an })}
-                        className={`rounded-xl p-1 flex flex-col items-center ${
-                          look.animal === an ? "ring-2 ring-brand bg-brand/5" : ""
-                        }`}
-                      >
-                        <Avatar appearance={{ ...look, animal: an }} size={46} bob={false} />
-                        <span className="text-[10px] text-ink-700/60">{ANIMAL_LABEL[an]}</span>
-                      </button>
-                    ))}
-                  </div>
+                {part === "antenna" && (
+                  <Swatches
+                    colors={HAIR_COLORS}
+                    value={look.hairColor}
+                    onPick={(c) => set({ hairColor: c })}
+                  />
                 )}
                 {part === "face" && (
                   <div className="grid grid-cols-3 gap-2">
@@ -273,24 +195,8 @@ export default function OnboardingPage() {
                           look.face === f ? "ring-2 ring-brand bg-brand/5" : ""
                         }`}
                       >
-                        <Avatar appearance={{ ...look, face: f }} size={48} bob={false} />
+                        <Avatar appearance={{ ...look, face: f }} size={52} bob={false} />
                         <span className="text-[10px] text-ink-700/60">{FACE_LABEL[f]}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-                {part === "glasses" && (
-                  <div className="grid grid-cols-3 gap-2">
-                    {GLASSES.map((gl) => (
-                      <button
-                        key={gl}
-                        onClick={() => set({ glasses: gl })}
-                        className={`rounded-xl p-1 flex flex-col items-center ${
-                          look.glasses === gl ? "ring-2 ring-brand bg-brand/5" : ""
-                        }`}
-                      >
-                        <Avatar appearance={{ ...look, glasses: gl }} size={48} bob={false} />
-                        <span className="text-[10px] text-ink-700/60">{GLASSES_LABEL[gl]}</span>
                       </button>
                     ))}
                   </div>

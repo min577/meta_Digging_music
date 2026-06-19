@@ -3,7 +3,7 @@
 import { Outlines } from "@react-three/drei";
 import * as THREE from "three";
 import { useMemo } from "react";
-import type { Appearance } from "@/lib/appearance";
+import type { Appearance, FaceStyle } from "@/lib/appearance";
 
 // "Bean" — 디깅타운 오리지널 마스코트.
 // 머리·몸이 하나로 이어진 젤리빈 실루엣 + 큰 글로시 눈 + 음악 신호 안테나.
@@ -70,24 +70,8 @@ export default function BeanAvatar3D({ a }: { a: Appearance }) {
         <Outlines thickness={1.8} color={OUT} />
       </mesh>
 
-      {/* 눈 (큰 글로시 아몬드) */}
-      {[-6.4, 6.4].map((x) => (
-        <group key={x} position={[x, 36, 14.5]}>
-          <mesh scale={[0.82, 1.18, 0.6]}>
-            <sphereGeometry args={[3.9, 22, 22]} />
-            <primitive object={eyeMat} attach="material" />
-          </mesh>
-          {/* 캐치라이트 */}
-          <mesh position={[-1, 1.4, 2.2]}>
-            <sphereGeometry args={[1.05, 12, 12]} />
-            <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={0.5} />
-          </mesh>
-          <mesh position={[1.1, -1.1, 2.1]}>
-            <sphereGeometry args={[0.5, 10, 10]} />
-            <meshStandardMaterial color="#ffffff" />
-          </mesh>
-        </group>
-      ))}
+      {/* 얼굴 (표정) */}
+      <Face3D face={a.face} eyeMat={eyeMat} />
 
       {/* 볼터치 */}
       {[-11, 11].map((x) => (
@@ -96,12 +80,6 @@ export default function BeanAvatar3D({ a }: { a: Appearance }) {
           <meshStandardMaterial color="#ff9bb0" transparent opacity={0.55} roughness={1} depthWrite={false} />
         </mesh>
       ))}
-
-      {/* 입 (작은 미소) */}
-      <mesh position={[0, 30.6, 16.6]} rotation={[0, 0, Math.PI]}>
-        <torusGeometry args={[2, 0.55, 8, 20, Math.PI]} />
-        <meshStandardMaterial color="#3a2d27" />
-      </mesh>
 
       {/* 음악 신호 안테나 (시그니처) */}
       <mesh position={[2.5, 54.5, 0]} rotation={[0, 0, -0.18]}>
@@ -114,6 +92,62 @@ export default function BeanAvatar3D({ a }: { a: Appearance }) {
       </mesh>
     </group>
   );
+}
+
+// 표정 — 눈/입 변형
+function Face3D({ face, eyeMat }: { face: FaceStyle; eyeMat: THREE.Material }) {
+  const MOUTH = "#3a2d27";
+  const EYE = "#241d1a";
+
+  const RoundEye = ({ x }: { x: number }) => (
+    <group position={[x, 36, 14.5]}>
+      <mesh scale={[0.82, 1.18, 0.6]}>
+        <sphereGeometry args={[3.9, 22, 22]} />
+        <primitive object={eyeMat} attach="material" />
+      </mesh>
+      <mesh position={[-1, 1.4, 2.2]}>
+        <sphereGeometry args={[1.05, 12, 12]} />
+        <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={0.5} />
+      </mesh>
+      <mesh position={[1.1, -1.1, 2.1]}>
+        <sphereGeometry args={[0.5, 10, 10]} />
+        <meshStandardMaterial color="#ffffff" />
+      </mesh>
+    </group>
+  );
+  const ArchEye = ({ x }: { x: number }) => (
+    <mesh position={[x, 36, 15]}>
+      <torusGeometry args={[3, 0.7, 8, 16, Math.PI]} />
+      <meshStandardMaterial color={EYE} />
+    </mesh>
+  );
+  const LineEye = ({ x }: { x: number }) => (
+    <mesh position={[x, 36, 15]}>
+      <boxGeometry args={[6, 1.4, 1]} />
+      <meshStandardMaterial color={EYE} />
+    </mesh>
+  );
+
+  let eyes: React.ReactNode;
+  if (face === "happy") eyes = <><ArchEye x={-6.4} /><ArchEye x={6.4} /></>;
+  else if (face === "cool") eyes = <><LineEye x={-6.4} /><LineEye x={6.4} /></>;
+  else if (face === "wink") eyes = <><RoundEye x={-6.4} /><ArchEye x={6.4} /></>;
+  else eyes = <><RoundEye x={-6.4} /><RoundEye x={6.4} /></>; // smile, cat
+
+  const mouth =
+    face === "cool" ? (
+      <mesh position={[0, 30.6, 16.4]}>
+        <boxGeometry args={[5, 1.3, 1]} />
+        <meshStandardMaterial color={MOUTH} />
+      </mesh>
+    ) : (
+      <mesh position={[0, 30.6, 16.6]} rotation={[0, 0, Math.PI]}>
+        <torusGeometry args={[face === "happy" ? 3 : 2, 0.55, 8, 20, Math.PI]} />
+        <meshStandardMaterial color={MOUTH} />
+      </mesh>
+    );
+
+  return (<>{eyes}{mouth}</>);
 }
 
 function tone(hex: string, amt: number): string {
