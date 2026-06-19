@@ -415,6 +415,62 @@ function render(kind: DecorKind): React.ReactNode {
           <meshStandardMaterial color="#1f7a3a" emissive="#37b85f" emissiveIntensity={0.7} />
         </mesh>
       </>);
+    case "bush":
+      return (<>
+        {sph(13, [0, 11, 0], "#4f9d62")}
+        {sph(10, [-11, 8, 3], "#469058")}
+        {sph(10, [11, 8, -2], "#58ad6e")}
+        {sph(9, [2, 17, 4], "#63bd7d")}
+      </>);
+    case "rock":
+      return (
+        <mesh castShadow position={[0, 8, 0]} rotation={[0.3, 0.6, 0.1]} scale={[1.3, 0.8, 1.1]}>
+          <dodecahedronGeometry args={[12, 0]} />
+          {M("#9aa0a6")}
+        </mesh>
+      );
+    case "flowerbed":
+      return (<>
+        {box(34, 5, 24, 0, "#6a4a30")}
+        {([["#ff6ea0", -10, -6], ["#ffd23a", 0, 5], ["#ff8a5b", 10, -4], ["#b07cc6", -4, 8], ["#46d8c5", 7, 9]] as const).map((f, i) => (
+          <group key={i} position={[f[1], 0, f[2]]}>
+            {cyl(0.8, 12, 5, "#3f7a52")}
+            {sph(3.2, [0, 18, 0], f[0])}
+          </group>
+        ))}
+      </>);
+    case "stringlights": {
+      const bulbs = Array.from({ length: 7 }, (_, i) => {
+        const t = i / 6;
+        const x = -30 + 60 * t;
+        const y = 58 - Math.sin(Math.PI * t) * 12; // 늘어진 줄(sag)
+        return <group key={i} position={[x, y, 0]}>{sph(2, [0, 0, 0], "#fff3c0", "#ffcf6a")}</group>;
+      });
+      return (<>
+        {cyl(1.4, 62, 0, "#5a4632", [-30, 0, 0])}
+        {cyl(1.4, 62, 0, "#5a4632", [30, 0, 0])}
+        {bulbs}
+      </>);
+    }
+    case "parasol":
+      return (<>
+        {cyl(1.4, 58, 0, "#7a5230")}
+        <mesh castShadow position={[0, 58, 0]}>
+          <coneGeometry args={[28, 16, 18]} />
+          {M("#ff8a5b")}
+        </mesh>
+        <mesh position={[0, 50.5, 0]}>
+          <coneGeometry args={[28.4, 2, 18, 1, true]} />
+          {M("#ffd23a")}
+        </mesh>
+      </>);
+    case "picnic":
+      return (<>
+        {box(46, 1.6, 46, 0, "#d85a5a")}
+        {box(46, 1.7, 9, 0.1, "#f2ead9", [0, 0, -12])}
+        {box(46, 1.7, 9, 0.1, "#f2ead9", [0, 0, 12])}
+        {box(13, 9, 11, 1.6, "#b5824a", [15, 0, 13])}
+      </>);
     default:
       return box(20, 24, 20, 0, "#9aa0b5");
   }

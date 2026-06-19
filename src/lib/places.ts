@@ -212,8 +212,10 @@ function layoutFor(id: PlaceId): D[] {
         { kind: "rug", x: 400, y: 330, size: 56 }, { kind: "rug", x: 600, y: 520, size: 56 },
         ...rowX("counter", 270, 730, 95, 3, 70),
         ...rowX(["painting", "painting2"], 200, 800, 55, 3, 46),
+        ...rowX("stringlights", 250, 750, 62, 3, 64), // 천장 전구줄(아늑)
         ...tableSet(290, 320), ...tableSet(500, 320), ...tableSet(710, 320),
         ...tableSet(390, 510), ...tableSet(620, 510),
+        { kind: "flowerbed", x: 120, y: 130, size: 36 }, { kind: "flowerbed", x: 880, y: 130, size: 36 },
         ...corners(["plant", "plant2"], 46),
       ];
     case "library":
@@ -244,17 +246,25 @@ function layoutFor(id: PlaceId): D[] {
       return [
         ...rowX("bench", 230, 770, 300, 3, 52),
         ...rowX("streetlamp", 150, 850, 250, 4, 60),
+        ...rowX("stringlights", 250, 750, 236, 3, 72), // 가로등 사이 전구줄
         { kind: "tree", x: 120, y: 470, size: 72 }, { kind: "tree", x: 880, y: 470, size: 72 },
         { kind: "tree", x: 300, y: 560, size: 64 }, { kind: "tree", x: 700, y: 560, size: 64 },
+        { kind: "bush", x: 180, y: 545, size: 42 }, { kind: "bush", x: 820, y: 545, size: 42 },
+        { kind: "rock", x: 245, y: 470, size: 34 }, { kind: "rock", x: 760, y: 470, size: 30 },
+        ...rowX("flowerbed", 320, 680, 615, 3, 40),
+        { kind: "picnic", x: 410, y: 565, size: 60 }, { kind: "parasol", x: 560, y: 545, size: 66 },
         { kind: "bicycle", x: 200, y: 380, size: 46 }, { kind: "tent", x: 820, y: 420, size: 60 },
-        ...rowX("plant", 160, 840, 640, 3, 42),
+        ...rowX("plant", 150, 850, 685, 2, 42),
       ];
     case "city":
       return [
         ...rowX(["building", "building2", "building3"], 120, 880, 110, 5, 92),
         ...rowX("streetlamp", 180, 820, 300, 4, 60),
+        ...rowX("stringlights", 260, 740, 250, 3, 70),
         { kind: "car", x: 300, y: 450, size: 60, rot: HALF }, { kind: "car2", x: 700, y: 450, size: 60, rot: -HALF },
         ...rowX("neon", 220, 780, 180, 3, 54),
+        { kind: "bush", x: 140, y: 560, size: 38 }, { kind: "bush", x: 860, y: 560, size: 38 },
+        ...rowX("flowerbed", 300, 700, 690, 3, 38),
         ...rowX(["tree2", "plant"], 160, 840, 640, 3, 56),
       ];
     case "airplane":
