@@ -94,7 +94,7 @@ export default function RoomPage() {
     enterRoom(id);
   }, [id, enterRoom]);
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    chatEndRef.current?.scrollIntoView({ block: "nearest" }); // 페이지 전체 스크롤(흔들림) 방지
   }, [session.chat.length]);
   useEffect(() => {
     listenAccum.current = 0;

@@ -297,7 +297,7 @@ export function useRoomSession(
     (text: string) => {
       const msg: ChatMessage = {
         id: `c_${Date.now()}`,
-        userId: meRef.current.userId,
+        userId: meRef.current.id, // 세션 id — 수신자가 머리 위 말풍선 매칭에 사용
         handle: meRef.current.handle,
         text,
         at: Date.now(),

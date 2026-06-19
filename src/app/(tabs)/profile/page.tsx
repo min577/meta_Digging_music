@@ -7,6 +7,7 @@ import Avatar from "@/components/Avatar";
 import { useAppStore, useMyTopGenre } from "@/store/useAppStore";
 import { GENRES, GENRE_LIST, genre as genreOf } from "@/lib/genres";
 import { sortedGenres } from "@/lib/taste";
+import { FACES, FACE_LABEL } from "@/lib/appearance";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { signInWithGoogle, signOut } from "@/lib/profile";
 import { ACHIEVEMENTS, buildStats, isDone } from "@/lib/achievements";
@@ -112,6 +113,26 @@ export default function ProfilePage() {
               </span>
             </div>
           </div>
+        </div>
+
+        {/* 얼굴(표정) 바꾸기 */}
+        <div className="card p-3 mt-3">
+          <p className="text-xs font-bold text-ink-700 mb-2">😊 얼굴 표정 바꾸기</p>
+          <div className="flex gap-2 overflow-x-auto no-scrollbar">
+            {FACES.map((f) => (
+              <button
+                key={f}
+                onClick={() => setAppearance({ ...user.character.appearance, face: f })}
+                className={`shrink-0 rounded-xl p-1 flex flex-col items-center ${
+                  user.character.appearance.face === f ? "ring-2 ring-brand bg-brand/5" : ""
+                }`}
+              >
+                <Avatar appearance={{ ...user.character.appearance, face: f }} size={48} bob={false} />
+                <span className="text-[10px] text-ink-700/60">{FACE_LABEL[f]}</span>
+              </button>
+            ))}
+          </div>
+          <p className="text-[11px] text-ink-700/45 mt-2">본체색·목도리·안테나는 상점에서 바꿀 수 있어요.</p>
         </div>
 
         {/* 진화 */}

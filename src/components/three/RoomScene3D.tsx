@@ -145,11 +145,11 @@ function Scene({
   const playerRef = useRef<THREE.Group>(null);
   const budARef = useRef<THREE.Mesh>(null);
   const budBRef = useRef<THREE.Mesh>(null);
-  // 이어폰 줄 (THREE.Line — JSX <line>는 SVG와 충돌하므로 명령형 생성)
+  // 손잡기 줄(팔) — THREE.Line (JSX <line>는 SVG와 충돌하므로 명령형 생성)
   const linkLine = useMemo(() => {
     const geo = new THREE.BufferGeometry();
     geo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(9), 3));
-    const l = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: "#2b2620" }));
+    const l = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: "#e8b48c", linewidth: 2 }));
     l.visible = false;
     l.frustumCulled = false;
     return l;
@@ -238,9 +238,9 @@ function Scene({
       }
     }
     if (lockPos && !m.seated) {
-      // 대상 옆으로 자동 추종 (실제 친구도 따라감)
-      const sx = clamp(lockPos.x + 48, PAD, WORLD_W - PAD);
-      const sz = clamp(lockPos.z + 6, PAD, WORLD_H - PAD);
+      // 대상 옆으로 자동 추종 (손잡는 거리)
+      const sx = clamp(lockPos.x + 40, PAD, WORLD_W - PAD);
+      const sz = clamp(lockPos.z, PAD, WORLD_H - PAD);
       m.x += (sx - m.x) * Math.min(1, dt * 3.2);
       m.z += (sz - m.z) * Math.min(1, dt * 3.2);
       m.heading = Math.atan2(lockPos.x - m.x, lockPos.z - m.z);
@@ -270,20 +270,19 @@ function Scene({
     const showLink = !!lockPos;
     linkLine.visible = showLink;
     if (showLink && lockPos) {
+      // 손잡기: 손 높이(y~22)에서 두 캐릭터의 안쪽 손을 연결
+      const dirx = Math.sign(lockPos.x - m.x) || 1;
+      const ax = m.x + dirx * 11, bx = lockPos.x - dirx * 11;
       const pos = linkLine.geometry.attributes.position as THREE.BufferAttribute;
-      pos.setXYZ(0, m.x, 54, m.z);
-      pos.setXYZ(1, (m.x + lockPos.x) / 2, 76, (m.z + lockPos.z) / 2);
-      pos.setXYZ(2, lockPos.x, 54, lockPos.z);
+      pos.setXYZ(0, ax, 22, m.z);
+      pos.setXYZ(1, (ax + bx) / 2, 19, (m.z + lockPos.z) / 2);
+      pos.setXYZ(2, bx, 22, lockPos.z);
       pos.needsUpdate = true;
+      if (budARef.current) budARef.current.position.set(ax, 22, m.z);
+      if (budBRef.current) budBRef.current.position.set(bx, 22, lockPos.z);
     }
-    if (budARef.current) {
-      budARef.current.visible = showLink;
-      budARef.current.position.set(m.x, 50, m.z);
-    }
-    if (budBRef.current) {
-      budBRef.current.visible = showLink;
-      if (lockPos) budBRef.current.position.set(lockPos.x, 50, lockPos.z);
-    }
+    if (budARef.current) budARef.current.visible = showLink;
+    if (budBRef.current) budBRef.current.visible = showLink;
 
     // 근처 좌석 탐지 + 안내 프롬프트
     if (!m.seated) {
@@ -433,6 +432,11 @@ function Scene({
         </>
       )}
 
+      {/* 확장 바닥 — 룸 주변 여백을 채워 '뻥 뚫린' 배경 방지 */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[WORLD_W / 2, -0.8, WORLD_H / 2]}>
+        <planeGeometry args={[WORLD_W * 5, WORLD_H * 5]} />
+        <meshStandardMaterial color={adjust(scene.floor[0], scene.floorTint - 30)} />
+      </mesh>
       {/* 바닥 */}
       <mesh
         rotation={[-Math.PI / 2, 0, 0]}
@@ -515,15 +519,15 @@ function Scene({
         <ChatBubble text={myBubble && Date.now() - myBubble.at < 5000 ? myBubble.text : null} />
       </group>
 
-      {/* 이어폰 링크 (같이 듣기 상호작용) */}
+      {/* 손잡기 (같이 듣기 상호작용) */}
       <primitive object={linkLine} />
       <mesh ref={budARef} visible={false}>
-        <sphereGeometry args={[2.6, 12, 12]} />
-        <meshStandardMaterial color="#2b2620" />
+        <sphereGeometry args={[3, 12, 12]} />
+        <meshStandardMaterial color="#f2cda3" />
       </mesh>
       <mesh ref={budBRef} visible={false}>
-        <sphereGeometry args={[2.6, 12, 12]} />
-        <meshStandardMaterial color="#2b2620" />
+        <sphereGeometry args={[3, 12, 12]} />
+        <meshStandardMaterial color="#f2cda3" />
       </mesh>
 
       {/* NPC */}
