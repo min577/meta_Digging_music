@@ -156,7 +156,7 @@ export default function RoomPage() {
   // 맵 NPC (룸 멤버)
   const npcs = useMemo<MapAvatar3D[]>(() => {
     if (!room) return [];
-    return room.members.map((m, i) => ({
+    return room.members.slice(0, 8).map((m, i) => ({ // 성능: 표시 NPC 수 제한
       id: m.userId,
       handle: m.handle,
       appearance: appearanceFromSeed(m.handle),

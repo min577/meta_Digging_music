@@ -87,8 +87,8 @@ export default function RoomScene3D(props: Props) {
     <div className="relative w-full h-full rounded-2xl overflow-hidden shadow-soft">
       <Canvas
         shadows
-        dpr={[1, 1.7]}
-        gl={{ antialias: true, preserveDrawingBuffer: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.08 }}
+        dpr={[1, 1.4]}
+        gl={{ antialias: true, preserveDrawingBuffer: true, powerPreference: "high-performance", toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.08 }}
         camera={{ fov: 50, near: 1, far: 4000, position: [600, 280, 760] }}
       >
         <color attach="background" args={[SKY[time.phase]]} />
@@ -104,7 +104,7 @@ export default function RoomScene3D(props: Props) {
           <Scene {...props} time={time} />
         </Suspense>
         <EffectComposer>
-          <Bloom intensity={0.55} luminanceThreshold={0.72} luminanceSmoothing={0.22} mipmapBlur />
+          <Bloom intensity={0.4} luminanceThreshold={0.85} luminanceSmoothing={0.2} mipmapBlur />
         </EffectComposer>
       </Canvas>
 
@@ -145,6 +145,8 @@ function Scene({
   const [prompt, setPrompt] = useState<{ x: number; z: number; text: string } | null>(null);
   const playerRef = useRef<THREE.Group>(null);
   const myIdR = useRef(myId); myIdR.current = myId;
+  const camTarget = useMemo(() => new THREE.Vector3(), []);
+  const camPosV = useMemo(() => new THREE.Vector3(), []);
   // 손잡기 줄(팔)+손 풀 — 그룹 같이듣기(한 명에게 여러 명) 사슬 렌더
   const linkPool = useMemo(() => {
     return Array.from({ length: 16 }, () => {
@@ -381,11 +383,11 @@ function Scene({
       }
     }
 
-    // 카메라 추적 (넓은 시야)
-    const target = new THREE.Vector3(m.x, 50, m.z - 20);
-    const camPos = new THREE.Vector3(m.x, 270, m.z + 340);
-    camera.position.lerp(camPos, 0.12);
-    camera.lookAt(target);
+    // 카메라 추적 (넓은 시야) — 객체 재사용(GC 방지)
+    camPosV.set(m.x, 270, m.z + 340);
+    camTarget.set(m.x, 50, m.z - 20);
+    camera.position.lerp(camPosV, 0.12);
+    camera.lookAt(camTarget);
 
     // 근접 오디오
     if (cbR.current.onAudio && now - lastAudioAt.current > 160) {
@@ -450,7 +452,7 @@ function Scene({
         intensity={L.dir}
         color={L.dirColor}
         castShadow
-        shadow-mapSize={[2048, 2048]}
+        shadow-mapSize={[1024, 1024]}
         shadow-camera-left={-700}
         shadow-camera-right={700}
         shadow-camera-top={700}
