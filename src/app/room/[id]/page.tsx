@@ -470,7 +470,27 @@ export default function RoomPage() {
       )}
 
       {/* 맵 */}
-      <div ref={mapWrapRef} className="px-4 mt-2 h-[52vh] md:h-auto md:flex-1 md:min-h-0">
+      <div ref={mapWrapRef} className="relative px-4 mt-2 h-[52vh] md:h-auto md:flex-1 md:min-h-0">
+        {/* 같이 듣기 — 맵 위 오버레이(레이아웃 안 밀림) */}
+        {mode === "free" && (lockedId || nearbyPerson) && (
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20">
+            {lockedId ? (
+              <button
+                onClick={() => setLockedId(null)}
+                className="chip bg-live text-white font-bold py-2 px-4 flex items-center gap-1.5 shadow-soft whitespace-nowrap"
+              >
+                🎧 {handleForSource(lockedId)}님과 함께 듣는 중 · 연결 끊기
+              </button>
+            ) : (
+              <button
+                onClick={() => setLockedId(nearbyPerson!.id)}
+                className="chip bg-brand text-white font-bold py-2 px-4 flex items-center gap-1.5 shadow-soft animate-bob whitespace-nowrap"
+              >
+                🎧 {handleForSource(nearbyPerson!.id)}님과 같이 듣기
+              </button>
+            )}
+          </div>
+        )}
         <RoomScene3D
           meAppearance={user?.character.appearance ?? defaultAppearance()}
           meHandle={user?.handle ?? "나"}
@@ -492,27 +512,6 @@ export default function RoomPage() {
           onRemovePlaced={removePlaced}
         />
       </div>
-
-      {/* 같이 듣기 (자유모드: 근처 사람과 연결 → 풀볼륨 유지 + 동행) */}
-      {mode === "free" && (lockedId || nearbyPerson) && (
-        <div className="px-4 mt-2 flex justify-center">
-          {lockedId ? (
-            <button
-              onClick={() => setLockedId(null)}
-              className="chip bg-live text-white font-bold py-2 px-4 flex items-center gap-1.5 shadow-soft"
-            >
-              🎧 {handleForSource(lockedId)}님과 함께 듣는 중 · 연결 끊기
-            </button>
-          ) : (
-            <button
-              onClick={() => setLockedId(nearbyPerson!.id)}
-              className="chip bg-brand text-white font-bold py-2 px-4 flex items-center gap-1.5 shadow-soft animate-bob"
-            >
-              🎧 {handleForSource(nearbyPerson!.id)}님과 같이 듣기
-            </button>
-          )}
-        </div>
-      )}
 
       {/* 반응 버튼 */}
       <div className="px-4 mt-2 flex gap-2 justify-center">
