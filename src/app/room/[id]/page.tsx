@@ -115,6 +115,10 @@ export default function RoomPage() {
   useEffect(() => {
     if (mode !== "free") setLockedId(null); // 파티모드 전환 시 동행 해제
   }, [mode]);
+  // 같이 듣기 대상 변경을 브로드캐스트(그룹 손잡기 사슬 동기화)
+  useEffect(() => {
+    session.broadcastListen(mode === "free" ? lockedId : null);
+  }, [lockedId, mode]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const roomGenre = room ? topGenre(room.tasteVector) : "pop";
 
@@ -424,9 +428,9 @@ export default function RoomPage() {
           );
         })}
 
-      {/* 본문: 웹(md+)에서 맵(좌) + 채팅(우) 2단, 모바일은 세로 스택 */}
-      <div className="md:flex md:gap-3 md:px-2 md:items-start">
-      <div className="md:flex-1 md:min-w-0 flex flex-col">
+      {/* 본문: 웹(md+)에서 맵 꽉 채우고 채팅은 우측 오버레이, 모바일은 세로 스택 */}
+      <div className="md:relative">
+      <div className="flex flex-col">
 
       {/* 맵 툴바 */}
       <div className="px-4 mt-2 flex items-center justify-between">
@@ -466,7 +470,7 @@ export default function RoomPage() {
       )}
 
       {/* 맵 */}
-      <div ref={mapWrapRef} className="px-4 mt-2 h-[52vh] md:h-[66vh]">
+      <div ref={mapWrapRef} className="px-4 mt-2 h-[52vh] md:h-[74vh]">
         <RoomScene3D
           meAppearance={user?.character.appearance ?? defaultAppearance()}
           meHandle={user?.handle ?? "나"}
@@ -478,6 +482,7 @@ export default function RoomPage() {
           placed={[...myDecor, ...session.othersDecor]}
           editMode={editMode}
           lockedId={mode === "free" ? lockedId : null}
+          myId={session.myId}
           chat={session.chat}
           myBubble={myBubble}
           onMove={session.broadcastMove}
@@ -539,10 +544,10 @@ export default function RoomPage() {
 
       </div>{/* /좌측 컬럼 */}
 
-      {/* 채팅/큐 — 웹(md+)에서 우측 컬럼 */}
-      <div className="md:w-[340px] md:shrink-0 flex flex-col">
+      {/* 채팅/큐 — 웹(md+)에서 우측 오버레이(맵 위에 겹침) */}
+      <div className="md:absolute md:top-2 md:right-3 md:bottom-2 md:w-[320px] md:z-30 flex flex-col">
       {/* 큐 / 채팅 패널 */}
-      <div className="bg-cream-50 rounded-t-3xl mt-2 flex flex-col flex-1 min-h-[16vh] max-h-[28vh] md:max-h-none md:h-[66vh] md:rounded-3xl">
+      <div className="bg-cream-50 rounded-t-3xl mt-2 flex flex-col flex-1 min-h-[16vh] max-h-[28vh] md:max-h-none md:h-full md:rounded-3xl md:bg-cream-50/95 md:backdrop-blur md:shadow-card">
         <div className="flex items-center gap-2 px-4 pt-3">
           <button
             onClick={() => setTab("queue")}

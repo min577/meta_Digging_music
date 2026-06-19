@@ -29,6 +29,7 @@ export interface MapAvatar {
   walking?: boolean;
   track?: Track;
   jumpAt?: number; // 원격 점프 표시용(수신 시각)
+  lockedTarget?: string | null; // 이 유저가 같이 듣기로 연결한 대상(손잡기 사슬)
 }
 
 export interface Speaker {

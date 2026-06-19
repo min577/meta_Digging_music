@@ -58,6 +58,7 @@ interface Props {
   editMode?: boolean;
   /** 같이 듣기로 연결한 소스 id ("npc_<uid>" | "player_<id>") — 풀볼륨 고정 + NPC 동행 */
   lockedId?: string | null;
+  myId?: string;
   chat?: { userId: string; text: string; at: number }[];
   myBubble?: { text: string; at: number } | null;
   onMove?: (x: number, y: number, dir: "down" | "up" | "left" | "right") => void;
@@ -125,7 +126,7 @@ export default function RoomScene3D(props: Props) {
 
 function Scene({
   meAppearance, meHandle, meTrack, place, npcs, remote = [], speakers = [],
-  placed = [], editMode, lockedId, chat = [], myBubble, onMove, onJump, onAudio, onPlaceAt, onRemovePlaced, time,
+  placed = [], editMode, lockedId, myId, chat = [], myBubble, onMove, onJump, onAudio, onPlaceAt, onRemovePlaced, time,
 }: Props & { time: TimePhase }) {
   const { camera } = useThree();
   const scene = placeScene(place);
@@ -143,16 +144,21 @@ function Scene({
   const lastPrompt = useRef("");
   const [prompt, setPrompt] = useState<{ x: number; z: number; text: string } | null>(null);
   const playerRef = useRef<THREE.Group>(null);
-  const budARef = useRef<THREE.Mesh>(null);
-  const budBRef = useRef<THREE.Mesh>(null);
-  // 손잡기 줄(팔) — THREE.Line (JSX <line>는 SVG와 충돌하므로 명령형 생성)
-  const linkLine = useMemo(() => {
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(9), 3));
-    const l = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: "#e8b48c", linewidth: 2 }));
-    l.visible = false;
-    l.frustumCulled = false;
-    return l;
+  const myIdR = useRef(myId); myIdR.current = myId;
+  // 손잡기 줄(팔)+손 풀 — 그룹 같이듣기(한 명에게 여러 명) 사슬 렌더
+  const linkPool = useMemo(() => {
+    return Array.from({ length: 16 }, () => {
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(9), 3));
+      const line = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: "#e8b48c" }));
+      const hand = () => new THREE.Mesh(new THREE.SphereGeometry(3, 12, 12), new THREE.MeshStandardMaterial({ color: "#f2cda3" }));
+      const g = new THREE.Group();
+      const hA = hand(), hB = hand();
+      g.add(line, hA, hB);
+      g.visible = false;
+      g.frustumCulled = false;
+      return { g, line, hA, hB };
+    });
   }, []);
   const npcRefs = useRef<Record<string, THREE.Group>>({});
   const npcState = useRef<Record<string, { x: number; z: number; tx: number; tz: number; next: number; heading: number; walking: boolean }>>({});
@@ -267,22 +273,45 @@ function Scene({
     }
 
     // 이어폰 링크 (같이 듣기 상호작용 비주얼)
-    const showLink = !!lockPos;
-    linkLine.visible = showLink;
-    if (showLink && lockPos) {
-      // 손잡기: 손 높이(y~22)에서 두 캐릭터의 안쪽 손을 연결
-      const dirx = Math.sign(lockPos.x - m.x) || 1;
-      const ax = m.x + dirx * 11, bx = lockPos.x - dirx * 11;
-      const pos = linkLine.geometry.attributes.position as THREE.BufferAttribute;
-      pos.setXYZ(0, ax, 22, m.z);
-      pos.setXYZ(1, (ax + bx) / 2, 19, (m.z + lockPos.z) / 2);
-      pos.setXYZ(2, bx, 22, lockPos.z);
-      pos.needsUpdate = true;
-      if (budARef.current) budARef.current.position.set(ax, 22, m.z);
-      if (budBRef.current) budBRef.current.position.set(bx, 22, lockPos.z);
+    // 손잡기 사슬: 나 + 모든 원격 팔로워의 (팔로워→대상) 쌍을 그림
+    const posOf = (id: string | null | undefined): { x: number; z: number } | null => {
+      if (!id) return null;
+      if (id.startsWith("npc_")) { const v = npcState.current[id.slice(4)]; return v ? { x: v.x, z: v.z } : null; }
+      if (id.startsWith("player_")) {
+        const sid = id.slice(7);
+        if (sid === myIdR.current) return { x: m.x, z: m.z };
+        const g = remoteRefs.current[sid];
+        if (g) return { x: g.position.x, z: g.position.z };
+        const r = remoteR.current.find((p) => p.id === sid);
+        return r ? { x: r.x, z: r.y } : null;
+      }
+      return null;
+    };
+    const pairs: { ax: number; az: number; bx: number; bz: number }[] = [];
+    if (lockPos) pairs.push({ ax: m.x, az: m.z, bx: lockPos.x, bz: lockPos.z });
+    for (const r of remoteR.current) {
+      const t = (r as { lockedTarget?: string | null }).lockedTarget;
+      if (!t) continue;
+      const tp = posOf(t);
+      if (!tp) continue;
+      const g = remoteRefs.current[r.id];
+      const fx = g ? g.position.x : r.x, fz = g ? g.position.z : r.y;
+      pairs.push({ ax: fx, az: fz, bx: tp.x, bz: tp.z });
     }
-    if (budARef.current) budARef.current.visible = showLink;
-    if (budBRef.current) budBRef.current.visible = showLink;
+    linkPool.forEach((p, i) => {
+      const pr = pairs[i];
+      if (!pr) { p.g.visible = false; return; }
+      p.g.visible = true;
+      const dirx = Math.sign(pr.bx - pr.ax) || 1;
+      const ax = pr.ax + dirx * 11, bx = pr.bx - dirx * 11;
+      const pos = p.line.geometry.attributes.position as THREE.BufferAttribute;
+      pos.setXYZ(0, ax, 22, pr.az);
+      pos.setXYZ(1, (ax + bx) / 2, 19, (pr.az + pr.bz) / 2);
+      pos.setXYZ(2, bx, 22, pr.bz);
+      pos.needsUpdate = true;
+      p.hA.position.set(ax, 22, pr.az);
+      p.hB.position.set(bx, 22, pr.bz);
+    });
 
     // 근처 좌석 탐지 + 안내 프롬프트
     if (!m.seated) {
@@ -519,16 +548,10 @@ function Scene({
         <ChatBubble text={myBubble && Date.now() - myBubble.at < 5000 ? myBubble.text : null} />
       </group>
 
-      {/* 손잡기 (같이 듣기 상호작용) */}
-      <primitive object={linkLine} />
-      <mesh ref={budARef} visible={false}>
-        <sphereGeometry args={[3, 12, 12]} />
-        <meshStandardMaterial color="#f2cda3" />
-      </mesh>
-      <mesh ref={budBRef} visible={false}>
-        <sphereGeometry args={[3, 12, 12]} />
-        <meshStandardMaterial color="#f2cda3" />
-      </mesh>
+      {/* 손잡기 사슬 (그룹 같이 듣기) */}
+      {linkPool.map((p, i) => (
+        <primitive key={i} object={p.g} />
+      ))}
 
       {/* NPC */}
       {npcs.map((n) => (
