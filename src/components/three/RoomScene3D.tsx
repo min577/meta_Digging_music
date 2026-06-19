@@ -87,7 +87,7 @@ export default function RoomScene3D(props: Props) {
       <Canvas
         shadows
         dpr={[1, 1.7]}
-        gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.08 }}
+        gl={{ antialias: true, preserveDrawingBuffer: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.08 }}
         camera={{ fov: 50, near: 1, far: 4000, position: [600, 280, 760] }}
       >
         <color attach="background" args={[SKY[time.phase]]} />

@@ -86,6 +86,16 @@ export default function RoomPage() {
   const [inviteCopied, setInviteCopied] = useState(false);
   const listenAccum = useRef(0);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const mapWrapRef = useRef<HTMLDivElement>(null);
+
+  const captureRoom = () => {
+    const c = mapWrapRef.current?.querySelector("canvas") as HTMLCanvasElement | null;
+    if (!c) return;
+    const a = document.createElement("a");
+    a.href = c.toDataURL("image/png");
+    a.download = `digtown_room_${Date.now()}.png`;
+    a.click();
+  };
 
   const room = session.room;
   const mode = room?.roomMode ?? "party";
@@ -414,19 +424,28 @@ export default function RoomPage() {
           );
         })}
 
+      {/* 본문: 웹(md+)에서 맵(좌) + 채팅(우) 2단, 모바일은 세로 스택 */}
+      <div className="md:flex md:gap-3 md:px-2 md:items-start">
+      <div className="md:flex-1 md:min-w-0 flex flex-col">
+
       {/* 맵 툴바 */}
       <div className="px-4 mt-2 flex items-center justify-between">
         <span className="text-[11px] text-white/70">
           {editMode ? "🔨 꾸미기 중 — 맵을 탭해 배치, 소품을 탭해 삭제" : ""}
         </span>
-        <button
-          onClick={() => setEditMode((e) => !e)}
-          className={`chip py-1.5 px-3 font-bold ${
-            editMode ? "bg-live text-white" : "bg-black/30 text-white"
-          }`}
-        >
-          {editMode ? "완료" : "🔨 꾸미기"}
-        </button>
+        <div className="flex items-center gap-1.5">
+          <button onClick={captureRoom} className="chip py-1.5 px-3 font-bold bg-black/30 text-white" title="사진 촬영">
+            📷
+          </button>
+          <button
+            onClick={() => setEditMode((e) => !e)}
+            className={`chip py-1.5 px-3 font-bold ${
+              editMode ? "bg-live text-white" : "bg-black/30 text-white"
+            }`}
+          >
+            {editMode ? "완료" : "🔨 꾸미기"}
+          </button>
+        </div>
       </div>
 
       {/* 가구 팔레트 (꾸미기 모드) */}
@@ -447,7 +466,7 @@ export default function RoomPage() {
       )}
 
       {/* 맵 */}
-      <div className="px-4 mt-2 h-[52vh]">
+      <div ref={mapWrapRef} className="px-4 mt-2 h-[52vh] md:h-[66vh]">
         <RoomScene3D
           meAppearance={user?.character.appearance ?? defaultAppearance()}
           meHandle={user?.handle ?? "나"}
@@ -518,8 +537,12 @@ export default function RoomPage() {
         </AnimatePresence>
       </div>
 
+      </div>{/* /좌측 컬럼 */}
+
+      {/* 채팅/큐 — 웹(md+)에서 우측 컬럼 */}
+      <div className="md:w-[340px] md:shrink-0 flex flex-col">
       {/* 큐 / 채팅 패널 */}
-      <div className="bg-cream-50 rounded-t-3xl mt-2 flex flex-col flex-1 min-h-[16vh] max-h-[28vh]">
+      <div className="bg-cream-50 rounded-t-3xl mt-2 flex flex-col flex-1 min-h-[16vh] max-h-[28vh] md:max-h-none md:h-[66vh] md:rounded-3xl">
         <div className="flex items-center gap-2 px-4 pt-3">
           <button
             onClick={() => setTab("queue")}
@@ -617,6 +640,8 @@ export default function RoomPage() {
           </div>
         )}
       </div>
+      </div>{/* /우측 컬럼 */}
+      </div>{/* /본문 2단 */}
 
       {/* 디깅 저장 토스트 */}
       <AnimatePresence>
