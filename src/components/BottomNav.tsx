@@ -5,10 +5,10 @@ import { usePathname } from "next/navigation";
 import Icon, { type IconName } from "./Icon";
 
 const TABS: { href: string; label: string; icon: IconName }[] = [
+  { href: "/world", label: "월드", icon: "compass" },
   { href: "/home", label: "홈", icon: "home" },
   { href: "/charts", label: "차트", icon: "music" },
   { href: "/friends", label: "친구", icon: "friends" },
-  { href: "/shop", label: "상점", icon: "shop" },
   { href: "/profile", label: "프로필", icon: "user" },
 ];
 

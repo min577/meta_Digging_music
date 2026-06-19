@@ -72,7 +72,7 @@ export default function OnboardingPage() {
       situations,
       seedTracks: seeds,
     });
-    router.replace("/home");
+    router.replace("/world");
   };
 
   const canNext = [true, true, situations.length > 0, seeds.length === 3][step];
