@@ -8,7 +8,7 @@ import { useAppStore, useMyTopGenre } from "@/store/useAppStore";
 import { GENRES, GENRE_LIST, genre as genreOf } from "@/lib/genres";
 import { sortedGenres } from "@/lib/taste";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
-import { signInWithGoogle } from "@/lib/profile";
+import { signInWithGoogle, signOut } from "@/lib/profile";
 import { ACHIEVEMENTS, buildStats, isDone } from "@/lib/achievements";
 
 type View = "report" | "diggs" | "ranking" | "achv";
@@ -21,8 +21,16 @@ export default function ProfilePage() {
   const listenEvents = useAppStore((s) => s.listenEvents);
   const evolve = useAppStore((s) => s.evolve);
   const setAppearance = useAppStore((s) => s.setAppearance);
+  const resetAll = useAppStore((s) => s.resetAll);
   const myGenre = useMyTopGenre();
   const [view, setView] = useState<View>("report");
+
+  // 로그아웃 → 온보딩부터 다시 (Supabase 세션도 정리)
+  const logout = async () => {
+    if (!window.confirm("로그아웃하면 이 기기의 디깅 기록이 초기화되고 온보딩부터 다시 시작해요. 계속할까요?")) return;
+    try { await signOut(); } catch {}
+    resetAll();
+  };
 
   // 업적 통계 + 달성 수
   const stats = useMemo(
@@ -355,6 +363,13 @@ export default function ProfilePage() {
             데모 모드 · Supabase 키를 연결하면 클라우드 동기화가 켜져요
           </p>
         )}
+
+        <button
+          onClick={logout}
+          className="w-full text-center text-xs font-bold text-ink-700/50 py-3 active:scale-[0.99] transition"
+        >
+          로그아웃 · 온보딩 다시 보기
+        </button>
       </section>
     </div>
   );
