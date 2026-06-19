@@ -85,7 +85,7 @@ export default function RoomScene3D(props: Props) {
         shadows
         dpr={[1, 1.7]}
         gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.08 }}
-        camera={{ fov: 46, near: 1, far: 4000, position: [500, 320, 820] }}
+        camera={{ fov: 44, near: 1, far: 4000, position: [500, 200, 640] }}
       >
         <color attach="background" args={[SKY[time.phase]]} />
         <fog attach="fog" args={[SKY[time.phase], 1100, 2600]} />
@@ -293,9 +293,9 @@ function Scene({
       }
     }
 
-    // 카메라 추적
-    const target = new THREE.Vector3(m.x, 50, m.z - 25);
-    const camPos = new THREE.Vector3(m.x, 280, m.z + 340);
+    // 카메라 추적 (아바타에 더 가깝게 확대)
+    const target = new THREE.Vector3(m.x, 46, m.z - 10);
+    const camPos = new THREE.Vector3(m.x, 175, m.z + 215);
     camera.position.lerp(camPos, 0.12);
     camera.lookAt(target);
 
