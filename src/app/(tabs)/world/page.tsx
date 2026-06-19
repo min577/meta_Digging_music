@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import MapScene2D, { type Spot } from "@/components/MapScene2D";
 import AudioPlayer from "@/components/AudioPlayer";
 import Icon from "@/components/Icon";
@@ -33,6 +33,17 @@ export default function WorldPage() {
   const [result, setResult] = useState<Track | null>(null);
   const [startedAt, setStartedAt] = useState(0);
   const [isNew, setIsNew] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const mapCanvas = useRef<HTMLCanvasElement | null>(null);
+
+  const capture = () => {
+    const c = mapCanvas.current;
+    if (!c) return;
+    const a = document.createElement("a");
+    a.href = c.toDataURL("image/png");
+    a.download = `digtown_${Date.now()}.png`;
+    a.click();
+  };
 
   const dig = async (s: Spot) => {
     if (busy) return;
@@ -43,15 +54,20 @@ export default function WorldPage() {
       const arr = pool.length ? pool : list.filter((t) => t.previewUrl);
       if (arr.length) {
         const pick = arr[Math.floor(Math.random() * arr.length)];
-        const fresh = addDigg(pick, null); // 신규면 true
-        logListen(pick, 0);
-        setResult(pick);
-        setIsNew(fresh);
+        logListen(pick, 0); // 미리듣기는 청취로 기록
+        setResult(pick); // 저장은 선택 (보관/넘기기)
+        setIsNew(!hasDigg(pick.id));
+        setSaved(false);
         setStartedAt(Date.now());
       }
     } finally {
       setBusy(false);
     }
+  };
+
+  const keepDig = () => {
+    if (result) addDigg(result, null);
+    setSaved(true);
   };
 
   return (
@@ -62,14 +78,20 @@ export default function WorldPage() {
         spots={SPOTS}
         onNear={setNear}
         onDig={dig}
+        onReady={(c) => (mapCanvas.current = c)}
       />
 
       {/* 상단 HUD */}
       <div className="absolute top-3 left-3 right-3 flex items-center justify-between z-10 pointer-events-none">
         <span className="chip bg-black/45 text-white text-[11px]">🎧 디깅 월드 · WASD/터치 이동 · 🦘 방방이</span>
-        <span className="chip bg-white/90 text-ink-900 text-[11px] font-bold flex items-center gap-1">
-          <Icon name="music" size={13} /> 디깅함 {diggs.length}
-        </span>
+        <div className="flex items-center gap-2 pointer-events-auto">
+          <span className="chip bg-white/90 text-ink-900 text-[11px] font-bold flex items-center gap-1">
+            <Icon name="music" size={13} /> 디깅함 {diggs.length}
+          </span>
+          <button onClick={capture} className="chip bg-white/90 text-ink-900 text-[13px] font-bold" title="사진 찍기">
+            📷
+          </button>
+        </div>
       </div>
 
       {/* 근접 디깅 버튼 (화면 중앙) */}
@@ -100,22 +122,33 @@ export default function WorldPage() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[11px] font-bold text-brand">
-                {isNew ? "✨ 새로운 곡을 디깅했어요!" : "🎧 이미 디깅한 곡"}
+                {saved ? "💾 디깅함에 담았어요!" : isNew ? "✨ 새로운 곡 발견!" : "🎧 발견한 곡"}
               </p>
               <p className="text-sm font-bold truncate">{result.title}</p>
               <p className="text-xs text-ink-700/55 truncate">
                 {result.artist} · {GENRES[result.genre].label}
               </p>
             </div>
-            <button
-              onClick={() => setResult(null)}
-              className="shrink-0 w-8 h-8 grid place-items-center rounded-full bg-cream-100 text-ink-700"
-              aria-label="닫기"
-            >
-              <Icon name="x" size={16} />
-            </button>
           </div>
+          {/* 미리듣기 30초 */}
           <AudioPlayer key={result.id} previewUrl={result.previewUrl} startedAt={startedAt} muted={false} />
+          {/* 보관 / 넘기기 선택 */}
+          <div className="flex gap-2 mt-2.5">
+            {saved ? (
+              <button onClick={() => setResult(null)} className="btn-primary flex-1 py-2">
+                확인
+              </button>
+            ) : (
+              <>
+                <button onClick={() => setResult(null)} className="btn-ghost flex-1 py-2">
+                  넘기기
+                </button>
+                <button onClick={keepDig} className="btn-primary flex-1 py-2">
+                  💾 디깅함에 담기
+                </button>
+              </>
+            )}
+          </div>
         </div>
       )}
     </div>

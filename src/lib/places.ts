@@ -178,7 +178,8 @@ export function place(id: PlaceId): Place {
 }
 
 // ---- 구조적 레이아웃 헬퍼 (월드 1000x720) ----
-const W = WORLD_W, H = WORLD_H;
+// 레이아웃 작성 기준(고정) — 실제 월드 크기는 placeScene에서 스케일
+const W = 1000, H = 720;
 const HALF = Math.PI / 2;
 type D = Decor;
 type K = DecorKind | DecorKind[];
@@ -292,6 +293,11 @@ export function placeScene(id: PlaceId) {
     stage: p.stage,
     floorType: p.floorType,
     env: p.env,
-    decor: layoutFor(id),
+    // 레이아웃(1000×720 기준)을 실제 월드 크기로 스케일 — 위치만 넓혀 답답함 해소(크기는 유지)
+    decor: layoutFor(id).map((d) => ({
+      ...d,
+      x: Math.round(d.x * (WORLD_W / W)),
+      y: Math.round(d.y * (WORLD_H / H)),
+    })),
   };
 }

@@ -21,7 +21,7 @@ body {
 /* 모바일 퍼스트: 앱을 가운데 폰 프레임으로 */
 .phone-shell {
   width: 100%;
-  max-width: 440px;
+  max-width: 920px;
   margin: 0 auto;
   min-height: 100dvh;
   position: relative;

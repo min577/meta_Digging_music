@@ -24,12 +24,14 @@ export default function MapScene2D({
   spots,
   onNear,
   onDig,
+  onReady,
 }: {
   bodyColor: string;
   accentColor: string;
   spots: Spot[];
   onNear: (s: Spot | null) => void;
   onDig: (s: Spot) => void;
+  onReady?: (canvas: HTMLCanvasElement) => void;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const me = useRef({ x: PLAZA.x, y: PLAZA.y + 60, dir: 1, t: 0, walking: false, bounce: 0 });
@@ -114,6 +116,7 @@ export default function MapScene2D({
       }
     };
     fit();
+    onReady?.(canvas);
     window.addEventListener("resize", fit);
 
     const loop = (now: number) => {

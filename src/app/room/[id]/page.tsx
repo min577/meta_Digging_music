@@ -81,6 +81,7 @@ export default function RoomPage() {
   const [editMode, setEditMode] = useState(false);
   const [selectedItem, setSelectedItem] = useState(FURNITURE[0]);
   const [lockedId, setLockedId] = useState<string | null>(null); // 같이 듣기 연결 대상
+  const [myBubble, setMyBubble] = useState<{ text: string; at: number } | null>(null); // 머리 위 말풍선
   const listenAccum = useRef(0);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
@@ -189,7 +190,9 @@ export default function RoomPage() {
   const headerVol = myTrack ? 1 : loudest?.volume ?? 0;
   const g = genreOf(track ? track.genre : roomGenre);
   const pct = progress.dur > 0 ? (progress.cur / progress.dur) * 100 : 0;
-  const isHost = room.queueMode === "dj";
+  const isDJ = room.queueMode === "dj";
+  // 실제 호스트만 DJ 스킵 가능 (핸들 일치 기준)
+  const amHost = !!user && room.hostHandle === user.handle;
 
   const pickMyMusic = (t: Track) => {
     setMyTrack(t);
@@ -241,6 +244,9 @@ export default function RoomPage() {
     const v = chatInput.trim();
     if (!v) return;
     session.sendChat(v);
+    const at = Date.now();
+    setMyBubble({ text: v, at }); // 내 머리 위 말풍선
+    setTimeout(() => setMyBubble((b) => (b && b.at === at ? null : b)), 4800);
     setChatInput("");
   };
 
@@ -316,13 +322,17 @@ export default function RoomPage() {
               {hasDigg(track.id) ? "💾" : "＋"}
             </button>
           )}
-          {mode === "party" && isHost && (
+          {mode === "party" && (!isDJ || amHost) && (
             <button
               onClick={session.skip}
               className="w-9 h-9 rounded-full bg-cream-100 grid place-items-center"
+              title={isDJ ? "다음 곡 (호스트)" : "다음 곡"}
             >
               ⏭
             </button>
+          )}
+          {mode === "party" && isDJ && !amHost && (
+            <span className="chip bg-black/25 text-white text-[10px]">🎧 호스트가 선곡 중</span>
           )}
           {mode === "free" && (
             <button
@@ -349,11 +359,11 @@ export default function RoomPage() {
           startedAt={session.play.startedAt}
           muted={muted}
           onProgress={handleProgress}
-          onEnded={session.skip}
+          onEnded={!isDJ || amHost ? session.skip : undefined}
         />
       )}
-      {/* 자유모드: 내 송출곡(풀볼륨) + 주변 소스 거리별 볼륨 동시 믹싱 */}
-      {mode === "free" && myTrack?.previewUrl && (
+      {/* 자유모드: 내 송출곡 — 단, 같이 듣기 중엔 끔(겹침 방지) */}
+      {mode === "free" && !lockedId && myTrack?.previewUrl && (
         <AudioPlayer
           key={`me_${myTrack.id}`}
           previewUrl={myTrack.previewUrl}
@@ -424,7 +434,10 @@ export default function RoomPage() {
           placed={[...myDecor, ...session.othersDecor]}
           editMode={editMode}
           lockedId={mode === "free" ? lockedId : null}
+          chat={session.chat}
+          myBubble={myBubble}
           onMove={session.broadcastMove}
+          onJump={session.broadcastJump}
           onAudio={(v) => setVols(v)}
           onPlaceAt={placeAt}
           onRemovePlaced={removePlaced}
@@ -481,18 +494,16 @@ export default function RoomPage() {
       </div>
 
       {/* 큐 / 채팅 패널 */}
-      <div className="bg-cream-50 rounded-t-3xl mt-2 flex flex-col flex-1 min-h-[26vh] max-h-[40vh]">
+      <div className="bg-cream-50 rounded-t-3xl mt-2 flex flex-col flex-1 min-h-[16vh] max-h-[28vh]">
         <div className="flex items-center gap-2 px-4 pt-3">
-          {mode === "party" && (
-            <button
-              onClick={() => setTab("queue")}
-              className={`chip py-1.5 px-4 ${
-                tab === "queue" ? "bg-brand text-white" : "bg-cream-100 text-ink-700"
-              }`}
-            >
-              🤝 큐 ({session.queue.length})
-            </button>
-          )}
+          <button
+            onClick={() => setTab("queue")}
+            className={`chip py-1.5 px-4 ${
+              tab === "queue" ? "bg-brand text-white" : "bg-cream-100 text-ink-700"
+            }`}
+          >
+            🤝 큐 ({session.queue.length})
+          </button>
           <button
             onClick={() => setTab("chat")}
             className={`chip py-1.5 px-4 ${
@@ -501,7 +512,7 @@ export default function RoomPage() {
           >
             💬 채팅
           </button>
-          {mode === "party" && room.queueMode === "collab" && tab === "queue" && (
+          {tab === "queue" && (
             <button
               onClick={() => setShowSuggest(true)}
               className="ml-auto chip py-1.5 px-3 bg-brand/10 text-brand-dark font-bold"
@@ -512,7 +523,7 @@ export default function RoomPage() {
         </div>
 
         <div className="flex-1 overflow-y-auto no-scrollbar px-4 py-3">
-          {tab === "queue" && mode === "party" ? (
+          {tab === "queue" ? (
             <div className="space-y-2">
               {session.queue.length === 0 && (
                 <p className="text-center text-ink-700/40 text-sm py-6">

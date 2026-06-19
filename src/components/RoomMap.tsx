@@ -28,6 +28,7 @@ export interface MapAvatar {
   dir?: Dir;
   walking?: boolean;
   track?: Track;
+  jumpAt?: number; // 원격 점프 표시용(수신 시각)
 }
 
 export interface Speaker {

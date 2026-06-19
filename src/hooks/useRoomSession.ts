@@ -41,6 +41,7 @@ export interface RoomSession {
   sendChat: (text: string) => void;
   react: (emoji: string) => void;
   broadcastMove: (x: number, y: number, dir: MapAvatar["dir"]) => void;
+  broadcastJump: () => void;
   setMyTrack: (t: Track | null) => void;
   broadcastDecor: (items: PlacedItem[]) => void;
 }
@@ -158,6 +159,10 @@ export function useRoomSession(
       .on("broadcast", { event: "move" }, ({ payload }: any) => {
         if (payload.id === meRef.current.id) return;
         setRemote((r) => ({ ...r, [payload.id]: { ...r[payload.id], ...payload } }));
+      })
+      .on("broadcast", { event: "jump" }, ({ payload }: any) => {
+        if (payload.id === meRef.current.id) return;
+        setRemote((r) => ({ ...r, [payload.id]: { ...r[payload.id], jumpAt: Date.now() } }));
       })
       .on("broadcast", { event: "playing" }, ({ payload }: any) => {
         if (payload.id === meRef.current.id) return;
@@ -335,6 +340,10 @@ export function useRoomSession(
     [broadcast]
   );
 
+  const broadcastJump = useCallback(() => {
+    broadcast("jump", { id: meRef.current.id });
+  }, [broadcast]);
+
   const broadcastDecor = useCallback(
     (items: PlacedItem[]) => {
       broadcast("decor", { id: meRef.current.id, items });
@@ -375,6 +384,7 @@ export function useRoomSession(
     sendChat,
     react,
     broadcastMove,
+    broadcastJump,
     setMyTrack,
     broadcastDecor,
   };

@@ -58,7 +58,10 @@ interface Props {
   editMode?: boolean;
   /** 같이 듣기로 연결한 소스 id ("npc_<uid>" | "player_<id>") — 풀볼륨 고정 + NPC 동행 */
   lockedId?: string | null;
+  chat?: { userId: string; text: string; at: number }[];
+  myBubble?: { text: string; at: number } | null;
   onMove?: (x: number, y: number, dir: "down" | "up" | "left" | "right") => void;
+  onJump?: () => void;
   onAudio?: (vols: AudioVol[]) => void;
   onPlaceAt?: (x: number, y: number) => void;
   onRemovePlaced?: (id: string) => void;
@@ -85,7 +88,7 @@ export default function RoomScene3D(props: Props) {
         shadows
         dpr={[1, 1.7]}
         gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.08 }}
-        camera={{ fov: 44, near: 1, far: 4000, position: [500, 200, 640] }}
+        camera={{ fov: 50, near: 1, far: 4000, position: [600, 280, 760] }}
       >
         <color attach="background" args={[SKY[time.phase]]} />
         <fog attach="fog" args={[SKY[time.phase], 1100, 2600]} />
@@ -122,7 +125,7 @@ export default function RoomScene3D(props: Props) {
 
 function Scene({
   meAppearance, meHandle, meTrack, place, npcs, remote = [], speakers = [],
-  placed = [], editMode, lockedId, onMove, onAudio, onPlaceAt, onRemovePlaced, time,
+  placed = [], editMode, lockedId, chat = [], myBubble, onMove, onJump, onAudio, onPlaceAt, onRemovePlaced, time,
 }: Props & { time: TimePhase }) {
   const { camera } = useThree();
   const scene = placeScene(place);
@@ -140,6 +143,17 @@ function Scene({
   const lastPrompt = useRef("");
   const [prompt, setPrompt] = useState<{ x: number; z: number; text: string } | null>(null);
   const playerRef = useRef<THREE.Group>(null);
+  const budARef = useRef<THREE.Mesh>(null);
+  const budBRef = useRef<THREE.Mesh>(null);
+  // 이어폰 줄 (THREE.Line — JSX <line>는 SVG와 충돌하므로 명령형 생성)
+  const linkLine = useMemo(() => {
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(9), 3));
+    const l = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: "#2b2620" }));
+    l.visible = false;
+    l.frustumCulled = false;
+    return l;
+  }, []);
   const npcRefs = useRef<Record<string, THREE.Group>>({});
   const npcState = useRef<Record<string, { x: number; z: number; tx: number; tz: number; next: number; heading: number; walking: boolean }>>({});
   const remoteRefs = useRef<Record<string, THREE.Group>>({});
@@ -152,7 +166,7 @@ function Scene({
   const speakersR = useRef(speakers); speakersR.current = speakers;
   const npcsR = useRef(npcs); npcsR.current = npcs;
   const lockedR = useRef(lockedId); lockedR.current = lockedId;
-  const cbR = useRef({ onMove, onAudio }); cbR.current = { onMove, onAudio };
+  const cbR = useRef({ onMove, onJump, onAudio }); cbR.current = { onMove, onJump, onAudio };
 
   // NPC 상태 초기화
   useMemo(() => {
@@ -178,6 +192,7 @@ function Scene({
         if (!m.seated && !m.air) {
           m.vy = JUMP_V;
           m.air = true;
+          cbR.current.onJump?.();
         }
       }
       if (k === "e") {
@@ -210,12 +225,34 @@ function Scene({
     if (k.has("a") || k.has("arrowleft")) dx -= 1;
     if (k.has("d") || k.has("arrowright")) dx += 1;
     const m = me.current;
-    m.walking = !m.seated && (dx !== 0 || dz !== 0);
-    if (m.walking) {
-      const len = Math.hypot(dx, dz) || 1;
-      m.x = clamp(m.x + (dx / len) * SPEED * dt, PAD, WORLD_W - PAD);
-      m.z = clamp(m.z + (dz / len) * SPEED * dt, PAD, WORLD_H - PAD);
-      m.heading = Math.atan2(dx, dz);
+    // 같이 듣기 대상 위치 (NPC/원격 유저) — 자동 팔로우 + 이어폰 링크용
+    const lk = lockedR.current;
+    let lockPos: { x: number; z: number } | null = null;
+    if (lk) {
+      if (lk.startsWith("npc_")) {
+        const v = npcState.current[lk.slice(4)];
+        if (v) lockPos = { x: v.x, z: v.z };
+      } else if (lk.startsWith("player_")) {
+        const r = remoteR.current.find((p) => `player_${p.id}` === lk);
+        if (r) lockPos = { x: r.x, z: r.y };
+      }
+    }
+    if (lockPos && !m.seated) {
+      // 대상 옆으로 자동 추종 (실제 친구도 따라감)
+      const sx = clamp(lockPos.x + 48, PAD, WORLD_W - PAD);
+      const sz = clamp(lockPos.z + 6, PAD, WORLD_H - PAD);
+      m.x += (sx - m.x) * Math.min(1, dt * 3.2);
+      m.z += (sz - m.z) * Math.min(1, dt * 3.2);
+      m.heading = Math.atan2(lockPos.x - m.x, lockPos.z - m.z);
+      m.walking = Math.hypot(sx - m.x, sz - m.z) > 3;
+    } else {
+      m.walking = !m.seated && (dx !== 0 || dz !== 0);
+      if (m.walking) {
+        const len = Math.hypot(dx, dz) || 1;
+        m.x = clamp(m.x + (dx / len) * SPEED * dt, PAD, WORLD_W - PAD);
+        m.z = clamp(m.z + (dz / len) * SPEED * dt, PAD, WORLD_H - PAD);
+        m.heading = Math.atan2(dx, dz);
+      }
     }
     // 점프 적분 (포물선)
     if (m.air) {
@@ -227,6 +264,25 @@ function Scene({
       const base = m.seated ? 22 : bob(now, m.walking); // 앉으면 좌석 높이
       playerRef.current.position.set(m.x, base + m.jy, m.z);
       playerRef.current.rotation.y = lerpAngle(playerRef.current.rotation.y, m.heading, 0.2);
+    }
+
+    // 이어폰 링크 (같이 듣기 상호작용 비주얼)
+    const showLink = !!lockPos;
+    linkLine.visible = showLink;
+    if (showLink && lockPos) {
+      const pos = linkLine.geometry.attributes.position as THREE.BufferAttribute;
+      pos.setXYZ(0, m.x, 54, m.z);
+      pos.setXYZ(1, (m.x + lockPos.x) / 2, 76, (m.z + lockPos.z) / 2);
+      pos.setXYZ(2, lockPos.x, 54, lockPos.z);
+      pos.needsUpdate = true;
+    }
+    if (budARef.current) {
+      budARef.current.visible = showLink;
+      budARef.current.position.set(m.x, 50, m.z);
+    }
+    if (budBRef.current) {
+      budBRef.current.visible = showLink;
+      if (lockPos) budBRef.current.position.set(lockPos.x, 50, lockPos.z);
     }
 
     // 근처 좌석 탐지 + 안내 프롬프트
@@ -250,29 +306,21 @@ function Scene({
     // NPC
     for (const id in npcState.current) {
       const v = npcState.current[id];
-      const locked = lockedR.current === `npc_${id}`;
-      if (locked) {
-        // 같이 듣기: 내 옆(우측)으로 와서 함께 머무름
-        v.tx = clamp(m.x + 55, PAD, WORLD_W - PAD);
-        v.tz = m.z;
-      } else {
-        v.next -= dt;
-        if (v.next <= 0 || Math.hypot(v.tx - v.x, v.tz - v.z) < 10) {
-          if (v.next <= 0) {
-            const s = hashStr(id) + now * 0.0003;
-            v.tx = PAD + rand(s) * (WORLD_W - 2 * PAD);
-            v.tz = PAD + rand(s + 9.1) * (WORLD_H - 2 * PAD);
-            v.next = 2 + rand(s + 3.3) * 4;
-          }
+      v.next -= dt;
+      if (v.next <= 0 || Math.hypot(v.tx - v.x, v.tz - v.z) < 10) {
+        if (v.next <= 0) {
+          const s = hashStr(id) + now * 0.0003;
+          v.tx = PAD + rand(s) * (WORLD_W - 2 * PAD);
+          v.tz = PAD + rand(s + 9.1) * (WORLD_H - 2 * PAD);
+          v.next = 2 + rand(s + 3.3) * 4;
         }
       }
       const ddx = v.tx - v.x, ddz = v.tz - v.z;
       const d = Math.hypot(ddx, ddz);
       v.walking = d > 6;
       if (v.walking) {
-        const spd = locked ? 0.98 : 0.5; // 동행 NPC는 빠르게 따라옴
-        v.x += (ddx / d) * SPEED * spd * dt;
-        v.z += (ddz / d) * SPEED * spd * dt;
+        v.x += (ddx / d) * SPEED * 0.5 * dt;
+        v.z += (ddz / d) * SPEED * 0.5 * dt;
         v.heading = Math.atan2(ddx, ddz);
       }
       const g = npcRefs.current[id];
@@ -288,39 +336,47 @@ function Scene({
       if (g) {
         g.position.x += (r.x - g.position.x) * 0.2;
         g.position.z += (r.y - g.position.z) * 0.2;
-        g.position.y = bob(now + hashStr(r.id), true);
+        // 원격 점프 아크 (broadcast 받은 jumpAt 기준)
+        let jy = 0;
+        const jt = (r as { jumpAt?: number }).jumpAt;
+        if (jt) {
+          const e = (Date.now() - jt) / 1000;
+          if (e >= 0 && e < 0.6) jy = Math.sin((e / 0.6) * Math.PI) * 50;
+        }
+        g.position.y = bob(now + hashStr(r.id), true) + jy;
         g.rotation.y = lerpAngle(g.rotation.y, dirHeading(r.dir), 0.2);
       }
     }
 
-    // 카메라 추적 (아바타에 더 가깝게 확대)
-    const target = new THREE.Vector3(m.x, 46, m.z - 10);
-    const camPos = new THREE.Vector3(m.x, 175, m.z + 215);
+    // 카메라 추적 (넓은 시야)
+    const target = new THREE.Vector3(m.x, 50, m.z - 20);
+    const camPos = new THREE.Vector3(m.x, 270, m.z + 340);
     camera.position.lerp(camPos, 0.12);
     camera.lookAt(target);
 
     // 근접 오디오
     if (cbR.current.onAudio && now - lastAudioAt.current > 160) {
       const out: AudioVol[] = [];
-      for (const s of speakersR.current) {
-        const v = 1 - Math.hypot(m.x - s.x, m.z - s.y) / RANGE;
-        if (v > 0.03) out.push({ id: s.id, volume: +v.toFixed(2) });
-      }
-      for (const r of remoteR.current) {
-        if (!r.track) continue;
-        const id = `player_${r.id}`;
-        const raw = 1 - Math.hypot(m.x - r.x, m.z - r.y) / PERSON_RANGE;
-        const v = lockedR.current === id ? 1 : raw;
-        if (v > 0.03) out.push({ id, volume: +v.toFixed(2) });
-      }
-      for (const n of npcsR.current) {
-        if (!n.track) continue;
-        const id = `npc_${n.id}`;
-        const st = npcState.current[n.id];
-        const nx = st?.x ?? n.x, nz = st?.z ?? n.y;
-        const raw = 1 - Math.hypot(m.x - nx, m.z - nz) / PERSON_RANGE;
-        const v = lockedR.current === id ? 1 : raw;
-        if (v > 0.03) out.push({ id, volume: +v.toFixed(2) });
+      if (lk) {
+        // 같이 듣기 중엔 그 사람 곡만 (영역 내 다른 노래 겹침 없음)
+        out.push({ id: lk, volume: 1 });
+      } else {
+        for (const s of speakersR.current) {
+          const v = 1 - Math.hypot(m.x - s.x, m.z - s.y) / RANGE;
+          if (v > 0.03) out.push({ id: s.id, volume: +v.toFixed(2) });
+        }
+        for (const r of remoteR.current) {
+          if (!r.track) continue;
+          const v = 1 - Math.hypot(m.x - r.x, m.z - r.y) / PERSON_RANGE;
+          if (v > 0.03) out.push({ id: `player_${r.id}`, volume: +v.toFixed(2) });
+        }
+        for (const n of npcsR.current) {
+          if (!n.track) continue;
+          const st = npcState.current[n.id];
+          const nx = st?.x ?? n.x, nz = st?.z ?? n.y;
+          const v = 1 - Math.hypot(m.x - nx, m.z - nz) / PERSON_RANGE;
+          if (v > 0.03) out.push({ id: `npc_${n.id}`, volume: +v.toFixed(2) });
+        }
       }
       const sig = out.map((o) => `${o.id}:${o.volume}`).join("|");
       if (sig !== lastAudio.current) {
@@ -338,6 +394,14 @@ function Scene({
   });
 
   const L = lightCfg(time);
+
+  // 최근(5초내) 채팅을 말풍선으로
+  const recentBubble = (id: string): string | null => {
+    for (let i = chat.length - 1; i >= 0; i--) {
+      if (chat[i].userId === id) return Date.now() - chat[i].at < 5000 ? chat[i].text : null;
+    }
+    return null;
+  };
 
   const onGroundDown = (e: ThreeEvent<PointerEvent>) => {
     if (!editMode || !onPlaceAt) return;
@@ -448,7 +512,19 @@ function Scene({
         <Avatar3D a={meAppearance} />
         <NameTag handle={meHandle} me track={meTrack ?? undefined} />
         {meTrack && <AudioAura genre={meTrack.genre} />}
+        <ChatBubble text={myBubble && Date.now() - myBubble.at < 5000 ? myBubble.text : null} />
       </group>
+
+      {/* 이어폰 링크 (같이 듣기 상호작용) */}
+      <primitive object={linkLine} />
+      <mesh ref={budARef} visible={false}>
+        <sphereGeometry args={[2.6, 12, 12]} />
+        <meshStandardMaterial color="#2b2620" />
+      </mesh>
+      <mesh ref={budBRef} visible={false}>
+        <sphereGeometry args={[2.6, 12, 12]} />
+        <meshStandardMaterial color="#2b2620" />
+      </mesh>
 
       {/* NPC */}
       {npcs.map((n) => (
@@ -465,9 +541,21 @@ function Scene({
           <Avatar3D a={r.appearance ?? appearanceFromSeed(r.handle)} />
           <NameTag handle={r.handle} track={r.track} />
           {r.track && <AudioAura genre={r.track.genre} />}
+          <ChatBubble text={recentBubble(r.id)} />
         </group>
       ))}
     </group>
+  );
+}
+
+function ChatBubble({ text }: { text: string | null }) {
+  if (!text) return null;
+  return (
+    <Html position={[0, 96, 0]} center distanceFactor={520} style={{ pointerEvents: "none" }}>
+      <div className="px-2.5 py-1 rounded-2xl bg-white text-ink-900 text-[11px] font-bold shadow-soft whitespace-nowrap max-w-[180px] overflow-hidden text-ellipsis">
+        {text}
+      </div>
+    </Html>
   );
 }
 

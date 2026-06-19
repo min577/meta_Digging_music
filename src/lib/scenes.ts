@@ -1,9 +1,9 @@
 import type { GenreId } from "./genres";
 import type { DecorKind } from "@/components/DecorSprite";
 
-// 월드 좌표계 — 아담한 공간
-export const WORLD_W = 1000;
-export const WORLD_H = 720;
+// 월드 좌표계 — 넉넉한 공간 (레이아웃은 1000×720 기준으로 작성 후 placeScene에서 스케일)
+export const WORLD_W = 1340;
+export const WORLD_H = 960;
 
 export type FloorType = "wood" | "grass" | "tile" | "neon" | "dark";
 
