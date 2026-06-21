@@ -25,6 +25,7 @@ export default function MapScene2D({
   onNear,
   onDig,
   onReady,
+  targetRef,
 }: {
   bodyColor: string;
   accentColor: string;
@@ -32,14 +33,15 @@ export default function MapScene2D({
   onNear: (s: Spot | null) => void;
   onDig: (s: Spot) => void;
   onReady?: (canvas: HTMLCanvasElement) => void;
+  targetRef?: React.RefObject<HTMLElement | null>;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const me = useRef({ x: PLAZA.x, y: PLAZA.y + 60, dir: 1, t: 0, walking: false, bounce: 0, vx: 0, vy: 0 });
   const keys = useRef<Set<string>>(new Set());
   const joy = useRef({ active: false, id: -1, ox: 0, oy: 0, dx: 0, dy: 0 });
   const nearRef = useRef<Spot | null>(null);
-  const cb = useRef({ onNear, onDig, spots, bodyColor, accentColor });
-  cb.current = { onNear, onDig, spots, bodyColor, accentColor };
+  const cb = useRef({ onNear, onDig, spots, bodyColor, accentColor, targetRef });
+  cb.current = { onNear, onDig, spots, bodyColor, accentColor, targetRef };
 
   useEffect(() => {
     const moveKeys = ["w", "a", "s", "d", "arrowup", "arrowdown", "arrowleft", "arrowright"];
@@ -171,6 +173,15 @@ export default function MapScene2D({
       if (near !== nearRef.current) {
         nearRef.current = near;
         cb.current.onNear(near);
+      }
+      // 플레이어의 화면(px) 위치를 버튼 요소에 반영 → 아바타 머리 위에 정확히
+      const tEl = cb.current.targetRef?.current;
+      if (tEl) {
+        const vw = canvas.width / dpr, vh = canvas.height / dpr;
+        const camx = clamp(st.x - vw / 2, 0, Math.max(0, WORLD.w - vw));
+        const camy = clamp(st.y - vh / 2, 0, Math.max(0, WORLD.h - vh));
+        tEl.style.left = `${Math.round(st.x - camx)}px`;
+        tEl.style.top = `${Math.round(st.y - camy)}px`;
       }
       draw(ctx, canvas, dpr, now, st, cb.current.spots, cb.current.bodyColor, cb.current.accentColor, near, joy.current);
       raf = requestAnimationFrame(loop);
