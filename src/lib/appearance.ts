@@ -135,7 +135,7 @@ export function defaultAppearance(): Appearance {
     hair: "short",
     hairColor: HAIR_COLORS[0],
     outfit: OUTFIT_COLORS[0],
-    pants: PANTS_COLORS[0],
+    pants: "none", // 목도리 기본 = 없음 (레퍼런스)
     hat: "none",
     face: "smile",
     glasses: "none",
@@ -154,7 +154,8 @@ export function appearanceFromSeed(seed: string): Appearance {
     hair: pick(HAIR_STYLES.filter((s) => s !== "bald"), 2),
     hairColor: pick(HAIR_COLORS, 3),
     outfit: pick(OUTFIT_COLORS, 5),
-    pants: pick(PANTS_COLORS, 7),
+    pants: "none", // 깔끔한 기본 룩
+
     hat: pick(HATS, 11),
     face: pick(FACES, 13),
     glasses: pick([...GLASSES, "none", "none"], 17) as GlassesStyle,

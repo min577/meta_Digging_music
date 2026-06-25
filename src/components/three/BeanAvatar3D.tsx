@@ -18,7 +18,7 @@ export default function BeanAvatar3D({ a }: { a: Appearance }) {
   const ear = tone(body, -8);
   const hoodInner = tone(body, -16);
   const hair = a.hairColor || "#2A251D";
-  const scarf = a.pants || "#3E4A5E";
+  const scarf = a.pants || "none";
 
   const eyeMat = useMemo(
     () => new THREE.MeshStandardMaterial({ color: "#241d1a", roughness: 0.18, metalness: 0.1 }),
@@ -99,12 +99,14 @@ export default function BeanAvatar3D({ a }: { a: Appearance }) {
         <meshStandardMaterial color="#ffffff" transparent opacity={0.14} roughness={1} depthWrite={false} />
       </mesh>
 
-      {/* 목도리 (목/후드 경계) */}
-      <mesh position={[0, 30, 2]} rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[12.6, 2.3, 14, 36]} />
-        <meshStandardMaterial color={scarf} roughness={0.7} />
-        <Outlines thickness={1.8} color={OUT} />
-      </mesh>
+      {/* 목도리 (선택) — 'none'이면 미표시 */}
+      {scarf !== "none" && (
+        <mesh position={[0, 30, 2]} rotation={[Math.PI / 2, 0, 0]}>
+          <torusGeometry args={[12.6, 2.3, 14, 36]} />
+          <meshStandardMaterial color={scarf} roughness={0.7} />
+          <Outlines thickness={1.8} color={OUT} />
+        </mesh>
+      )}
 
       {/* 볼터치 */}
       {[-9.5, 9.5].map((x) => (

@@ -171,7 +171,7 @@ export default function ProfilePage() {
             )}
             {part === "scarf" && (
               <Swatches
-                colors={HAIR_COLORS}
+                colors={["none", ...HAIR_COLORS]}
                 value={user.character.appearance.pants}
                 onPick={(c) => setAppearance({ ...user.character.appearance, pants: c } as Appearance)}
               />
@@ -534,11 +534,13 @@ function Swatches({
         <button
           key={c}
           onClick={() => onPick(c)}
-          className={`aspect-square rounded-xl transition active:scale-95 ${
+          className={`aspect-square rounded-xl transition active:scale-95 grid place-items-center ${
             value === c ? "ring-2 ring-brand ring-offset-2 ring-offset-cream-50" : ""
-          }`}
-          style={{ background: c }}
-        />
+          } ${c === "none" ? "border-2 border-dashed border-cream-300 text-ink-700/40 text-[9px] font-bold" : ""}`}
+          style={c === "none" ? { background: "#fff" } : { background: c }}
+        >
+          {c === "none" ? "없음" : ""}
+        </button>
       ))}
     </div>
   );

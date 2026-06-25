@@ -27,7 +27,7 @@ export default function Avatar({
   const body = a.outfit || "#7B5EE6";
   const ear = shade(body, -8);
   const foot = shade(body, -30);
-  const scarf = a.pants || "#3E4A5E";
+  const scarf = a.pants || "none";
   const hair = a.hairColor || "#2A251D";
   const gid = "bd" + body.replace(/[^a-zA-Z0-9]/g, "");
 
@@ -80,14 +80,16 @@ export default function Avatar({
 
         {/* 얼굴(크림) */}
         <ellipse cx="50" cy="54" rx="21" ry="22" fill="#F8E2C5" />
-        {/* 앞머리(다크 마운드) */}
+        {/* 앞머리(다크 둥근 마운드) */}
         <path
-          d="M29 54 Q29 31 50 31 Q71 31 71 54 Q61 49 50 50 Q39 49 29 54 Z"
+          d="M28 53 Q28 30 50 30 Q72 30 72 53 Q61 49 50 50 Q39 49 28 53 Z"
           fill={hair}
         />
 
-        {/* 목도리 (목/후드 경계, 서브틀) */}
-        <path d="M32 72 Q50 80 68 72 L68 77 Q50 85 32 77 Z" fill={scarf} />
+        {/* 목도리 (선택) — 'none'이면 미표시 */}
+        {scarf !== "none" && (
+          <path d="M34 73 Q50 79 66 73 L66 77 Q50 83 34 77 Z" fill={scarf} />
+        )}
 
         {/* 얼굴 표정 */}
         <BeanFace face={a.face} />
