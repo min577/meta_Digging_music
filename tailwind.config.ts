@@ -28,13 +28,15 @@ const config: Config = {
         },
         // 장르별 무드 액센트
         jazz: "#8A6D3B",
-        citypop: "#FF6EC7",
+        citypop: "#9C8CE4",
         lofi: "#7C83FD",
         metal: "#4B4B5C",
-        live: "#FF5A5F",
+        live: "#F4571A",
+        // DigTown 브랜드 = 마스코트 보라 + 골드 헤드폰
+        gold: "#F2C14E",
         brand: {
-          DEFAULT: "#6C8AE4",
-          dark: "#4F6FCB",
+          DEFAULT: "#7B5EE6",
+          dark: "#5E45C6",
         },
       },
       fontFamily: {

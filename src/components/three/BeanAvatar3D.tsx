@@ -158,9 +158,9 @@ function Hat3D({ kind, accent }: { kind: HatStyle; accent: string }) {
     case "headphones":
       return (
         <group position={[0, 44, 0]}>
-          <mesh position={[0, 10, 0]}><torusGeometry args={[14.5, 1.8, 12, 28, Math.PI]} /><meshStandardMaterial color="#34495e" /></mesh>
+          <mesh position={[0, 10, 0]}><torusGeometry args={[14.5, 1.8, 12, 28, Math.PI]} /><meshStandardMaterial color="#C99A2E" metalness={0.3} roughness={0.5} /></mesh>
           {[-14.5, 14.5].map((x) => (
-            <RoundedBox key={x} args={[4.5, 8, 8]} radius={2} smoothness={2} position={[x, 2, 0]}><meshStandardMaterial color="#6c8ae4" /></RoundedBox>
+            <RoundedBox key={x} args={[4.5, 8, 8]} radius={2} smoothness={2} position={[x, 2, 0]}><meshStandardMaterial color="#F2C14E" metalness={0.3} roughness={0.45} /></RoundedBox>
           ))}
         </group>
       );

@@ -114,9 +114,9 @@ function Hat({ kind, accent }: { kind: HatStyle; accent: string }) {
     case "headphones":
       return (
         <g>
-          <path d="M28 30 Q28 9 50 9 Q72 9 72 30" stroke="#34495e" strokeWidth="4" fill="none" />
-          <rect x="23" y="28" width="9" height="13" rx="3" fill="#6c8ae4" />
-          <rect x="68" y="28" width="9" height="13" rx="3" fill="#6c8ae4" />
+          <path d="M28 30 Q28 9 50 9 Q72 9 72 30" stroke="#C99A2E" strokeWidth="4" fill="none" />
+          <rect x="23" y="28" width="9" height="13" rx="3" fill="#F2C14E" />
+          <rect x="68" y="28" width="9" height="13" rx="3" fill="#F2C14E" />
         </g>
       );
     case "fedora":

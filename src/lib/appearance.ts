@@ -63,15 +63,16 @@ export const HAIR_STYLES: HairStyle[] = [
   "bald",
 ];
 
+// 디자인 가이드 후드 컬러 (브랜드 보라 우선 = 기본값)
 export const OUTFIT_COLORS = [
-  "#6C8AE4",
-  "#FF5A5F",
-  "#46D8C5",
-  "#FFB23E",
-  "#9B59B6",
-  "#2ECC71",
-  "#34495E",
-  "#FF6EC7",
+  "#7B5EE6", // 브랜드 보라 (기본)
+  "#E84B3C", // 레드
+  "#F4571A", // 오렌지
+  "#F5B731", // 옐로우
+  "#2BA84A", // 그린
+  "#5FB0E8", // 블루
+  "#F6A6BE", // 핑크
+  "#34495E", // 차콜
 ];
 
 export const PANTS_COLORS = ["#3E4A5E", "#6B4A2B", "#2A2A35", "#5A6B8C", "#7A7A7A"];
