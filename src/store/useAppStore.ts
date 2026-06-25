@@ -41,6 +41,8 @@ interface AppState {
   roomDecor: Record<string, PlacedItem[]>;
   /** 구매한 상점 악세서리 id 목록 (착용 여부와 별개로 영구 보유) */
   ownedItems: string[];
+  /** 탭별 코치마크 튜토리얼 완료 여부 (key: home/world/shop/friends/profile) */
+  tours: Record<string, boolean>;
 
   // ---- 룸 ----
   addRoom: (room: Room) => void;
@@ -64,6 +66,10 @@ interface AppState {
 
   // ---- 상점 보유 아이템 ----
   ownItem: (id: string) => void;
+
+  // ---- 튜토리얼(코치마크) ----
+  markTour: (key: string) => void;
+  resetTours: () => void;
 
   // ---- 디깅함 ----
   addDigg: (track: Track, roomId: string | null) => boolean; // 신규면 true
@@ -120,11 +126,15 @@ export const useAppStore = create<AppState>()(
       customRooms: [],
       roomDecor: {},
       ownedItems: [],
+      tours: {},
 
       addRoom: (room) => set((s) => ({ customRooms: [room, ...s.customRooms] })),
 
       ownItem: (id) =>
         set((s) => (s.ownedItems.includes(id) ? {} : { ownedItems: [...s.ownedItems, id] })),
+
+      markTour: (key) => set((s) => ({ tours: { ...s.tours, [key]: true } })),
+      resetTours: () => set({ tours: {} }),
 
       placeDecor: (roomId, item) =>
         set((s) => ({
@@ -170,6 +180,7 @@ export const useAppStore = create<AppState>()(
           visitedRooms: [],
           customRooms: [],
           ownedItems: [],
+          tours: {},
         }),
 
       setCharacter: (c) =>
@@ -350,6 +361,7 @@ export const useAppStore = create<AppState>()(
         customRooms: s.customRooms,
         roomDecor: s.roomDecor,
         ownedItems: s.ownedItems,
+        tours: s.tours,
       }),
     }
   )

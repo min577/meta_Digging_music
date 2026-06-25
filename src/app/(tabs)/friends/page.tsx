@@ -4,12 +4,18 @@ import { useMemo, useState } from "react";
 import TopBar from "@/components/TopBar";
 import Avatar from "@/components/Avatar";
 import ProfileSheet from "@/components/ProfileSheet";
+import CoachTour, { type TourStep } from "@/components/CoachTour";
 import { appearanceFromSeed } from "@/lib/appearance";
 import { useAppStore } from "@/store/useAppStore";
 import { genre as genreOf, type GenreId } from "@/lib/genres";
 import { matchPercent } from "@/lib/taste";
 import { ROOMS } from "@/lib/mock";
 import type { Friend } from "@/lib/types";
+
+const FRIENDS_TOUR: TourStep[] = [
+  { target: "friends-suggest", title: "취향이 비슷한 사람", desc: "취향 일치도 순으로 추천돼요. 카드를 누르면 상대의 좋아하는 장르·프로필 뮤직·플레이리스트를 볼 수 있어요." },
+  { target: "friends-invite", title: "친구 초대", desc: "초대 링크를 공유해 친구를 데려오고, 같이 들으러 가요." },
+];
 
 export default function FriendsPage() {
   const user = useAppStore((s) => s.user);
@@ -71,6 +77,7 @@ export default function FriendsPage() {
 
   return (
     <div>
+      <CoachTour tourKey="friends" steps={FRIENDS_TOUR} />
       <TopBar title="친구" sub="취향이 통하는 사람을 발견해요" />
 
       {/* 검색 */}
@@ -87,7 +94,7 @@ export default function FriendsPage() {
       </div>
 
       {/* 초대 */}
-      <section className="px-5 mt-3">
+      <section data-tour="friends-invite" className="px-5 mt-3">
         <div className="card p-4">
           <p className="text-sm font-bold text-ink-800">친구 초대</p>
           <p className="text-xs text-ink-700/50 mt-0.5">
@@ -104,7 +111,7 @@ export default function FriendsPage() {
 
       {/* 추천: 취향 매칭 */}
       {suggestions.length > 0 && (
-        <section className="px-5 mt-4">
+        <section data-tour="friends-suggest" className="px-5 mt-4">
           <p className="font-bold text-ink-900 mb-2">🎯 취향이 비슷한 사람</p>
           <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1">
             {suggestions.map((s) => (

@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import TopBar from "@/components/TopBar";
 import Avatar from "@/components/Avatar";
+import CoachTour, { type TourStep } from "@/components/CoachTour";
 import { useAppStore, useMyTopGenre } from "@/store/useAppStore";
 import { GENRES } from "@/lib/genres";
 import {
@@ -41,6 +42,12 @@ const ITEMS: ShopItem[] = [
 const TABS: { id: Slot; label: string }[] = [
   { id: "hat", label: "🎩 모자" },
   { id: "glasses", label: "🕶️ 안경" },
+];
+
+const SHOP_TOUR: TourStep[] = [
+  { target: "shop-preview", title: "내 캐릭터 미리보기", desc: "보유 코인으로 악세서리를 사면 바로 여기 미리 입혀져요." },
+  { target: "shop-tabs", title: "모자 · 안경", desc: "카테고리를 골라 마음에 드는 아이템을 찾아 구매·착용해요.", advance: "tap" },
+  { title: "기본 꾸미기는 무료", desc: "본체색·목도리·머리·표정은 마이페이지 ‘기본 꾸미기’에서 무료로 바꿀 수 있어요." },
 ];
 
 export default function ShopPage() {
@@ -99,10 +106,11 @@ export default function ShopPage() {
 
   return (
     <div>
-      <TopBar title="상점" sub="모자·안경으로 나의 Bean을 꾸며보세요" />
+      <CoachTour tourKey="shop" steps={SHOP_TOUR} />
+      <TopBar title="상점" sub="모자·안경으로 나의 캐릭터를 꾸며보세요" />
 
       {/* 미리보기 + 코인 */}
-      <div className="px-5 flex items-center gap-4">
+      <div data-tour="shop-preview" className="px-5 flex items-center gap-4">
         <div className="rounded-3xl bg-cream-50 border border-cream-200 px-6 py-3 shadow-card">
           <Avatar appearance={ap} size={96} aura={auraColor} />
         </div>
@@ -118,7 +126,7 @@ export default function ShopPage() {
       </p>
 
       {/* 슬롯 탭 */}
-      <div className="px-5 mt-3 flex gap-2 overflow-x-auto no-scrollbar">
+      <div data-tour="shop-tabs" className="px-5 mt-3 flex gap-2 overflow-x-auto no-scrollbar">
         {TABS.map((t) => (
           <button
             key={t.id}

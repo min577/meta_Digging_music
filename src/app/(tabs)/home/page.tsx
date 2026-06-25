@@ -6,12 +6,20 @@ import { useRouter } from "next/navigation";
 import TopBar from "@/components/TopBar";
 import RoomCard from "@/components/RoomCard";
 import MoodBuilding from "@/components/MoodBuilding";
+import CoachTour, { type TourStep } from "@/components/CoachTour";
 import { LOCATIONS, ROOMS } from "@/lib/mock";
 import { GENRES, GENRE_LIST, type GenreId } from "@/lib/genres";
 import { matchPercent, topGenre } from "@/lib/taste";
 import { useAppStore } from "@/store/useAppStore";
 
 type Filter = "match" | GenreId;
+
+const HOME_TOUR: TourStep[] = [
+  { target: "home-quest", title: "오늘의 퀘스트", desc: "여기서 진행 중인 퀘스트와 보상을 확인해요. 디깅·퀘스트로 코인을 모아요." },
+  { target: "home-mood", title: "무드 공간", desc: "한강·카페 같은 공간으로 들어가 음악을 함께 들어요. 카드를 누르면 입장!" },
+  { target: "home-create", title: "룸 만들기", desc: "내 룸을 만들어 친구를 초대할 수도 있어요." },
+  { target: "home-filter", title: "취향 일치순", desc: "룸과 사람은 항상 취향 일치도 순으로 추천돼요." },
+];
 
 export default function HomePage() {
   const router = useRouter();
@@ -56,6 +64,7 @@ export default function HomePage() {
 
   return (
     <div>
+      <CoachTour tourKey="home" steps={HOME_TOUR} />
       <TopBar
         title={`안녕, ${user?.handle ?? "디깅러"} 👋`}
         sub="오늘은 어떤 곡을 디깅해볼까요?"
@@ -65,6 +74,7 @@ export default function HomePage() {
       {activeQuest && (
         <Link
           href="/quests"
+          data-tour="home-quest"
           className="mx-5 mt-2 card p-3.5 flex items-center gap-3 active:scale-[0.99] transition bg-gradient-to-r from-brand/10 to-cream-50"
         >
           <span className="text-2xl shrink-0">🎯</span>
@@ -90,11 +100,12 @@ export default function HomePage() {
       )}
 
       {/* 무드 공간 캐러셀 */}
-      <section className="mt-4">
+      <section className="mt-4" data-tour="home-mood">
         <div className="flex items-center justify-between px-5">
           <h2 className="font-bold text-ink-900">무드 공간</h2>
           <Link
             href="/room/create"
+            data-tour="home-create"
             className="btn-primary py-2 px-4 text-sm font-bold flex items-center gap-1 shadow-soft active:scale-95"
           >
             <span className="text-base leading-none">＋</span> 룸 만들기
@@ -126,7 +137,7 @@ export default function HomePage() {
       </section>
 
       {/* 필터 */}
-      <div className="mt-5 px-5 flex items-center gap-2 overflow-x-auto no-scrollbar">
+      <div data-tour="home-filter" className="mt-5 px-5 flex items-center gap-2 overflow-x-auto no-scrollbar">
         <button
           onClick={() => setFilter("match")}
           className={`chip py-1.5 px-3 shrink-0 border ${

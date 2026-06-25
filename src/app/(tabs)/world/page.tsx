@@ -4,11 +4,18 @@ import { useRef, useState } from "react";
 import MapScene2D, { type Spot } from "@/components/MapScene2D";
 import AudioPlayer from "@/components/AudioPlayer";
 import Icon from "@/components/Icon";
+import CoachTour, { type TourStep } from "@/components/CoachTour";
 import { useAppStore, useMyTopGenre } from "@/store/useAppStore";
 import { GENRES } from "@/lib/genres";
 import { tracksByGenre } from "@/lib/music";
 import { defaultAppearance } from "@/lib/appearance";
 import type { Track } from "@/lib/types";
+
+const WORLD_TOUR: TourStep[] = [
+  { title: "디깅 월드에 온 걸 환영해요", desc: "캐릭터를 움직여 음악을 발견하는 공간이에요. WASD·방향키 또는 화면을 드래그해 직접 움직여보세요!", advance: "move" },
+  { target: "world-hud", title: "이동 & 방방이", desc: "자유롭게 돌아다니다 음악 스팟에 다가가면 '디깅하기' 버튼이 떠요. 방방이에선 점프!" },
+  { target: "world-bag", title: "디깅함", desc: "발견해서 담은 곡은 여기 디깅함에 쌓여요. 마이페이지에서 다시 볼 수 있어요." },
+];
 
 // 디깅 월드의 음악 스팟 (장르별)
 const SPOTS: Spot[] = [
@@ -74,6 +81,7 @@ export default function WorldPage() {
 
   return (
     <div className="relative h-[calc(100dvh_-_120px)] overflow-hidden bg-[#7cc96b]">
+      <CoachTour tourKey="world" steps={WORLD_TOUR} />
       <MapScene2D
         bodyColor={ap.outfit}
         accentColor={ap.hairColor}
@@ -87,9 +95,9 @@ export default function WorldPage() {
 
       {/* 상단 HUD */}
       <div className="absolute top-3 left-3 right-3 flex items-center justify-between z-10 pointer-events-none">
-        <span className="chip bg-black/45 text-white text-[11px]">🎧 디깅 월드 · WASD/터치 이동 · 🦘 방방이</span>
+        <span data-tour="world-hud" className="chip bg-black/45 text-white text-[11px]">🎧 디깅 월드 · WASD/터치 이동 · 🦘 방방이</span>
         <div className="flex items-center gap-2 pointer-events-auto">
-          <span className="chip bg-white/90 text-ink-900 text-[11px] font-bold flex items-center gap-1">
+          <span data-tour="world-bag" className="chip bg-white/90 text-ink-900 text-[11px] font-bold flex items-center gap-1">
             <Icon name="music" size={13} /> 디깅함 {diggs.length}
           </span>
           <button onClick={capture} className="chip bg-white/90 text-ink-900 text-[13px] font-bold" title="사진 찍기">

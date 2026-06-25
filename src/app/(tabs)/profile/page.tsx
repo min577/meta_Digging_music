@@ -2,8 +2,10 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import TopBar from "@/components/TopBar";
 import Avatar from "@/components/Avatar";
+import CoachTour, { type TourStep } from "@/components/CoachTour";
 import { useAppStore, useMyTopGenre } from "@/store/useAppStore";
 import { GENRES, GENRE_LIST, genre as genreOf } from "@/lib/genres";
 import { sortedGenres } from "@/lib/taste";
@@ -18,6 +20,11 @@ type View = "report" | "diggs" | "ranking" | "achv";
 
 const STAGE_NAME = ["새싹", "디깅 비기너", "디깅 헤드", "디깅 마스터"];
 
+const PROFILE_TOUR: TourStep[] = [
+  { target: "profile-customize", title: "기본 꾸미기 (무료)", desc: "본체색·목도리·머리·표정을 무료로 바꿀 수 있어요. 모자·안경은 상점에서!" },
+  { target: "profile-tabs", title: "취향 리포트 & 디깅함", desc: "여기서 내 장르 분포, 저장한 곡(디깅함), 업적을 확인해요." },
+];
+
 export default function ProfilePage() {
   const user = useAppStore((s) => s.user);
   const diggs = useAppStore((s) => s.diggs);
@@ -27,6 +34,8 @@ export default function ProfilePage() {
   const removeDigg = useAppStore((s) => s.removeDigg);
   const customRooms = useAppStore((s) => s.customRooms);
   const resetAll = useAppStore((s) => s.resetAll);
+  const resetTours = useAppStore((s) => s.resetTours);
+  const router = useRouter();
   const myGenre = useMyTopGenre();
   const [view, setView] = useState<View>("report");
   const [part, setPart] = useState<"body" | "scarf" | "antenna" | "face">("body");
@@ -108,6 +117,7 @@ export default function ProfilePage() {
 
   return (
     <div>
+      <CoachTour tourKey="profile" steps={PROFILE_TOUR} />
       <TopBar title="마이페이지" />
 
       {/* 아바타 카드 */}
@@ -137,7 +147,7 @@ export default function ProfilePage() {
         </div>
 
         {/* 기본 꾸미기 (무료) — 본체색/목도리/머리/표정 */}
-        <div id="base-customizer" className="card p-3 mt-3 scroll-mt-20">
+        <div id="base-customizer" data-tour="profile-customize" className="card p-3 mt-3 scroll-mt-20">
           <div className="flex items-center justify-between mb-2">
             <p className="text-xs font-bold text-ink-700">🎨 기본 꾸미기 <span className="text-brand">무료</span></p>
             <span className="text-[10px] text-ink-700/45">모자·안경은 상점에서</span>
@@ -240,7 +250,7 @@ export default function ProfilePage() {
       </section>
 
       {/* 탭 */}
-      <div className="px-5 mt-4 flex gap-2 overflow-x-auto no-scrollbar">
+      <div data-tour="profile-tabs" className="px-5 mt-4 flex gap-2 overflow-x-auto no-scrollbar">
         {([
           ["achv", "🏆 업적"],
           ["report", "📊 취향 리포트"],
@@ -498,6 +508,16 @@ export default function ProfilePage() {
             데모 모드 · Supabase 키를 연결하면 클라우드 동기화가 켜져요
           </p>
         )}
+
+        <button
+          onClick={() => {
+            resetTours();
+            router.push("/world");
+          }}
+          className="btn-ghost w-full text-sm"
+        >
+          🎮 튜토리얼 다시 보기
+        </button>
 
         <button
           onClick={logout}
