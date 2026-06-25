@@ -3,9 +3,10 @@
 import { useMemo, useState } from "react";
 import TopBar from "@/components/TopBar";
 import Avatar from "@/components/Avatar";
+import ProfileSheet from "@/components/ProfileSheet";
 import { appearanceFromSeed } from "@/lib/appearance";
 import { useAppStore } from "@/store/useAppStore";
-import { genre as genreOf } from "@/lib/genres";
+import { genre as genreOf, type GenreId } from "@/lib/genres";
 import { matchPercent } from "@/lib/taste";
 import { ROOMS } from "@/lib/mock";
 import type { Friend } from "@/lib/types";
@@ -17,6 +18,7 @@ export default function FriendsPage() {
   const taste = user?.tasteVector ?? {};
   const [q, setQ] = useState("");
   const [copied, setCopied] = useState(false);
+  const [selected, setSelected] = useState<{ handle: string; topGenre: GenreId; isFriend: boolean; addable?: Friend } | null>(null);
 
   // 친구를 취향 일치도로 정렬 (1순위 = 취향, 친구는 2순위지만 목록 내부 정렬은 취향순)
   const ranked = useMemo(
@@ -107,11 +109,16 @@ export default function FriendsPage() {
           <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1">
             {suggestions.map((s) => (
               <div key={s.userId} className="card shrink-0 w-32 p-3 text-center">
-                <Avatar appearance={appearanceFromSeed(s.handle)} size={56} bob={false} />
-                <p className="font-bold text-sm mt-1 truncate">{s.handle}</p>
-                <p className="text-[11px] text-ink-700/50">
-                  {genreOf(s.topGenre).emoji} {s.matchPct}% 일치
-                </p>
+                <button
+                  onClick={() => setSelected({ handle: s.handle, topGenre: s.topGenre, isFriend: false, addable: s })}
+                  className="w-full flex flex-col items-center active:scale-95 transition"
+                >
+                  <Avatar appearance={appearanceFromSeed(s.handle)} size={56} bob={false} />
+                  <p className="font-bold text-sm mt-1 truncate w-full">{s.handle}</p>
+                  <p className="text-[11px] text-ink-700/50">
+                    {genreOf(s.topGenre).emoji} {s.matchPct}% 일치
+                  </p>
+                </button>
                 <button
                   onClick={() => addFriend(s)}
                   className="mt-2 w-full rounded-xl bg-brand text-white text-xs font-bold py-1.5 active:scale-95 transition"
@@ -129,7 +136,18 @@ export default function FriendsPage() {
         <p className="font-bold text-ink-900 mb-2">내 친구 ({ranked.length})</p>
         <div className="space-y-2">
           {filtered.map((f) => (
-            <div key={f.userId} className="card px-3 py-2.5 flex items-center gap-3">
+            <button
+              key={f.userId}
+              onClick={() =>
+                setSelected({
+                  handle: f.handle,
+                  topGenre: f.topGenre,
+                  isFriend: f.status === "accepted",
+                  addable: f.status === "pending" ? f : undefined,
+                })
+              }
+              className="w-full card px-3 py-2.5 flex items-center gap-3 text-left active:scale-[0.99] transition"
+            >
               <Avatar appearance={appearanceFromSeed(f.handle)} size={44} bob={false} />
               <div className="flex-1 min-w-0">
                 <p className="font-bold text-sm truncate">{f.handle}</p>
@@ -141,10 +159,21 @@ export default function FriendsPage() {
               <span className="chip bg-brand/10 text-brand-dark font-bold">
                 {f.matchPct}%
               </span>
-            </div>
+            </button>
           ))}
         </div>
       </section>
+
+      {selected && (
+        <ProfileSheet
+          handle={selected.handle}
+          topGenre={selected.topGenre}
+          myTaste={taste}
+          isFriend={selected.isFriend}
+          onAddFriend={selected.addable ? () => addFriend(selected.addable!) : undefined}
+          onClose={() => setSelected(null)}
+        />
+      )}
     </div>
   );
 }
