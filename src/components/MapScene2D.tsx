@@ -649,12 +649,10 @@ function player(
   ctx.fill();
   const ex = st.dir * 0.6;
   const hair = accent;
-  // 팔
-  ctx.fillStyle = shade(body, -12);
-  ctx.beginPath();
-  ctx.ellipse(x - 12, y + 4, 3.4, 4.6, 0, 0, Math.PI * 2);
-  ctx.ellipse(x + 12, y + 4, 3.4, 4.6, 0, 0, Math.PI * 2);
-  ctx.fill();
+  // 후드 양옆 귀(퍼프)
+  ctx.fillStyle = shade(body, -8);
+  circle(ctx, x - 12.5, y - 5, 4.4);
+  circle(ctx, x + 12.5, y - 5, 4.4);
   // 온지 본체(하단)
   ctx.fillStyle = body;
   ctx.beginPath();
@@ -671,39 +669,33 @@ function player(
   ctx.beginPath();
   ctx.arc(x, y - 6, 12.5, 0, Math.PI * 2);
   ctx.stroke();
-  // 후드 안감 림
-  ctx.fillStyle = shade(body, -16);
-  circle(ctx, x + ex * 0.4, y - 3, 10.6);
   // 얼굴(크림)
-  ctx.fillStyle = "#F6EBD8";
-  circle(ctx, x + ex * 0.5, y - 3, 9);
-  // 앞머리(다크)
   const fx = x + ex * 0.5;
+  ctx.fillStyle = "#F8E2C5";
+  ctx.beginPath();
+  ctx.ellipse(fx, y - 3, 8.6, 9, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // 앞머리(다크 마운드)
   ctx.fillStyle = hair;
   ctx.beginPath();
-  ctx.arc(fx, y - 3, 9, Math.PI, Math.PI * 2, false);
-  ctx.quadraticCurveTo(fx + 5, y - 2, fx + 3, y - 4);
-  ctx.quadraticCurveTo(fx, y - 1, fx - 3, y - 4);
-  ctx.quadraticCurveTo(fx - 5, y - 2, fx - 9, y - 3);
+  ctx.arc(fx, y - 3, 8.6, Math.PI, Math.PI * 2, false);
+  ctx.quadraticCurveTo(fx + 4, y - 4, fx, y - 3.5);
+  ctx.quadraticCurveTo(fx - 4, y - 4, fx - 8.6, y - 3);
   ctx.closePath();
   ctx.fill();
-  // 눈
-  ctx.fillStyle = "#241d1a";
-  circle(ctx, fx - 3.8, y - 2, 2.5);
-  circle(ctx, fx + 3.8, y - 2, 2.5);
-  ctx.fillStyle = "#fff";
-  circle(ctx, fx - 4.5, y - 3, 0.85);
-  circle(ctx, fx + 3.1, y - 3, 0.85);
-  // 볼터치
-  ctx.fillStyle = "rgba(255,140,170,0.5)";
-  circle(ctx, fx - 6.5, y + 1, 1.9);
-  circle(ctx, fx + 6.5, y + 1, 1.9);
-  // 미소
-  ctx.strokeStyle = "#3a2d27";
-  ctx.lineWidth = 1.5;
+  // 눈 (세로 오벌)
+  ctx.fillStyle = "#2a2520";
   ctx.beginPath();
-  ctx.arc(fx, y + 1, 2.6, 0.15 * Math.PI, 0.85 * Math.PI);
-  ctx.stroke();
+  ctx.ellipse(fx - 3.4, y, 1.9, 2.7, 0, 0, Math.PI * 2);
+  ctx.ellipse(fx + 3.4, y, 1.9, 2.7, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#fff";
+  circle(ctx, fx - 4, y - 0.8, 0.7);
+  circle(ctx, fx + 2.8, y - 0.8, 0.7);
+  // 볼터치
+  ctx.fillStyle = "rgba(255,140,170,0.45)";
+  circle(ctx, fx - 6, y + 3, 1.7);
+  circle(ctx, fx + 6, y + 3, 1.7);
 }
 
 function trampoline(ctx: CanvasRenderingContext2D, x: number, y: number, now: number) {

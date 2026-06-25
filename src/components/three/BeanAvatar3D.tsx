@@ -15,6 +15,7 @@ export default function BeanAvatar3D({ a }: { a: Appearance }) {
   const body = a.outfit || "#7B5EE6";
   const belly = tone(body, 26);
   const foot = tone(body, -34);
+  const ear = tone(body, -8);
   const hoodInner = tone(body, -16);
   const hair = a.hairColor || "#2A251D";
   const scarf = a.pants || "#3E4A5E";
@@ -64,6 +65,15 @@ export default function BeanAvatar3D({ a }: { a: Appearance }) {
         <Outlines thickness={3} color={OUT} />
       </mesh>
 
+      {/* 후드 양옆 귀(퍼프) */}
+      {[-16.5, 16.5].map((x) => (
+        <mesh key={x} position={[x, 45, -1]} castShadow>
+          <sphereGeometry args={[6.6, 22, 22]} />
+          <meshStandardMaterial color={ear} roughness={0.58} />
+          <Outlines thickness={2.2} color={OUT} />
+        </mesh>
+      ))}
+
       {/* 후드 안감 림 (살짝 어둡게) */}
       <mesh position={[0, 43, 7]} scale={[1.04, 1.1, 0.55]}>
         <sphereGeometry args={[14.4, 30, 30]} />
@@ -73,14 +83,14 @@ export default function BeanAvatar3D({ a }: { a: Appearance }) {
       {/* 얼굴 (크림) */}
       <mesh position={[0, 43, 8]} scale={[1.02, 1.06, 0.92]} castShadow>
         <sphereGeometry args={[13.6, 32, 32]} />
-        <meshStandardMaterial color="#F6EBD8" roughness={0.6} />
+        <meshStandardMaterial color="#F8E2C5" roughness={0.6} />
       </mesh>
 
-      {/* 앞머리 (다크) — 얼굴 상단 캡 */}
-      <mesh position={[0, 47.5, 7.5]} rotation={[0.2, 0, 0]} scale={[1.03, 0.92, 1.0]}>
-        <sphereGeometry args={[13.9, 30, 30, 0, Math.PI * 2, 0, Math.PI * 0.52]} />
+      {/* 앞머리 (다크 마운드) — 얼굴 상단 풍성하게 */}
+      <mesh position={[0, 48, 6.5]} rotation={[0.16, 0, 0]} scale={[1.05, 1.02, 1.04]}>
+        <sphereGeometry args={[14.2, 32, 32, 0, Math.PI * 2, 0, Math.PI * 0.62]} />
         <meshStandardMaterial color={hair} roughness={0.65} />
-        <Outlines thickness={1.6} color={OUT} />
+        <Outlines thickness={1.8} color={OUT} />
       </mesh>
 
       {/* 림 하이라이트 (좌상단 부드러운 광) */}
