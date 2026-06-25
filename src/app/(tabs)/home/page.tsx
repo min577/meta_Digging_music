@@ -17,8 +17,13 @@ export default function HomePage() {
   const router = useRouter();
   const user = useAppStore((s) => s.user);
   const customRooms = useAppStore((s) => s.customRooms);
+  const quests = useAppStore((s) => s.quests);
   const taste = user?.tasteVector ?? {};
   const [filter, setFilter] = useState<Filter>("match");
+
+  // 오늘의 진행 중인 퀘스트 (없으면 첫 퀘스트)
+  const activeQuest = quests.find((q) => !q.completedAt) ?? quests[0];
+  const doneQuests = quests.filter((q) => q.completedAt).length;
 
   // 룸 + 취향 일치도 (기본 정렬 = 취향 일치순)
   const ranked = useMemo(() => {
@@ -56,12 +61,43 @@ export default function HomePage() {
         sub="오늘은 어떤 곡을 디깅해볼까요?"
       />
 
+      {/* 디깅 퀘스트 배너 (눈에 띄게) */}
+      {activeQuest && (
+        <Link
+          href="/quests"
+          className="mx-5 mt-2 card p-3.5 flex items-center gap-3 active:scale-[0.99] transition bg-gradient-to-r from-brand/10 to-cream-50"
+        >
+          <span className="text-2xl shrink-0">🎯</span>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between gap-2">
+              <p className="font-bold text-sm text-ink-900 truncate">디깅 퀘스트 · {activeQuest.title}</p>
+              <span className="text-[10px] font-bold text-brand shrink-0">완료 {doneQuests}/{quests.length}</span>
+            </div>
+            <div className="mt-1.5 flex items-center gap-2">
+              <div className="flex-1 h-2 rounded-full bg-cream-200 overflow-hidden">
+                <div
+                  className="h-full bg-brand rounded-full transition-all"
+                  style={{ width: `${Math.min(100, (activeQuest.progress / activeQuest.goal) * 100)}%` }}
+                />
+              </div>
+              <span className="text-[10px] font-bold text-ink-700/55 shrink-0">
+                {activeQuest.progress}/{activeQuest.goal} · 🪙{activeQuest.rewardCoins}
+              </span>
+            </div>
+          </div>
+          <span className="text-ink-700/30 shrink-0">›</span>
+        </Link>
+      )}
+
       {/* 무드 공간 캐러셀 */}
-      <section className="mt-2">
+      <section className="mt-4">
         <div className="flex items-center justify-between px-5">
           <h2 className="font-bold text-ink-900">무드 공간</h2>
-          <Link href="/room/create" className="text-xs font-bold text-brand">
-            + 룸 만들기
+          <Link
+            href="/room/create"
+            className="btn-primary py-2 px-4 text-sm font-bold flex items-center gap-1 shadow-soft active:scale-95"
+          >
+            <span className="text-base leading-none">＋</span> 룸 만들기
           </Link>
         </div>
         <div className="mt-3 overflow-hidden">

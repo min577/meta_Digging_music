@@ -8,6 +8,8 @@ import { useAppStore, useMyTopGenre } from "@/store/useAppStore";
 import { GENRES, GENRE_LIST, genre as genreOf } from "@/lib/genres";
 import { sortedGenres } from "@/lib/taste";
 import { FACES, FACE_LABEL, OUTFIT_COLORS, HAIR_COLORS, type Appearance } from "@/lib/appearance";
+import { ROOMS } from "@/lib/mock";
+import { place as placeOf } from "@/lib/places";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { signInWithGoogle, signOut } from "@/lib/profile";
 import { ACHIEVEMENTS, buildStats, isDone } from "@/lib/achievements";
@@ -22,10 +24,28 @@ export default function ProfilePage() {
   const listenEvents = useAppStore((s) => s.listenEvents);
   const evolve = useAppStore((s) => s.evolve);
   const setAppearance = useAppStore((s) => s.setAppearance);
+  const removeDigg = useAppStore((s) => s.removeDigg);
+  const customRooms = useAppStore((s) => s.customRooms);
   const resetAll = useAppStore((s) => s.resetAll);
   const myGenre = useMyTopGenre();
   const [view, setView] = useState<View>("report");
   const [part, setPart] = useState<"body" | "scarf" | "antenna" | "face">("body");
+  const [diggGenre, setDiggGenre] = useState<string>("all");
+
+  // 디깅 곡 출처(어느 룸/장소에서 저장했는지) 해석
+  const sourceOf = (roomId: string | null) => {
+    if (!roomId) return { emoji: "🧭", name: "디깅 월드" };
+    const r = [...customRooms, ...ROOMS].find((x) => x.id === roomId);
+    if (!r) return { emoji: "🎧", name: "룸" };
+    const p = placeOf(r.place);
+    return { emoji: p.emoji, name: p.name };
+  };
+  // 디깅함에 존재하는 장르(자동 분류 칩)
+  const diggGenres = useMemo(
+    () => [...new Set(diggs.map((d) => d.track.genre))],
+    [diggs]
+  );
+  const shownDiggs = diggGenre === "all" ? diggs : diggs.filter((d) => d.track.genre === diggGenre);
 
   // 로그아웃 → 온보딩부터 다시 (Supabase 세션도 정리)
   const logout = async () => {
@@ -291,41 +311,88 @@ export default function ProfilePage() {
             {diggs.length === 0 ? (
               <Empty text="아직 저장한 곡이 없어요. 룸에서 마음에 드는 곡을 디깅해보세요!" />
             ) : (
-              <div className="grid grid-cols-2 gap-3">
-                {diggs.map((d) => (
-                  <a
-                    key={d.id}
-                    href={d.track.previewUrl || undefined}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="card overflow-hidden"
+              <>
+                {/* 장르 자동 분류 필터 */}
+                <div className="flex gap-2 overflow-x-auto no-scrollbar mb-3">
+                  <button
+                    onClick={() => setDiggGenre("all")}
+                    className={`chip py-1 px-3 shrink-0 ${diggGenre === "all" ? "bg-brand text-white" : "bg-cream-100 text-ink-700"}`}
                   >
-                    {d.track.artwork ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={d.track.artwork}
-                        alt={d.track.title}
-                        className="h-24 w-full object-cover"
-                      />
-                    ) : (
-                      <div
-                        className="h-20 flex items-center justify-center text-3xl"
-                        style={{
-                          background: `linear-gradient(135deg, ${genreOf(d.track.genre).bg[0]}, ${genreOf(d.track.genre).bg[1]})`,
-                        }}
-                      >
-                        {genreOf(d.track.genre).emoji}
+                    전체 {diggs.length}
+                  </button>
+                  {diggGenres.map((g) => (
+                    <button
+                      key={g}
+                      onClick={() => setDiggGenre(g)}
+                      className={`chip py-1 px-3 shrink-0 ${diggGenre === g ? "text-white" : "bg-cream-100 text-ink-700"}`}
+                      style={diggGenre === g ? { background: GENRES[g].color } : undefined}
+                    >
+                      {GENRES[g].emoji} {GENRES[g].label}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  {shownDiggs.map((d) => {
+                    const src = sourceOf(d.discoveredInRoom);
+                    return (
+                      <div key={d.id} className="card overflow-hidden relative">
+                        {/* 삭제 버튼 */}
+                        <button
+                          onClick={() => removeDigg(d.track.id)}
+                          className="absolute top-1.5 right-1.5 z-10 w-6 h-6 rounded-full bg-black/45 text-white grid place-items-center text-xs active:scale-90"
+                          title="디깅함에서 삭제"
+                          aria-label="삭제"
+                        >
+                          ×
+                        </button>
+                        <a
+                          href={d.track.previewUrl || undefined}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="block"
+                        >
+                          {d.track.artwork ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={d.track.artwork}
+                              alt={d.track.title}
+                              className="h-24 w-full object-cover"
+                            />
+                          ) : (
+                            <div
+                              className="h-20 flex items-center justify-center text-3xl"
+                              style={{
+                                background: `linear-gradient(135deg, ${genreOf(d.track.genre).bg[0]}, ${genreOf(d.track.genre).bg[1]})`,
+                              }}
+                            >
+                              {genreOf(d.track.genre).emoji}
+                            </div>
+                          )}
+                          <div className="p-2">
+                            <p className="text-xs font-bold truncate">{d.track.title}</p>
+                            <p className="text-[10px] text-ink-700/50 truncate">
+                              {d.track.artist}
+                            </p>
+                            {/* 자동 태그: 장르 + 디깅한 곳 */}
+                            <div className="flex flex-wrap gap-1 mt-1.5">
+                              <span
+                                className="chip py-0.5 px-1.5 text-[9px] font-bold text-white"
+                                style={{ background: GENRES[d.track.genre].color }}
+                              >
+                                {GENRES[d.track.genre].label}
+                              </span>
+                              <span className="chip py-0.5 px-1.5 text-[9px] font-bold bg-cream-100 text-ink-700/70">
+                                {src.emoji} {src.name}
+                              </span>
+                            </div>
+                          </div>
+                        </a>
                       </div>
-                    )}
-                    <div className="p-2">
-                      <p className="text-xs font-bold truncate">{d.track.title}</p>
-                      <p className="text-[10px] text-ink-700/50 truncate">
-                        {d.track.artist}
-                      </p>
-                    </div>
-                  </a>
-                ))}
-              </div>
+                    );
+                  })}
+                </div>
+              </>
             )}
           </div>
         )}
