@@ -136,7 +136,7 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* 기본 꾸미기 (무료) — 본체색/목도리/안테나/표정 */}
+        {/* 기본 꾸미기 (무료) — 본체색/목도리/머리/표정 */}
         <div id="base-customizer" className="card p-3 mt-3 scroll-mt-20">
           <div className="flex items-center justify-between mb-2">
             <p className="text-xs font-bold text-ink-700">🎨 기본 꾸미기 <span className="text-brand">무료</span></p>
@@ -146,7 +146,7 @@ export default function ProfilePage() {
           {/* 파트 탭 */}
           <div className="flex gap-2 overflow-x-auto no-scrollbar">
             {([
-              ["body", "본체색"], ["scarf", "목도리"], ["antenna", "안테나"], ["face", "표정"],
+              ["body", "본체색"], ["scarf", "목도리"], ["antenna", "머리"], ["face", "표정"],
             ] as const).map(([id, label]) => (
               <button
                 key={id}

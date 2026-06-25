@@ -4,8 +4,8 @@ import type { Appearance, FaceStyle, HatStyle, GlassesStyle } from "@/lib/appear
 
 export type Dir = "down" | "up" | "left" | "right";
 
-// 디깅타운 마스코트 "Bean"의 2D 버전 — 3D BeanAvatar3D와 동일 디자인.
-// 본체=outfit · 목도리=pants · 안테나=hairColor · 표정=face. 모자/안경=상점 악세서리.
+// 디깅타운 마스코트의 2D 버전 — 후드 온지를 입은 캐릭터(디자인 가이드).
+// 후드(본체)=outfit · 목도리=pants · 앞머리=hairColor · 표정=face. 모자/안경=상점 악세서리.
 export default function Avatar({
   appearance,
   size = 72,
@@ -24,12 +24,13 @@ export default function Avatar({
 }) {
   const a = appearance;
   const flip = dir === "left";
-  const body = a.outfit || "#6C8AE4";
-  const belly = lighten(body, 28);
+  const body = a.outfit || "#7B5EE6";
+  const belly = lighten(body, 26);
   const foot = shade(body, -34);
-  const arm = shade(body, -8);
+  const arm = shade(body, -12);
+  const hoodInner = shade(body, -18);
   const scarf = a.pants || "#3E4A5E";
-  const accent = a.hairColor || "#FF6EC7";
+  const hair = a.hairColor || "#2A251D";
 
   return (
     <div
@@ -57,36 +58,43 @@ export default function Avatar({
         {/* 그림자 */}
         <ellipse cx="50" cy="114" rx="22" ry="5" fill="rgba(0,0,0,0.18)" />
 
-        {/* 안테나 (시그니처) */}
-        <line x1="55" y1="26" x2="60" y2="11" stroke={shade(body, -20)} strokeWidth="2.4" strokeLinecap="round" />
-        <circle cx="61" cy="9" r="4.4" fill={accent} />
-        <circle cx="59.4" cy="7.4" r="1.3" fill="#fff" opacity="0.7" />
-
         {/* 발 */}
-        <ellipse cx="39" cy="105" rx="8" ry="7" fill={foot} />
-        <ellipse cx="61" cy="105" rx="8" ry="7" fill={foot} />
+        <ellipse cx="40" cy="104" rx="8" ry="7" fill={foot} />
+        <ellipse cx="60" cy="104" rx="8" ry="7" fill={foot} />
         {/* 팔 */}
-        <ellipse cx="20" cy="72" rx="7" ry="8.5" fill={arm} />
-        <ellipse cx="80" cy="72" rx="7" ry="8.5" fill={arm} />
+        <ellipse cx="18" cy="77" rx="7" ry="9" fill={arm} />
+        <ellipse cx="82" cy="77" rx="7" ry="9" fill={arm} />
 
-        {/* 본체 (젤리빈) */}
-        <ellipse cx="50" cy="64" rx="30" ry="40" fill={body} />
+        {/* 온지 본체(하단) */}
+        <ellipse cx="50" cy="83" rx="30" ry="27" fill={body} />
         {/* 배 패치 */}
-        <ellipse cx="50" cy="82" rx="17" ry="19" fill={belly} />
+        <ellipse cx="50" cy="88" rx="14.5" ry="14" fill={belly} />
+
+        {/* 후드(머리 셸) */}
+        <circle cx="50" cy="48" r="30" fill={body} />
         {/* 림 하이라이트 */}
-        <ellipse cx="37" cy="46" rx="9" ry="12" fill="#fff" opacity="0.15" />
+        <ellipse cx="34" cy="36" rx="7" ry="10" fill="#fff" opacity="0.14" />
+        {/* 후드 안감 림(살짝 어둡게) */}
+        <ellipse cx="50" cy="54" rx="25" ry="26" fill={hoodInner} />
+        {/* 얼굴(크림) */}
+        <ellipse cx="50" cy="54" rx="22.5" ry="23.5" fill="#F6EBD8" />
+        {/* 앞머리(다크) */}
+        <path
+          d="M28 53 Q29 33 50 32 Q71 33 72 53 Q66 44 60 47 Q55 40 50 46 Q45 40 40 47 Q34 44 28 53 Z"
+          fill={hair}
+        />
 
-        {/* 목도리 (액센트) */}
-        <path d="M25 58 Q50 70 75 58 L75 66 Q50 78 25 66 Z" fill={scarf} />
-        <path d="M71 63 l7 15 l-8 -3 z" fill={shade(scarf, -16)} />
+        {/* 목도리 (목/후드 경계) */}
+        <path d="M26 74 Q50 86 74 74 L74 82 Q50 94 26 82 Z" fill={scarf} />
+        <path d="M70 79 l7 14 l-8 -3 z" fill={shade(scarf, -16)} />
 
-        {/* 얼굴 */}
+        {/* 얼굴 표정 */}
         <BeanFace face={a.face} />
 
         {/* 안경 (상점 악세서리) */}
         <Glasses kind={a.glasses} />
-        {/* 모자 (상점 악세서리) — 안테나 위/머리 위 */}
-        <Hat kind={a.hat} accent={accent} />
+        {/* 모자 (상점 악세서리) — 후드 위 */}
+        <Hat kind={a.hat} accent={hair} />
       </svg>
     </div>
   );

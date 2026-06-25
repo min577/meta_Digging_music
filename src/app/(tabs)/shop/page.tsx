@@ -18,7 +18,7 @@ import {
 } from "@/lib/appearance";
 
 // Bean 악세서리 상점 — 부가적인 모자/안경을 코인으로 구매·착용.
-// (본체색/목도리/안테나/표정 기본 외형은 무료 — 마이페이지 "기본 꾸미기"에서 변경)
+// (본체색/목도리/머리/표정 기본 외형은 무료 — 마이페이지 "기본 꾸미기"에서 변경)
 type Slot = "hat" | "glasses";
 type ShopItem = { id: string; slot: Slot; value: string; name: string; price: number };
 
@@ -114,7 +114,7 @@ export default function ShopPage() {
       </div>
 
       <p className="px-5 mt-3 text-[11px] text-ink-700/50">
-        본체색·목도리·안테나·표정은 <span className="font-bold text-ink-700/70">마이페이지 › 기본 꾸미기</span>에서 무료로 바꿀 수 있어요.
+        본체색·목도리·머리·표정은 <span className="font-bold text-ink-700/70">마이페이지 › 기본 꾸미기</span>에서 무료로 바꿀 수 있어요.
       </p>
 
       {/* 슬롯 탭 */}

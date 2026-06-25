@@ -647,52 +647,62 @@ function player(
   ctx.ellipse(x - 6, y + 17 + step, 4, 3, 0, 0, Math.PI * 2);
   ctx.ellipse(x + 6, y + 17 - step, 4, 3, 0, 0, Math.PI * 2);
   ctx.fill();
-  // 안테나 (글로우)
-  const pulse = 0.6 + 0.4 * Math.sin(now / 400);
-  const gl = ctx.createRadialGradient(x + 7, y - 32, 1, x + 7, y - 32, 12);
-  gl.addColorStop(0, hexA(accent, 0.6 * pulse));
-  gl.addColorStop(1, hexA(accent, 0));
-  ctx.fillStyle = gl;
+  const ex = st.dir * 0.6;
+  const hair = accent;
+  // 팔
+  ctx.fillStyle = shade(body, -12);
   ctx.beginPath();
-  ctx.arc(x + 7, y - 32, 12, 0, Math.PI * 2);
+  ctx.ellipse(x - 12, y + 4, 3.4, 4.6, 0, 0, Math.PI * 2);
+  ctx.ellipse(x + 12, y + 4, 3.4, 4.6, 0, 0, Math.PI * 2);
   ctx.fill();
-  ctx.strokeStyle = shade(body, -30);
-  ctx.lineWidth = 2.4;
-  ctx.beginPath();
-  ctx.moveTo(x + 4, y - 18);
-  ctx.lineTo(x + 7, y - 30);
-  ctx.stroke();
-  ctx.fillStyle = accent;
-  circle(ctx, x + 7, y - 32, 3.4);
-  // 몸통 + 외곽선
+  // 온지 본체(하단)
   ctx.fillStyle = body;
-  roundRect(ctx, x - 13, y - 9, 26, 28, 11);
+  ctx.beginPath();
+  ctx.ellipse(x, y + 8, 12, 11, 0, 0, Math.PI * 2);
   ctx.fill();
-  ctx.strokeStyle = "rgba(43,38,32,0.55)";
+  ctx.strokeStyle = "rgba(43,38,32,0.5)";
   ctx.lineWidth = 2;
   ctx.stroke();
-  // 배 패치
-  ctx.fillStyle = lighten(body, 30);
+  // 후드(머리 셸)
+  ctx.fillStyle = body;
+  circle(ctx, x, y - 6, 12.5);
+  ctx.strokeStyle = "rgba(43,38,32,0.5)";
+  ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.ellipse(x, y + 7, 8.5, 10, 0, 0, Math.PI * 2);
+  ctx.arc(x, y - 6, 12.5, 0, Math.PI * 2);
+  ctx.stroke();
+  // 후드 안감 림
+  ctx.fillStyle = shade(body, -16);
+  circle(ctx, x + ex * 0.4, y - 3, 10.6);
+  // 얼굴(크림)
+  ctx.fillStyle = "#F6EBD8";
+  circle(ctx, x + ex * 0.5, y - 3, 9);
+  // 앞머리(다크)
+  const fx = x + ex * 0.5;
+  ctx.fillStyle = hair;
+  ctx.beginPath();
+  ctx.arc(fx, y - 3, 9, Math.PI, Math.PI * 2, false);
+  ctx.quadraticCurveTo(fx + 5, y - 2, fx + 3, y - 4);
+  ctx.quadraticCurveTo(fx, y - 1, fx - 3, y - 4);
+  ctx.quadraticCurveTo(fx - 5, y - 2, fx - 9, y - 3);
+  ctx.closePath();
   ctx.fill();
   // 눈
   ctx.fillStyle = "#241d1a";
-  const ex = st.dir * 0.6;
-  circle(ctx, x - 4.5 + ex, y - 4, 2.6);
-  circle(ctx, x + 4.5 + ex, y - 4, 2.6);
+  circle(ctx, fx - 3.8, y - 2, 2.5);
+  circle(ctx, fx + 3.8, y - 2, 2.5);
   ctx.fillStyle = "#fff";
-  circle(ctx, x - 5.3 + ex, y - 5, 0.9);
-  circle(ctx, x + 3.7 + ex, y - 5, 0.9);
+  circle(ctx, fx - 4.5, y - 3, 0.85);
+  circle(ctx, fx + 3.1, y - 3, 0.85);
   // 볼터치
   ctx.fillStyle = "rgba(255,140,170,0.5)";
-  circle(ctx, x - 8 + ex, y - 1, 2);
-  circle(ctx, x + 8 + ex, y - 1, 2);
+  circle(ctx, fx - 6.5, y + 1, 1.9);
+  circle(ctx, fx + 6.5, y + 1, 1.9);
   // 미소
   ctx.strokeStyle = "#3a2d27";
-  ctx.lineWidth = 1.6;
+  ctx.lineWidth = 1.5;
   ctx.beginPath();
-  ctx.arc(x + ex, y, 3, 0.15 * Math.PI, 0.85 * Math.PI);
+  ctx.arc(fx, y + 1, 2.6, 0.15 * Math.PI, 0.85 * Math.PI);
   ctx.stroke();
 }
 

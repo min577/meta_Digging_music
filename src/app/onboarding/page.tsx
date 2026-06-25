@@ -34,7 +34,7 @@ type Part = "body" | "scarf" | "antenna" | "face";
 const PARTS: { id: Part; label: string }[] = [
   { id: "body", label: "본체 색" },
   { id: "scarf", label: "목도리" },
-  { id: "antenna", label: "안테나" },
+  { id: "antenna", label: "머리" },
   { id: "face", label: "표정" },
 ];
 
@@ -135,7 +135,7 @@ export default function OnboardingPage() {
                 나만의 캐릭터 만들기
               </h2>
               <p className="text-ink-700/60 text-sm mt-1">
-본체 색·목도리·안테나·표정으로 나만의 Bean을 꾸며보세요.
+본체 색·목도리·머리·표정으로 나만의 캐릭터를 꾸며보세요.
               </p>
 
               {/* 미리보기 */}
