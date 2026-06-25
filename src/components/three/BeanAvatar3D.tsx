@@ -1,9 +1,9 @@
 "use client";
 
-import { Outlines } from "@react-three/drei";
+import { Outlines, RoundedBox } from "@react-three/drei";
 import * as THREE from "three";
 import { useMemo } from "react";
-import type { Appearance, FaceStyle } from "@/lib/appearance";
+import type { Appearance, FaceStyle, HatStyle, GlassesStyle } from "@/lib/appearance";
 
 // "Bean" — 디깅타운 오리지널 마스코트.
 // 머리·몸이 하나로 이어진 젤리빈 실루엣 + 큰 글로시 눈 + 음악 신호 안테나.
@@ -90,8 +90,120 @@ export default function BeanAvatar3D({ a }: { a: Appearance }) {
         <sphereGeometry args={[2.6, 18, 18]} />
         <meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={0.9} roughness={0.3} toneMapped={false} />
       </mesh>
+
+      {/* 안경 (상점 악세서리) */}
+      <Glasses3D kind={a.glasses} />
+      {/* 모자 (상점 악세서리) */}
+      <Hat3D kind={a.hat} accent={accent} />
     </group>
   );
+}
+
+// 눈 앞(z≈16, y≈36) 안경
+function Glasses3D({ kind }: { kind: GlassesStyle }) {
+  if (!kind || kind === "none") return null;
+  if (kind === "round")
+    return (
+      <group>
+        {[-6.4, 6.4].map((x) => (
+          <mesh key={x} position={[x, 36, 15.4]} rotation={[Math.PI / 2, 0, 0]}>
+            <torusGeometry args={[3.4, 0.5, 8, 18]} />
+            <meshStandardMaterial color="#3a2d20" />
+          </mesh>
+        ))}
+        <mesh position={[0, 36, 15.4]}><boxGeometry args={[5, 0.7, 0.7]} /><meshStandardMaterial color="#3a2d20" /></mesh>
+      </group>
+    );
+  if (kind === "sun")
+    return (
+      <group>
+        {[-6.4, 6.4].map((x) => (
+          <RoundedBox key={x} args={[5.6, 4, 1.1]} radius={1} smoothness={2} position={[x, 36, 15.4]}>
+            <meshStandardMaterial color="#16161e" metalness={0.3} roughness={0.4} />
+          </RoundedBox>
+        ))}
+        <mesh position={[0, 36, 15.4]}><boxGeometry args={[4, 1, 1]} /><meshStandardMaterial color="#16161e" /></mesh>
+      </group>
+    );
+  // star / heart — 컬러 렌즈로 표현
+  const col = kind === "heart" ? "#ff6ec7" : "#ffd23a";
+  return (
+    <group>
+      {[-6.4, 6.4].map((x) => (
+        <RoundedBox key={x} args={[5.4, 4.4, 1]} radius={1.6} smoothness={3} position={[x, 36, 15.4]}>
+          <meshStandardMaterial color={col} emissive={col} emissiveIntensity={0.45} toneMapped={false} />
+        </RoundedBox>
+      ))}
+    </group>
+  );
+}
+
+// 본체 상단(y≈52) 모자
+function Hat3D({ kind, accent }: { kind: HatStyle; accent: string }) {
+  switch (kind) {
+    case "cap":
+      return (
+        <group position={[0, 52, 0]}>
+          <mesh castShadow><sphereGeometry args={[13, 22, 22, 0, Math.PI * 2, 0, Math.PI / 2]} /><meshStandardMaterial color="#ff5a5f" roughness={0.7} /><Outlines thickness={2} color={OUT} /></mesh>
+          <mesh castShadow position={[0, 0, 12]} rotation={[-0.32, 0, 0]}><RoundedBox args={[15, 1.6, 10]} radius={0.8} smoothness={2}><meshStandardMaterial color="#e0494e" /></RoundedBox></mesh>
+        </group>
+      );
+    case "beanie":
+      return (
+        <group position={[0, 52, 0]}>
+          <mesh castShadow><sphereGeometry args={[13.6, 22, 22, 0, Math.PI * 2, 0, Math.PI / 1.7]} /><meshStandardMaterial color="#46d8c5" roughness={0.85} /><Outlines thickness={2} color={OUT} /></mesh>
+          <mesh position={[0, 9, 0]}><sphereGeometry args={[2.6, 14, 14]} /><meshStandardMaterial color="#eafffb" /></mesh>
+        </group>
+      );
+    case "headphones":
+      return (
+        <group position={[0, 44, 0]}>
+          <mesh position={[0, 10, 0]}><torusGeometry args={[14.5, 1.8, 12, 28, Math.PI]} /><meshStandardMaterial color="#34495e" /></mesh>
+          {[-14.5, 14.5].map((x) => (
+            <RoundedBox key={x} args={[4.5, 8, 8]} radius={2} smoothness={2} position={[x, 2, 0]}><meshStandardMaterial color="#6c8ae4" /></RoundedBox>
+          ))}
+        </group>
+      );
+    case "fedora":
+      return (
+        <group position={[0, 53, 0]}>
+          <mesh castShadow><cylinderGeometry args={[8.5, 8.5, 9, 22]} /><meshStandardMaterial color="#5a4632" /><Outlines thickness={2} color={OUT} /></mesh>
+          <mesh castShadow position={[0, -4, 0]}><cylinderGeometry args={[15, 15, 1.6, 26]} /><meshStandardMaterial color="#4a3a2a" /></mesh>
+          <mesh position={[0, -1.5, 0]}><cylinderGeometry args={[8.7, 8.7, 2.4, 22]} /><meshStandardMaterial color="#33271b" /></mesh>
+        </group>
+      );
+    case "flower":
+      return (
+        <group position={[10, 50, 7]}>
+          {[0, 1, 2, 3, 4].map((i) => (
+            <mesh key={i} position={[Math.cos((i / 5) * Math.PI * 2) * 3, Math.sin((i / 5) * Math.PI * 2) * 3, 0]}>
+              <sphereGeometry args={[2.2, 10, 10]} /><meshStandardMaterial color="#ff6ec7" />
+            </mesh>
+          ))}
+          <mesh><sphereGeometry args={[2, 10, 10]} /><meshStandardMaterial color="#ffd23a" /></mesh>
+        </group>
+      );
+    case "crown":
+      return (
+        <group position={[0, 53, 0]}>
+          {[-9, -4.5, 0, 4.5, 9].map((x, i) => (
+            <mesh key={i} castShadow position={[x, 2 + (i === 2 ? 2 : 0), 0]}>
+              <coneGeometry args={[2.4, 7, 4]} /><meshStandardMaterial color="#ffd23a" emissive="#ffd23a" emissiveIntensity={0.2} />
+            </mesh>
+          ))}
+          <mesh position={[0, -1, 0]}><cylinderGeometry args={[9, 9, 3, 20]} /><meshStandardMaterial color="#ffd23a" emissive="#e6ad17" emissiveIntensity={0.15} /><Outlines thickness={1.6} color={OUT} /></mesh>
+        </group>
+      );
+    case "party":
+      return (
+        <group position={[0, 54, 0]}>
+          <mesh castShadow><coneGeometry args={[7, 18, 20]} /><meshStandardMaterial color={accent} roughness={0.5} /><Outlines thickness={2} color={OUT} /></mesh>
+          <mesh position={[0, 10, 0]}><sphereGeometry args={[2.4, 14, 14]} /><meshStandardMaterial color="#ffd23a" emissive="#ffd23a" emissiveIntensity={0.4} /></mesh>
+        </group>
+      );
+    default:
+      return null;
+  }
 }
 
 // 표정 — 눈/입 변형

@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import MapScene2D, { type Spot } from "@/components/MapScene2D";
 import AudioPlayer from "@/components/AudioPlayer";
 import Icon from "@/components/Icon";
-import { useAppStore } from "@/store/useAppStore";
+import { useAppStore, useMyTopGenre } from "@/store/useAppStore";
 import { GENRES } from "@/lib/genres";
 import { tracksByGenre } from "@/lib/music";
 import { defaultAppearance } from "@/lib/appearance";
@@ -26,6 +26,7 @@ export default function WorldPage() {
   const addDigg = useAppStore((s) => s.addDigg);
   const hasDigg = useAppStore((s) => s.hasDigg);
   const logListen = useAppStore((s) => s.logListen);
+  const myGenre = useMyTopGenre();
   const ap = user?.character.appearance ?? defaultAppearance();
 
   const [near, setNear] = useState<Spot | null>(null);
@@ -76,6 +77,7 @@ export default function WorldPage() {
       <MapScene2D
         bodyColor={ap.outfit}
         accentColor={ap.hairColor}
+        tasteColor={GENRES[myGenre].color}
         spots={SPOTS}
         onNear={setNear}
         onDig={dig}

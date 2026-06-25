@@ -495,6 +495,7 @@ export default function RoomPage() {
           meAppearance={user?.character.appearance ?? defaultAppearance()}
           meHandle={user?.handle ?? "나"}
           meTrack={myTrack}
+          meGenre={myGenre}
           place={room.place}
           npcs={npcs}
           remote={session.remotePlayers as MapAvatar3D[]}

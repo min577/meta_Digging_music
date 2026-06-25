@@ -21,6 +21,7 @@ const PLAZA = { x: WORLD.w / 2, y: WORLD.h * 0.62 };
 export default function MapScene2D({
   bodyColor,
   accentColor,
+  tasteColor,
   spots,
   onNear,
   onDig,
@@ -29,6 +30,8 @@ export default function MapScene2D({
 }: {
   bodyColor: string;
   accentColor: string;
+  /** 발밑 취향 오라 색 (대표 장르) */
+  tasteColor?: string;
   spots: Spot[];
   onNear: (s: Spot | null) => void;
   onDig: (s: Spot) => void;
@@ -40,8 +43,8 @@ export default function MapScene2D({
   const keys = useRef<Set<string>>(new Set());
   const joy = useRef({ active: false, id: -1, ox: 0, oy: 0, dx: 0, dy: 0 });
   const nearRef = useRef<Spot | null>(null);
-  const cb = useRef({ onNear, onDig, spots, bodyColor, accentColor, targetRef });
-  cb.current = { onNear, onDig, spots, bodyColor, accentColor, targetRef };
+  const cb = useRef({ onNear, onDig, spots, bodyColor, accentColor, tasteColor, targetRef });
+  cb.current = { onNear, onDig, spots, bodyColor, accentColor, tasteColor, targetRef };
 
   useEffect(() => {
     const moveKeys = ["w", "a", "s", "d", "arrowup", "arrowdown", "arrowleft", "arrowright"];
@@ -183,7 +186,7 @@ export default function MapScene2D({
         tEl.style.left = `${Math.round(st.x - camx)}px`;
         tEl.style.top = `${Math.round(st.y - camy)}px`;
       }
-      draw(ctx, canvas, dpr, now, st, cb.current.spots, cb.current.bodyColor, cb.current.accentColor, near, joy.current);
+      draw(ctx, canvas, dpr, now, st, cb.current.spots, cb.current.bodyColor, cb.current.accentColor, cb.current.tasteColor, near, joy.current);
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
@@ -245,6 +248,7 @@ function draw(
   spots: Spot[],
   body: string,
   accent: string,
+  tasteColor: string | undefined,
   near: Spot | null,
   joy: { active: boolean; ox: number; oy: number; dx: number; dy: number }
 ) {
@@ -331,7 +335,7 @@ function draw(
   }
 
   // 플레이어
-  player(ctx, st, body, accent, now);
+  player(ctx, st, body, accent, tasteColor, now);
 
   ctx.restore();
 
@@ -611,12 +615,26 @@ function player(
   st: { x: number; y: number; dir: number; t: number; walking: boolean; bounce: number },
   body: string,
   accent: string,
+  tasteColor: string | undefined,
   now: number
 ) {
   const x = st.x;
   const bob = st.walking ? Math.abs(Math.sin(st.t)) * 3 : Math.sin(now / 600) * 1;
   const tramp = st.bounce > 0 ? Math.abs(Math.sin(now / 140)) * 32 * st.bounce : 0;
   const y = st.y - bob - tramp;
+  // 발밑 취향 오라 (대표 장르 색, 은은한 펄스)
+  if (tasteColor) {
+    const pulse = 0.7 + 0.3 * Math.sin(now / 700);
+    ctx.fillStyle = hexA(tasteColor, 0.16);
+    ctx.beginPath();
+    ctx.ellipse(x, st.y + 19, 22 * pulse, 8 * pulse, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = hexA(tasteColor, 0.5 * pulse);
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.ellipse(x, st.y + 19, 18, 6.5, 0, 0, Math.PI * 2);
+    ctx.stroke();
+  }
   // 그림자
   ctx.fillStyle = "rgba(0,0,0,0.22)";
   ctx.beginPath();

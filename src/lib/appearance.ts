@@ -10,9 +10,9 @@ export type HairStyle =
   | "curly"
   | "bald";
 
-export type HatStyle = "none" | "cap" | "beanie" | "headphones" | "fedora" | "flower";
+export type HatStyle = "none" | "cap" | "beanie" | "headphones" | "fedora" | "flower" | "crown" | "party";
 export type FaceStyle = "smile" | "happy" | "wink" | "cool" | "cat";
-export type GlassesStyle = "none" | "round" | "sun" | "star";
+export type GlassesStyle = "none" | "round" | "sun" | "star" | "heart";
 export type AnimalType = "cat" | "rabbit" | "bear" | "dog" | "fox" | "frog" | "bird" | "hamster";
 
 export interface Appearance {
@@ -83,6 +83,8 @@ export const HATS: HatStyle[] = [
   "headphones",
   "fedora",
   "flower",
+  "crown",
+  "party",
 ];
 
 export const HAT_LABEL: Record<HatStyle, string> = {
@@ -92,10 +94,12 @@ export const HAT_LABEL: Record<HatStyle, string> = {
   headphones: "🎧 헤드폰",
   fedora: "🎩 페도라",
   flower: "🌸 꽃",
+  crown: "👑 왕관",
+  party: "🥳 파티햇",
 };
 
 export const FACES: FaceStyle[] = ["smile", "happy", "wink", "cool", "cat"];
-export const GLASSES: GlassesStyle[] = ["none", "round", "sun", "star"];
+export const GLASSES: GlassesStyle[] = ["none", "round", "sun", "star", "heart"];
 
 export const FACE_LABEL: Record<FaceStyle, string> = {
   smile: "😊 미소",
@@ -109,6 +113,7 @@ export const GLASSES_LABEL: Record<GlassesStyle, string> = {
   round: "🤓 동글",
   sun: "🕶️ 선글",
   star: "⭐ 별",
+  heart: "💗 하트",
 };
 
 export const HAIR_LABEL: Record<HairStyle, string> = {

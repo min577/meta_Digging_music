@@ -7,7 +7,7 @@ import Avatar from "@/components/Avatar";
 import { useAppStore, useMyTopGenre } from "@/store/useAppStore";
 import { GENRES, GENRE_LIST, genre as genreOf } from "@/lib/genres";
 import { sortedGenres } from "@/lib/taste";
-import { FACES, FACE_LABEL } from "@/lib/appearance";
+import { FACES, FACE_LABEL, OUTFIT_COLORS, HAIR_COLORS, type Appearance } from "@/lib/appearance";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { signInWithGoogle, signOut } from "@/lib/profile";
 import { ACHIEVEMENTS, buildStats, isDone } from "@/lib/achievements";
@@ -25,6 +25,7 @@ export default function ProfilePage() {
   const resetAll = useAppStore((s) => s.resetAll);
   const myGenre = useMyTopGenre();
   const [view, setView] = useState<View>("report");
+  const [part, setPart] = useState<"body" | "scarf" | "antenna" | "face">("body");
 
   // 로그아웃 → 온보딩부터 다시 (Supabase 세션도 정리)
   const logout = async () => {
@@ -96,7 +97,7 @@ export default function ProfilePage() {
             className="rounded-3xl p-2"
             style={{ background: `${GENRES[myGenre].color}18` }}
           >
-            <Avatar appearance={user.character.appearance} size={88} />
+            <Avatar appearance={user.character.appearance} size={88} aura={GENRES[myGenre].color} />
           </div>
           <div className="flex-1 min-w-0">
             <p className="font-extrabold text-lg text-ink-900">{user.handle}</p>
@@ -115,24 +116,70 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* 얼굴(표정) 바꾸기 */}
-        <div className="card p-3 mt-3">
-          <p className="text-xs font-bold text-ink-700 mb-2">😊 얼굴 표정 바꾸기</p>
+        {/* 기본 꾸미기 (무료) — 본체색/목도리/안테나/표정 */}
+        <div id="base-customizer" className="card p-3 mt-3 scroll-mt-20">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs font-bold text-ink-700">🎨 기본 꾸미기 <span className="text-brand">무료</span></p>
+            <span className="text-[10px] text-ink-700/45">모자·안경은 상점에서</span>
+          </div>
+
+          {/* 파트 탭 */}
           <div className="flex gap-2 overflow-x-auto no-scrollbar">
-            {FACES.map((f) => (
+            {([
+              ["body", "본체색"], ["scarf", "목도리"], ["antenna", "안테나"], ["face", "표정"],
+            ] as const).map(([id, label]) => (
               <button
-                key={f}
-                onClick={() => setAppearance({ ...user.character.appearance, face: f })}
-                className={`shrink-0 rounded-xl p-1 flex flex-col items-center ${
-                  user.character.appearance.face === f ? "ring-2 ring-brand bg-brand/5" : ""
+                key={id}
+                onClick={() => setPart(id)}
+                className={`chip py-1 px-3 shrink-0 ${
+                  part === id ? "bg-brand text-white" : "bg-cream-100 text-ink-700"
                 }`}
               >
-                <Avatar appearance={{ ...user.character.appearance, face: f }} size={48} bob={false} />
-                <span className="text-[10px] text-ink-700/60">{FACE_LABEL[f]}</span>
+                {label}
               </button>
             ))}
           </div>
-          <p className="text-[11px] text-ink-700/45 mt-2">본체색·목도리·안테나는 상점에서 바꿀 수 있어요.</p>
+
+          {/* 옵션 */}
+          <div className="mt-3">
+            {part === "body" && (
+              <Swatches
+                colors={OUTFIT_COLORS}
+                value={user.character.appearance.outfit}
+                onPick={(c) => setAppearance({ ...user.character.appearance, outfit: c } as Appearance)}
+              />
+            )}
+            {part === "scarf" && (
+              <Swatches
+                colors={HAIR_COLORS}
+                value={user.character.appearance.pants}
+                onPick={(c) => setAppearance({ ...user.character.appearance, pants: c } as Appearance)}
+              />
+            )}
+            {part === "antenna" && (
+              <Swatches
+                colors={HAIR_COLORS}
+                value={user.character.appearance.hairColor}
+                onPick={(c) => setAppearance({ ...user.character.appearance, hairColor: c } as Appearance)}
+              />
+            )}
+            {part === "face" && (
+              <div className="flex gap-2 overflow-x-auto no-scrollbar">
+                {FACES.map((f) => (
+                  <button
+                    key={f}
+                    onClick={() => setAppearance({ ...user.character.appearance, face: f })}
+                    className={`shrink-0 rounded-xl p-1 flex flex-col items-center ${
+                      user.character.appearance.face === f ? "ring-2 ring-brand bg-brand/5" : ""
+                    }`}
+                  >
+                    <Avatar appearance={{ ...user.character.appearance, face: f }} size={48} bob={false} />
+                    <span className="text-[10px] text-ink-700/60">{FACE_LABEL[f]}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* 진화 */}
@@ -401,6 +448,31 @@ function Stat({ label, value }: { label: string; value: number | string }) {
     <div className="card p-3 text-center">
       <p className="text-xl font-extrabold text-ink-900">{value}</p>
       <p className="text-[11px] text-ink-700/50">{label}</p>
+    </div>
+  );
+}
+
+function Swatches({
+  colors,
+  value,
+  onPick,
+}: {
+  colors: string[];
+  value: string;
+  onPick: (c: string) => void;
+}) {
+  return (
+    <div className="grid grid-cols-6 gap-2.5">
+      {colors.map((c) => (
+        <button
+          key={c}
+          onClick={() => onPick(c)}
+          className={`aspect-square rounded-xl transition active:scale-95 ${
+            value === c ? "ring-2 ring-brand ring-offset-2 ring-offset-cream-50" : ""
+          }`}
+          style={{ background: c }}
+        />
+      ))}
     </div>
   );
 }

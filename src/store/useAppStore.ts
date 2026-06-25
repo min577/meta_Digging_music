@@ -39,6 +39,8 @@ interface AppState {
   visitedRooms: string[];
   customRooms: Room[];
   roomDecor: Record<string, PlacedItem[]>;
+  /** 구매한 상점 악세서리 id 목록 (착용 여부와 별개로 영구 보유) */
+  ownedItems: string[];
 
   // ---- 룸 ----
   addRoom: (room: Room) => void;
@@ -59,6 +61,9 @@ interface AppState {
   setCharacter: (c: Partial<CharacterState>) => void;
   setAppearance: (a: Appearance) => void;
   evolve: () => void;
+
+  // ---- 상점 보유 아이템 ----
+  ownItem: (id: string) => void;
 
   // ---- 디깅함 ----
   addDigg: (track: Track, roomId: string | null) => boolean; // 신규면 true
@@ -114,8 +119,12 @@ export const useAppStore = create<AppState>()(
       visitedRooms: [],
       customRooms: [],
       roomDecor: {},
+      ownedItems: [],
 
       addRoom: (room) => set((s) => ({ customRooms: [room, ...s.customRooms] })),
+
+      ownItem: (id) =>
+        set((s) => (s.ownedItems.includes(id) ? {} : { ownedItems: [...s.ownedItems, id] })),
 
       placeDecor: (roomId, item) =>
         set((s) => ({
@@ -160,6 +169,7 @@ export const useAppStore = create<AppState>()(
           listenEvents: [],
           visitedRooms: [],
           customRooms: [],
+          ownedItems: [],
         }),
 
       setCharacter: (c) =>
@@ -339,6 +349,7 @@ export const useAppStore = create<AppState>()(
         visitedRooms: s.visitedRooms,
         customRooms: s.customRooms,
         roomDecor: s.roomDecor,
+        ownedItems: s.ownedItems,
       }),
     }
   )

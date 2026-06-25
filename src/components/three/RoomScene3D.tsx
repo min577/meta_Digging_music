@@ -50,6 +50,8 @@ interface Props {
   meAppearance: Appearance;
   meHandle: string;
   meTrack?: Track | null;
+  /** 내 대표 장르 — 발밑 취향 오라 색 */
+  meGenre?: GenreId;
   place: PlaceId;
   npcs: MapAvatar3D[];
   remote?: MapAvatar3D[];
@@ -125,7 +127,7 @@ export default function RoomScene3D(props: Props) {
 }
 
 function Scene({
-  meAppearance, meHandle, meTrack, place, npcs, remote = [], speakers = [],
+  meAppearance, meHandle, meTrack, meGenre, place, npcs, remote = [], speakers = [],
   placed = [], editMode, lockedId, myId, chat = [], myBubble, onMove, onJump, onAudio, onPlaceAt, onRemovePlaced, time,
 }: Props & { time: TimePhase }) {
   const { camera } = useThree();
@@ -550,6 +552,8 @@ function Scene({
       {/* 나 */}
       <group ref={playerRef}>
         <Avatar3D a={meAppearance} />
+        {/* 발밑 취향 오라 (대표 장르 색) — 음악 안 틀 때도 정체성 표시 */}
+        {meGenre && <TasteRing genre={meGenre} />}
         <NameTag handle={meHandle} me track={meTrack ?? undefined} />
         {meTrack && <AudioAura genre={meTrack.genre} />}
         <ChatBubble text={myBubble && Date.now() - myBubble.at < 5000 ? myBubble.text : null} />
@@ -632,32 +636,91 @@ function AudioAura({ genre }: { genre: GenreId }) {
   );
 }
 
+// 발밑 취향 오라 — 대표 장르 색의 작은 지면 링. 항상 표시(정체성), 은은한 펄스.
+function TasteRing({ genre }: { genre: GenreId }) {
+  const ringRef = useRef<THREE.Mesh>(null);
+  const col = GENRES[genre]?.color ?? "#6c8ae4";
+  useFrame(() => {
+    const p = 0.5 + 0.5 * Math.sin(performance.now() / 900);
+    if (ringRef.current) {
+      const s = 0.94 + p * 0.1;
+      ringRef.current.scale.set(s, s, 1);
+      (ringRef.current.material as THREE.MeshBasicMaterial).opacity = 0.45 + p * 0.3;
+    }
+  });
+  return (
+    <group position={[0, 1.2, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh>
+        <circleGeometry args={[26, 40]} />
+        <meshBasicMaterial color={col} transparent opacity={0.16} side={THREE.DoubleSide} depthWrite={false} />
+      </mesh>
+      <mesh ref={ringRef}>
+        <ringGeometry args={[24, 28, 40]} />
+        <meshBasicMaterial color={col} transparent opacity={0.6} side={THREE.DoubleSide} depthWrite={false} toneMapped={false} />
+      </mesh>
+    </group>
+  );
+}
+
 // 장소별 특수 배경 (한강 물 / 비행기 구름 / 도시 스카이라인)
 function EnvFx({ env, night }: { env: EnvType; night: boolean }) {
   if (env === "water") {
     const cx = WORLD_W / 2;
+    const bridgeZ = -160;
+    const wy = 0.3; // 강물 표면 — 바닥(y=0)/확장바닥(y=-0.8) 위로 올려 실제로 보이게
     return (
       <>
-        {/* 강물 (정면 먼 쪽으로 크게) */}
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[cx, -2, -260]}>
-          <planeGeometry args={[3000, 1300]} />
-          <meshStandardMaterial color="#3f86ad" roughness={0.16} metalness={0.55} emissive={night ? "#205a82" : "#1a4e72"} emissiveIntensity={night ? 0.55 : 0.2} />
-        </mesh>
-        {/* 강변(잔디→물 경계) */}
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[cx, 0.5, 10]}>
-          <planeGeometry args={[WORLD_W + 200, 40]} />
+        {/* 강변 둔치 (잔디→물 모래 경계) — 가까운 물가 */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[cx, 0.5, 6]}>
+          <planeGeometry args={[WORLD_W + 800, 44]} />
           <meshStandardMaterial color="#caa46e" />
         </mesh>
-        {/* 한강 다리 */}
-        <mesh position={[cx, 70, -70]} castShadow><boxGeometry args={[1500, 16, 34]} /><meshStandardMaterial color="#3a3f48" /></mesh>
-        {[-300, -50, 200, 450, 700, 950, 1200].map((x, i) => (
-          <mesh key={i} position={[x, 44, -70]}><boxGeometry args={[13, 52, 13]} /><meshStandardMaterial color="#2e333b" /></mesh>
+        {/* 한강 강물 — 넓고 크게 (둔치 바로 앞 ~ 건너편 강변까지) */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[cx, wy, -440]}>
+          <planeGeometry args={[3800, 920]} />
+          <meshStandardMaterial color={night ? "#274f6e" : "#3f86ad"} roughness={0.1} metalness={0.65} emissive={night ? "#1d4d72" : "#1a4e72"} emissiveIntensity={night ? 0.5 : 0.16} />
+        </mesh>
+        {/* 가까운 물가 하이라이트 */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[cx, wy + 0.1, -40]}>
+          <planeGeometry args={[WORLD_W + 700, 110]} />
+          <meshStandardMaterial color={night ? "#3a6f96" : "#62a7c8"} transparent opacity={0.5} roughness={0.08} metalness={0.6} />
+        </mesh>
+        {/* 잔물결 라인 */}
+        {[-120, -320, -560, -760].map((z, i) => (
+          <mesh key={"rp" + i} rotation={[-Math.PI / 2, 0, 0]} position={[cx, wy + 0.15, z]}>
+            <planeGeometry args={[2800 - i * 200, 6]} />
+            <meshBasicMaterial color="#cfeaf6" transparent opacity={0.16} />
+          </mesh>
         ))}
-        {/* 다리 조명 */}
-        {night && [-50, 200, 450, 700, 950].map((x, i) => (
-          <mesh key={"l" + i} position={[x, 84, -70]}><sphereGeometry args={[4, 10, 10]} /><meshStandardMaterial color="#ffe6a0" emissive="#ffcf6a" emissiveIntensity={1} /></mesh>
+        {/* 달빛 반영 (밤) */}
+        {night && (
+          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[cx + 380, wy + 0.18, -320]}>
+            <planeGeometry args={[90, 620]} />
+            <meshBasicMaterial color="#fff2c8" transparent opacity={0.24} />
+          </mesh>
+        )}
+        {/* 한강 다리 (가깝고 크게) */}
+        <mesh position={[cx, 80, bridgeZ]} castShadow><boxGeometry args={[2200, 18, 48]} /><meshStandardMaterial color="#3a3f48" /></mesh>
+        <mesh position={[cx, 94, bridgeZ]}><boxGeometry args={[2200, 6, 52]} /><meshStandardMaterial color="#2e333b" /></mesh>
+        {[-700, -440, -180, 80, 340, 600, 860, 1120, 1380].map((x, i) => (
+          <mesh key={i} position={[x, 46, bridgeZ]}><boxGeometry args={[16, 68, 16]} /><meshStandardMaterial color="#2e333b" /></mesh>
         ))}
-        <Skyline z={-560} night={night} />
+        {/* 아치 케이블 (한강대교 느낌) */}
+        {[-440, 80, 600, 1120].map((x, i) => (
+          <mesh key={"a" + i} position={[x, 118, bridgeZ]}>
+            <torusGeometry args={[125, 3, 8, 24, Math.PI]} />
+            <meshStandardMaterial color="#4a515c" />
+          </mesh>
+        ))}
+        {/* 다리 가로등 */}
+        {[-570, -310, -50, 210, 470, 730, 990, 1250].map((x, i) => (
+          <mesh key={"l" + i} position={[x, 102, bridgeZ]}>
+            <sphereGeometry args={[5, 12, 12]} />
+            <meshStandardMaterial color="#ffe6a0" emissive="#ffcf6a" emissiveIntensity={night ? 1.3 : 0.35} toneMapped={false} />
+          </mesh>
+        ))}
+        {/* 건너편 강변 + 여의도 스카이라인 (강물 너머 = 먼 땅) */}
+        <Skyline z={-980} night={night} tall />
       </>
     );
   }
