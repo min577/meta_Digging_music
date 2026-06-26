@@ -2,7 +2,7 @@
 
 import { RoundedBox, Outlines } from "@react-three/drei";
 import type { Appearance } from "@/lib/appearance";
-import BeanAvatar3D from "./BeanAvatar3D";
+import BeanAvatar3D, { type AvatarMotion } from "./BeanAvatar3D";
 
 const OUT = "#2e241c";
 function dark(hex: string, a = 34) {
@@ -12,9 +12,8 @@ function dark(hex: string, a = 34) {
 }
 
 // 동물의 숲풍 큰머리 라운드 캐릭터 + 툰 외곽선. 발끝 y=0, 키 ~62. 부모가 이동/회전.
-export default function Avatar3D({ a }: { a: Appearance }) {
-  // 오리지널 "Bean" 마스코트를 기본 아바타로 렌더
-  return <BeanAvatar3D a={a} />;
+export default function Avatar3D({ a, move }: { a: Appearance; move?: { current?: AvatarMotion | null } }) {
+  return <BeanAvatar3D a={a} move={move} />;
 }
 
 // (구) 절차적 동물의 숲풍 아바타 — 폴백/참고용

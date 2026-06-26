@@ -551,7 +551,7 @@ function Scene({
 
       {/* 나 */}
       <group ref={playerRef}>
-        <Avatar3D a={meAppearance} />
+        <Avatar3D a={meAppearance} move={me} />
         {/* 발밑 취향 오라 (대표 장르 색) — 음악 안 틀 때도 정체성 표시 */}
         {meGenre && <TasteRing genre={meGenre} />}
         <NameTag handle={meHandle} me track={meTrack ?? undefined} />
@@ -567,7 +567,7 @@ function Scene({
       {/* NPC */}
       {npcs.map((n) => (
         <group key={n.id} ref={(el) => { if (el) npcRefs.current[n.id] = el; }} position={[n.x, 0, n.y]}>
-          <Avatar3D a={n.appearance ?? appearanceFromSeed(n.handle)} />
+          <Avatar3D a={n.appearance ?? appearanceFromSeed(n.handle)} move={{ current: npcState.current[n.id] }} />
           <NameTag handle={n.handle} track={n.track} />
           {n.track && <AudioAura genre={n.track.genre} />}
         </group>
@@ -576,7 +576,7 @@ function Scene({
       {/* 원격 플레이어 */}
       {remote.map((r) => (
         <group key={r.id} ref={(el) => { if (el) remoteRefs.current[r.id] = el; }} position={[r.x, 0, r.y]}>
-          <Avatar3D a={r.appearance ?? appearanceFromSeed(r.handle)} />
+          <Avatar3D a={r.appearance ?? appearanceFromSeed(r.handle)} move={{ current: { heading: dirHeading(r.dir) } }} />
           <NameTag handle={r.handle} track={r.track} />
           {r.track && <AudioAura genre={r.track.genre} />}
           <ChatBubble text={recentBubble(r.id)} />
