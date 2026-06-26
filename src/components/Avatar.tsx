@@ -29,7 +29,7 @@ export default function Avatar({
   /** 발밑 취향 오라 색 (대표 장르) */
   aura?: string;
 }) {
-  const a = appearance;
+  const a = appearance || ({} as Appearance);
   const flip = dir === "left";
   const cos = a.costume && a.costume !== "none" ? a.costume : null;
   const hoodBody = cos === "plaid" || cos === "star" ? COSTUME_BODY[cos] : a.outfit || "#7B5EE6";

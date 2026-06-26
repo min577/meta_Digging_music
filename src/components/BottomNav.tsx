@@ -6,8 +6,8 @@ import { usePathname } from "next/navigation";
 type TabId = "world" | "home" | "friends" | "shop" | "user";
 const TABS: { href: string; label: string; icon: TabId }[] = [
   { href: "/world", label: "월드", icon: "world" },
-  { href: "/home", label: "홈", icon: "home" },
   { href: "/friends", label: "친구", icon: "friends" },
+  { href: "/home", label: "홈", icon: "home" },
   { href: "/shop", label: "상점", icon: "shop" },
   { href: "/profile", label: "마이", icon: "user" },
 ];

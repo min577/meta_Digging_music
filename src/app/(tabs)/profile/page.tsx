@@ -10,7 +10,7 @@ import CoachTour, { type TourStep } from "@/components/CoachTour";
 import { useAppStore, useMyTopGenre } from "@/store/useAppStore";
 import { GENRES, GENRE_LIST, genre as genreOf } from "@/lib/genres";
 import { sortedGenres } from "@/lib/taste";
-import { FACES, FACE_LABEL, OUTFIT_COLORS, HAIR_COLORS, type Appearance } from "@/lib/appearance";
+import { FACES, FACE_LABEL, OUTFIT_COLORS, HAIR_COLORS, defaultAppearance, type Appearance } from "@/lib/appearance";
 import { ROOMS } from "@/lib/mock";
 import { place as placeOf } from "@/lib/places";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
@@ -38,6 +38,8 @@ export default function ProfilePage() {
   const resetTours = useAppStore((s) => s.resetTours);
   const router = useRouter();
   const myGenre = useMyTopGenre();
+  // 저장 데이터에 appearance가 빠져 있어도 안전하게 (오래된 스키마 방어)
+  const ap = user?.character.appearance ?? defaultAppearance();
   const [view, setView] = useState<View>("report");
   const [part, setPart] = useState<"body" | "scarf" | "antenna" | "face">("body");
   const [diggGenre, setDiggGenre] = useState<string>("all");
@@ -74,7 +76,7 @@ export default function ProfilePage() {
   const doneCount = ACHIEVEMENTS.filter((a) => isDone(a, stats)).length;
   const equip = (slot: "hat" | "glasses", value: string) => {
     if (!user) return;
-    setAppearance({ ...user.character.appearance, [slot]: value } as any);
+    setAppearance({ ...ap, [slot]: value } as any);
   };
 
   // 취향 리포트: 장르 분포
@@ -131,7 +133,7 @@ export default function ProfilePage() {
             className="rounded-3xl p-2"
             style={{ background: `${genreOf(myGenre).color}18` }}
           >
-            <Avatar appearance={user.character.appearance} size={88} aura={genreOf(myGenre).color} />
+            <Avatar appearance={ap} size={88} aura={genreOf(myGenre).color} />
           </div>
           <div className="flex-1 min-w-0">
             <p className="font-extrabold text-lg text-ink-900">{user.handle}</p>
@@ -179,22 +181,22 @@ export default function ProfilePage() {
             {part === "body" && (
               <Swatches
                 colors={OUTFIT_COLORS}
-                value={user.character.appearance.outfit}
-                onPick={(c) => setAppearance({ ...user.character.appearance, outfit: c } as Appearance)}
+                value={ap.outfit}
+                onPick={(c) => setAppearance({ ...ap, outfit: c } as Appearance)}
               />
             )}
             {part === "scarf" && (
               <Swatches
                 colors={["none", ...HAIR_COLORS]}
-                value={user.character.appearance.pants}
-                onPick={(c) => setAppearance({ ...user.character.appearance, pants: c } as Appearance)}
+                value={ap.pants}
+                onPick={(c) => setAppearance({ ...ap, pants: c } as Appearance)}
               />
             )}
             {part === "antenna" && (
               <Swatches
                 colors={HAIR_COLORS}
-                value={user.character.appearance.hairColor}
-                onPick={(c) => setAppearance({ ...user.character.appearance, hairColor: c } as Appearance)}
+                value={ap.hairColor}
+                onPick={(c) => setAppearance({ ...ap, hairColor: c } as Appearance)}
               />
             )}
             {part === "face" && (
@@ -202,12 +204,12 @@ export default function ProfilePage() {
                 {FACES.map((f) => (
                   <button
                     key={f}
-                    onClick={() => setAppearance({ ...user.character.appearance, face: f })}
+                    onClick={() => setAppearance({ ...ap, face: f })}
                     className={`shrink-0 rounded-xl p-1 flex flex-col items-center ${
-                      user.character.appearance.face === f ? "ring-2 ring-brand bg-brand/5" : ""
+                      ap.face === f ? "ring-2 ring-brand bg-brand/5" : ""
                     }`}
                   >
-                    <Avatar appearance={{ ...user.character.appearance, face: f }} size={48} bob={false} />
+                    <Avatar appearance={{ ...ap, face: f }} size={48} bob={false} />
                     <span className="text-[10px] text-ink-700/60">{FACE_LABEL[f]}</span>
                   </button>
                 ))}
@@ -449,7 +451,7 @@ export default function ProfilePage() {
               const done = cur >= a.goal;
               const equipped =
                 a.reward &&
-                (user.character.appearance as any)[a.reward.slot] === a.reward.value;
+                (ap as any)[a.reward.slot] === a.reward.value;
               return (
                 <div key={a.id} className={`card p-3 ${done ? "" : "opacity-80"}`}>
                   <div className="flex items-center gap-3">
