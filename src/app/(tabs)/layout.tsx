@@ -1,5 +1,6 @@
 import AppGate from "@/components/AppGate";
 import BottomNav from "@/components/BottomNav";
+import TabBoundary from "@/components/TabBoundary";
 
 export default function TabsLayout({
   children,
@@ -8,7 +9,9 @@ export default function TabsLayout({
 }) {
   return (
     <AppGate>
-      <div className="app-frame pb-28">{children}</div>
+      <div className="app-frame pb-28">
+        <TabBoundary>{children}</TabBoundary>
+      </div>
       <BottomNav />
     </AppGate>
   );
