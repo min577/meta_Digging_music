@@ -14,7 +14,7 @@ import type { GenreId } from "@/lib/genres";
 import { GENRES } from "@/lib/genres";
 import type { Track, PlacedItem } from "@/lib/types";
 import type { DecorKind } from "@/components/DecorSprite";
-import { placeScene, type PlaceId, type EnvType } from "@/lib/places";
+import { placeScene, place as getPlace, PLACE_MOOD, type PlaceId, type EnvType } from "@/lib/places";
 import { WORLD_W, WORLD_H } from "@/lib/scenes";
 import { useTimePhase, type TimePhase } from "@/hooks/useTimePhase";
 
@@ -85,6 +85,9 @@ const SKY_HDRI: Record<string, string> = {
 export default function RoomScene3D(props: Props) {
   const time = useTimePhase();
   const outdoor = placeScene(props.place).env !== "indoor";
+  // 장소 무드를 안개에 살짝 섞어 공간마다 다른 분위기
+  const mood = PLACE_MOOD[props.place]?.color ?? "#ffffff";
+  const fogColor = mix(SKY[time.phase], mood, time.isNight ? 0.34 : 0.2);
   return (
     <div className="relative w-full h-full rounded-2xl overflow-hidden shadow-soft">
       <Canvas
@@ -93,8 +96,8 @@ export default function RoomScene3D(props: Props) {
         gl={{ antialias: true, preserveDrawingBuffer: true, powerPreference: "high-performance", toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.08 }}
         camera={{ fov: 50, near: 1, far: 4000, position: [600, 280, 760] }}
       >
-        <color attach="background" args={[SKY[time.phase]]} />
-        <fog attach="fog" args={[SKY[time.phase], 1100, 2600]} />
+        <color attach="background" args={[outdoor ? SKY[time.phase] : fogColor]} />
+        <fog attach="fog" args={[fogColor, 1100, 2600]} />
         <Suspense fallback={null}>
           {/* 야외 룸: 시간대별 하늘 HDRI를 배경+환경광으로. 실내: 환경광만(배경은 단색). */}
           <Environment
@@ -469,6 +472,17 @@ function Scene({
           <pointLight position={[720, 220, 460]} intensity={0.9} color="#9ad0ff" distance={1600} />
         </>
       )}
+      {/* 장소 무드 조명 (공간마다 다른 분위기) */}
+      <pointLight position={[WORLD_W / 2, 320, WORLD_H * 0.7]} intensity={time.isNight ? 0.9 : 0.5} color={PLACE_MOOD[place]?.color ?? "#ffffff"} distance={2400} />
+      {/* 장소 이름 사인 */}
+      <Html position={[WORLD_W / 2, 215, 30]} center distanceFactor={760} style={{ pointerEvents: "none" }}>
+        <div
+          className="px-5 py-2 rounded-2xl font-extrabold text-white whitespace-nowrap shadow-soft"
+          style={{ background: PLACE_MOOD[place]?.color ?? "#7B5EE6", boxShadow: `0 0 24px ${PLACE_MOOD[place]?.color ?? "#7B5EE6"}99` }}
+        >
+          {PLACE_MOOD[place]?.sign ?? getPlace(place).name}
+        </div>
+      </Html>
 
       {/* 확장 바닥 — 룸 주변 여백을 채워 '뻥 뚫린' 배경 방지 */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[WORLD_W / 2, -0.8, WORLD_H / 2]}>
@@ -915,4 +929,12 @@ function adjust(hex: string, amt: number) {
   const g = Math.max(0, Math.min(255, ((n >> 8) & 0xff) + amt));
   const b = Math.max(0, Math.min(255, (n & 0xff) + amt));
   return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, "0")}`;
+}
+// 두 hex를 t(0~1)로 섞기
+function mix(a: string, b: string, t: number) {
+  const pa = parseInt(a.replace("#", ""), 16), pb = parseInt(b.replace("#", ""), 16);
+  const r = Math.round(((pa >> 16) & 0xff) * (1 - t) + ((pb >> 16) & 0xff) * t);
+  const g = Math.round(((pa >> 8) & 0xff) * (1 - t) + ((pb >> 8) & 0xff) * t);
+  const c = Math.round((pa & 0xff) * (1 - t) + (pb & 0xff) * t);
+  return `#${((r << 16) | (g << 8) | c).toString(16).padStart(6, "0")}`;
 }

@@ -173,6 +173,16 @@ const PLACES: Record<PlaceId, Place> = {
 
 export const PLACE_LIST: Place[] = Object.values(PLACES);
 
+// 장소별 분위기(무드) — 룸 조명/안개 틴트 + 사인 색
+export const PLACE_MOOD: Record<PlaceId, { color: string; sign: string }> = {
+  gym: { color: "#46D8C5", sign: "🏋️ 한밤의 헬스장" },
+  library: { color: "#E8B96A", sign: "📚 조용한 도서관" },
+  hanriver: { color: "#5FB0E8", sign: "🌉 한강 밤 산책" },
+  airplane: { color: "#BFE6F7", sign: "✈️ 여행 가는 비행기" },
+  city: { color: "#C2479B", sign: "🌃 도시 야경 드라이브" },
+  cafe: { color: "#E0A05A", sign: "☕ 골목 카페" },
+};
+
 export function place(id: PlaceId): Place {
   return PLACES[id] ?? PLACES.cafe;
 }
