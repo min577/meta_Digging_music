@@ -18,6 +18,7 @@ const RoomScene3D = dynamic(() => import("@/components/three/RoomScene3D"), {
   ),
 });
 import TrackSearch from "@/components/TrackSearch";
+import CoachTour, { type TourStep } from "@/components/CoachTour";
 import { useRoomSession } from "@/hooks/useRoomSession";
 import { useAppStore, useMyTopGenre } from "@/store/useAppStore";
 import { GENRES, GENRE_LIST, genre as genreOf } from "@/lib/genres";
@@ -28,6 +29,13 @@ import { appearanceFromSeed, defaultAppearance } from "@/lib/appearance";
 import type { Track } from "@/lib/types";
 
 const REACTIONS = ["❤️", "🔥", "🎶", "😭", "🕺", "👏"];
+
+const ROOM_TOUR: TourStep[] = [
+  { target: "room-scene", title: "룸 둘러보기", desc: "WASD·방향키나 화면 드래그로 움직여요. 음악 존이나 다른 사람 곁으로 가면 소리가 켜지고 ‘같이 듣기’ 버튼이 떠요. 직접 움직여보세요!", advance: "move" },
+  { target: "room-nowplaying", title: "지금 나오는 곡", desc: "＋로 디깅함에 저장해요. 자유모드에선 ‘🎶 내 음악 틀기’로 내가 DJ가 될 수도 있어요." },
+  { target: "room-reactions", title: "반응 보내기", desc: "❤️🔥 같은 반응으로 같은 공간의 사람들과 분위기를 함께 즐겨요." },
+  { target: "room-panel", title: "채팅 & 협업 큐", desc: "채팅하고, 큐에 곡을 제안해 다음에 같이 들을 곡을 함께 정해요." },
+];
 const QUEUE_LABEL: Record<string, string> = { dj: "🎙 DJ", collab: "🤝 협업 큐", radio: "📻 라디오" };
 // 음악 존 배치 (월드 1400x1000 기준)
 const SPOTS = [
@@ -282,6 +290,7 @@ export default function RoomPage() {
       className="phone-shell min-h-[100dvh] flex flex-col md:h-[100dvh] md:min-h-0 md:overflow-hidden"
       style={{ background: `linear-gradient(180deg, ${g.bg[0]}, ${g.bg[1]})` }}
     >
+      <CoachTour tourKey="room" steps={ROOM_TOUR} />
       {/* 헤더 */}
       <header className="flex items-center justify-between px-4 pt-5 pb-2 text-white">
         <button
@@ -319,7 +328,7 @@ export default function RoomPage() {
 
       {/* Now Playing 바 */}
       <div className="px-4">
-        <div className="card p-2.5 flex items-center gap-3">
+        <div data-tour="room-nowplaying" className="card p-2.5 flex items-center gap-3">
           {track?.artwork ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={track.artwork} alt="" className="w-12 h-12 rounded-xl object-cover" />
@@ -470,7 +479,7 @@ export default function RoomPage() {
       )}
 
       {/* 맵 */}
-      <div ref={mapWrapRef} className="relative px-4 mt-2 h-[52vh] md:h-auto md:flex-1 md:min-h-0">
+      <div ref={mapWrapRef} data-tour="room-scene" className="relative px-4 mt-2 h-[52vh] md:h-auto md:flex-1 md:min-h-0">
         {/* 같이 듣기 — 맵 위 오버레이(레이아웃 안 밀림) */}
         {mode === "free" && (lockedId || nearbyPerson) && (
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20">
@@ -515,7 +524,7 @@ export default function RoomPage() {
       </div>
 
       {/* 반응 버튼 */}
-      <div className="px-4 mt-2 flex gap-2 justify-center">
+      <div data-tour="room-reactions" className="px-4 mt-2 flex gap-2 justify-center">
         {REACTIONS.map((e) => (
           <button
             key={e}
@@ -547,7 +556,7 @@ export default function RoomPage() {
       {/* 채팅/큐 — 웹(md+)에서 우측 오버레이(맵 위에 겹침) */}
       <div className="md:absolute md:top-2 md:right-3 md:bottom-2 md:w-[320px] md:z-30 flex flex-col">
       {/* 큐 / 채팅 패널 */}
-      <div className="bg-cream-50 rounded-t-3xl mt-2 flex flex-col flex-1 min-h-[16vh] max-h-[28vh] md:max-h-none md:h-full md:rounded-3xl md:bg-cream-50/95 md:backdrop-blur md:shadow-card">
+      <div data-tour="room-panel" className="bg-cream-50 rounded-t-3xl mt-2 flex flex-col flex-1 min-h-[16vh] max-h-[28vh] md:max-h-none md:h-full md:rounded-3xl md:bg-cream-50/95 md:backdrop-blur md:shadow-card">
         <div className="flex items-center gap-2 px-4 pt-3">
           <button
             onClick={() => setTab("queue")}
