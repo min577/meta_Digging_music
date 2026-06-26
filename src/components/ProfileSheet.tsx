@@ -3,7 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import Avatar from "@/components/Avatar";
 import Icon from "@/components/Icon";
-import { GENRES } from "@/lib/genres";
+import { genre as genreOf } from "@/lib/genres";
 import { matchPercent, sortedGenres } from "@/lib/taste";
 import { personProfile } from "@/lib/people";
 import type { GenreId } from "@/lib/genres";
@@ -26,7 +26,7 @@ export default function ProfileSheet({
   onClose: () => void;
 }) {
   const p = personProfile(handle, topGenre);
-  const g = GENRES[topGenre];
+  const g = genreOf(topGenre);
   const pct = matchPercent(myTaste, p.taste);
 
   return (
@@ -85,12 +85,12 @@ export default function ProfileSheet({
                 {sortedGenres(p.taste).map(([gid, v]) => (
                   <div key={gid} className="flex items-center gap-2">
                     <span className="text-xs w-14 text-ink-700">
-                      {GENRES[gid].emoji} {GENRES[gid].label}
+                      {genreOf(gid).emoji} {genreOf(gid).label}
                     </span>
                     <div className="flex-1 h-2 rounded-full bg-cream-200 overflow-hidden">
                       <div
                         className="h-full rounded-full"
-                        style={{ width: `${v * 100}%`, background: GENRES[gid].color }}
+                        style={{ width: `${v * 100}%`, background: genreOf(gid).color }}
                       />
                     </div>
                     <span className="text-xs text-ink-700/55 w-9 text-right">
@@ -113,9 +113,9 @@ export default function ProfileSheet({
                 >
                   <span
                     className="w-11 h-11 rounded-xl grid place-items-center text-xl shrink-0"
-                    style={{ background: GENRES[p.profileTrack.genre].color + "22" }}
+                    style={{ background: genreOf(p.profileTrack.genre).color + "22" }}
                   >
-                    {GENRES[p.profileTrack.genre].emoji}
+                    {genreOf(p.profileTrack.genre).emoji}
                   </span>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-bold truncate">{p.profileTrack.title}</p>
@@ -133,11 +133,11 @@ export default function ProfileSheet({
                 <div className="space-y-2">
                   {p.playlist.map((t) => (
                     <div key={t.id} className="card px-3 py-2 flex items-center gap-3">
-                      <span className="text-lg shrink-0">{GENRES[t.genre].emoji}</span>
+                      <span className="text-lg shrink-0">{genreOf(t.genre).emoji}</span>
                       <div className="min-w-0 flex-1">
                         <p className="text-xs font-bold truncate">{t.title}</p>
                         <p className="text-[10px] text-ink-700/50 truncate">
-                          {t.artist} · {GENRES[t.genre].label}
+                          {t.artist} · {genreOf(t.genre).label}
                         </p>
                       </div>
                     </div>

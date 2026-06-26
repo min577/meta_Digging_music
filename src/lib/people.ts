@@ -1,4 +1,4 @@
-import { GENRE_LIST, type GenreId } from "./genres";
+import { GENRE_LIST, normalizeGenre, type GenreId } from "./genres";
 import { CATALOG } from "./catalog";
 import { appearanceFromSeed, type Appearance } from "./appearance";
 import type { Track, TasteVector } from "./types";
@@ -21,7 +21,8 @@ export interface PersonProfile {
   playlist: Track[];
 }
 
-export function personProfile(handle: string, topGenre: GenreId): PersonProfile {
+export function personProfile(handle: string, rawTopGenre: GenreId): PersonProfile {
+  const topGenre = normalizeGenre(rawTopGenre);
   const h = seedNum(handle);
   const others = GENRE_LIST.map((g) => g.id).filter((g) => g !== topGenre);
   const s1 = others[h % others.length];
