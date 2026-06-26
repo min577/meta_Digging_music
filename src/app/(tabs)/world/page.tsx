@@ -43,7 +43,6 @@ export default function WorldPage() {
   const [isNew, setIsNew] = useState(false);
   const [saved, setSaved] = useState(false);
   const mapCanvas = useRef<HTMLCanvasElement | null>(null);
-  const digBtnRef = useRef<HTMLButtonElement | null>(null);
 
   const capture = () => {
     const c = mapCanvas.current;
@@ -90,7 +89,6 @@ export default function WorldPage() {
         onNear={setNear}
         onDig={dig}
         onReady={(c) => (mapCanvas.current = c)}
-        targetRef={digBtnRef}
       />
 
       {/* 상단 HUD */}
@@ -106,17 +104,18 @@ export default function WorldPage() {
         </div>
       </div>
 
-      {/* 근접 디깅 버튼 — 아바타 머리 위를 추적(좌표는 MapScene2D가 갱신) */}
+      {/* 근접 디깅 버튼 — 화면 하단 중앙 고정 */}
       {near && !result && (
-        <button
-          ref={digBtnRef}
-          onClick={() => dig(near)}
-          disabled={busy}
-          style={{ position: "absolute", left: -9999, top: -9999 }}
-          className="-translate-x-1/2 -translate-y-[150%] z-10 btn-primary shadow-soft animate-bob whitespace-nowrap"
-        >
-          {busy ? "디깅 중…" : `🎧 ${near.label}에서 디깅하기`}
-        </button>
+        <div className="absolute bottom-6 left-0 right-0 z-10 flex justify-center px-5 pointer-events-none">
+          <button
+            onClick={() => dig(near)}
+            disabled={busy}
+            className="dig-cta pointer-events-auto btn-primary shadow-soft whitespace-nowrap flex items-center gap-1.5"
+          >
+            <Icon name="headphones" size={16} strokeWidth={2.1} />
+            {busy ? "디깅 중…" : `${near.label}에서 디깅하기`}
+          </button>
+        </div>
       )}
 
       {/* 디깅 결과 카드 */}

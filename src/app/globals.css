@@ -152,3 +152,16 @@ body {
 .float-heart {
   animation: floatUp 2.2s ease-out forwards;
 }
+
+/* 디깅 CTA — 하단에서 부드럽게 올라온 뒤 살짝 떠 있는 느낌 */
+@keyframes digCtaIn {
+  from { transform: translateY(16px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+@keyframes digCtaBob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+.dig-cta {
+  animation: digCtaIn 0.28s ease-out, digCtaBob 2.4s ease-in-out 0.28s infinite;
+}
