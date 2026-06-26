@@ -1,8 +1,16 @@
 "use client";
 
-import type { Appearance, FaceStyle, HatStyle, GlassesStyle } from "@/lib/appearance";
+import type { Appearance, FaceStyle, HatStyle, GlassesStyle, CostumeStyle } from "@/lib/appearance";
 
 export type Dir = "down" | "up" | "left" | "right";
+
+// 코스튬별 본체 색 (디자인 가이드)
+const COSTUME_BODY: Record<Exclude<CostumeStyle, "none">, string> = {
+  witch: "#7B6BD6",
+  plaid: "#C6D8F0",
+  star: "#F4EDB0",
+  fries: "#E8443C",
+};
 
 // 디깅타운 마스코트 2D — 둥근 후드 온지(양옆 귀 + 크림 얼굴 + 둥근 앞머리). 디자인 레퍼런스 기준.
 // 후드(본체)=outfit · 목도리=pants · 앞머리=hairColor · 표정=face. 모자/안경=상점 악세서리.
@@ -24,7 +32,9 @@ export default function Avatar({
 }) {
   const a = appearance;
   const flip = dir === "left";
-  const body = a.outfit || "#7B5EE6";
+  // 코스튬이 있으면 본체 룩을 덮어씀
+  const cos = a.costume && a.costume !== "none" ? a.costume : null;
+  const body = cos ? COSTUME_BODY[cos] : a.outfit || "#7B5EE6";
   const ear = shade(body, -8);
   const foot = shade(body, -30);
   const scarf = a.pants || "none";
@@ -65,39 +75,73 @@ export default function Avatar({
         {/* 그림자 */}
         <ellipse cx="50" cy="114" rx="22" ry="5" fill="rgba(0,0,0,0.18)" />
 
-        {/* 발 */}
-        <ellipse cx="41" cy="103" rx="8" ry="6.5" fill={foot} />
-        <ellipse cx="59" cy="103" rx="8" ry="6.5" fill={foot} />
+        {cos === "fries" ? (
+          // 감자튀김 — 빨간 박스 + 튀김
+          <>
+            <ellipse cx="41" cy="103" rx="8" ry="6.5" fill="#B5392F" />
+            <ellipse cx="59" cy="103" rx="8" ry="6.5" fill="#B5392F" />
+            <FriesSticks />
+            <path d="M22 44 L78 44 L72 102 Q72 106 68 106 L32 106 Q28 106 28 102 Z" fill={`url(#${gid})`} />
+            <rect x="26" y="58" width="48" height="9" fill="#fff" opacity="0.85" />
+            <text x="50" y="66" fontFamily="Arial" fontSize="9" fontWeight="900" fill="#E0A92E" textAnchor="middle">DIG</text>
+            <FaceCore hair={hair} face={a.face} />
+          </>
+        ) : (
+          <>
+            {/* 발 */}
+            <ellipse cx="41" cy="103" rx="8" ry="6.5" fill={foot} />
+            <ellipse cx="59" cy="103" rx="8" ry="6.5" fill={foot} />
+            {/* 별 잠옷 라벤더 팔 (몸통 뒤) */}
+            {cos === "star" && (
+              <>
+                <ellipse cx="16" cy="80" rx="8" ry="11" fill="#B9C4E8" />
+                <ellipse cx="84" cy="80" rx="8" ry="11" fill="#B9C4E8" />
+              </>
+            )}
+            {/* 후드 양옆 귀(퍼프) */}
+            <circle cx="15" cy="47" r="10" fill={ear} />
+            <circle cx="85" cy="47" r="10" fill={ear} />
+            {/* 온지 본체(하단) */}
+            <ellipse cx="50" cy="83" rx="30" ry="26" fill={`url(#${gid})`} />
+            {/* 후드(머리) */}
+            <circle cx="50" cy="47" r="30" fill={`url(#${gid})`} />
 
-        {/* 후드 양옆 귀(퍼프) */}
-        <circle cx="15" cy="47" r="10" fill={ear} />
-        <circle cx="85" cy="47" r="10" fill={ear} />
+            {/* 코스튬 패턴 */}
+            {cos === "plaid" && <PlaidPattern />}
+            {cos === "star" && <StarPattern />}
 
-        {/* 온지 본체(하단) */}
-        <ellipse cx="50" cy="83" rx="30" ry="26" fill={`url(#${gid})`} />
-        {/* 후드(머리) */}
-        <circle cx="50" cy="47" r="30" fill={`url(#${gid})`} />
+            {/* 얼굴 + 앞머리 */}
+            <FaceCore hair={hair} face={a.face} />
 
-        {/* 얼굴(크림) */}
-        <ellipse cx="50" cy="54" rx="21" ry="22" fill="#F8E2C5" />
-        {/* 앞머리(다크 둥근 마운드) */}
-        <path
-          d="M28 53 Q28 30 50 30 Q72 30 72 53 Q61 49 50 50 Q39 49 28 53 Z"
-          fill={hair}
-        />
+            {/* 마녀 — 빨간 망토 칼라 + 벨트 */}
+            {cos === "witch" && (
+              <g>
+                <path d="M30 72 Q50 80 70 72 L72 80 Q50 90 28 80 Z" fill="#D8483C" />
+                <rect x="30" y="88" width="40" height="7" rx="2" fill="#C53A30" />
+                <rect x="46" y="87" width="8" height="9" rx="1.5" fill="#E8B84A" />
+              </g>
+            )}
 
-        {/* 목도리 (선택) — 'none'이면 미표시 */}
-        {scarf !== "none" && (
-          <path d="M34 73 Q50 79 66 73 L66 77 Q50 83 34 77 Z" fill={scarf} />
+            {/* 목도리 (코스튬 없을 때만) */}
+            {!cos && scarf !== "none" && (
+              <path d="M34 73 Q50 79 66 73 L66 77 Q50 83 34 77 Z" fill={scarf} />
+            )}
+          </>
         )}
-
-        {/* 얼굴 표정 */}
-        <BeanFace face={a.face} />
 
         {/* 안경 (상점 악세서리) */}
         <Glasses kind={a.glasses} />
-        {/* 모자 (상점 악세서리) — 후드 위 */}
-        <Hat kind={a.hat} accent={hair} />
+        {/* 마녀 모자 / 일반 모자 */}
+        {cos === "witch" ? (
+          <g transform="rotate(-6 50 22)">
+            <ellipse cx="50" cy="24" rx="30" ry="7" fill="#5A4AAE" />
+            <path d="M34 24 Q44 -8 60 2 L58 24 Z" fill="#6E5CC8" />
+            <rect x="36" y="19" width="28" height="5" rx="2" fill="#4A3C96" />
+            <circle cx="55" cy="11" r="2.5" fill="#E8B84A" />
+          </g>
+        ) : (
+          !cos && <Hat kind={a.hat} accent={hair} />
+        )}
       </svg>
     </div>
   );
@@ -207,6 +251,92 @@ function Glasses({ kind }: { kind: GlassesStyle }) {
     default:
       return null;
   }
+}
+
+// 얼굴(크림) + 앞머리 + 표정 — 모든 룩 공통
+function FaceCore({ hair, face }: { hair: string; face: FaceStyle }) {
+  return (
+    <>
+      <ellipse cx="50" cy="54" rx="21" ry="22" fill="#F8E2C5" />
+      <path d="M28 53 Q28 30 50 30 Q72 30 72 53 Q61 49 50 50 Q39 49 28 53 Z" fill={hair} />
+      <BeanFace face={face} />
+    </>
+  );
+}
+
+// 감자튀김 — 박스 위로 솟은 튀김
+function FriesSticks() {
+  const sticks: [number, number][] = [
+    [33, 30], [40, 38], [48, 42], [56, 38], [64, 32], [36, 24], [60, 24],
+  ];
+  return (
+    <g>
+      {sticks.map(([fx, h], i) => (
+        <rect key={i} x={fx} y={42 - h} width="6.5" height={h} rx="2.5" fill="#F4C23A" stroke="#E0A92E" strokeWidth="0.6" />
+      ))}
+    </g>
+  );
+}
+
+// 체크 잠옷 패턴 (본체에 클립)
+function PlaidPattern() {
+  const xs: number[] = [];
+  for (let x = 14; x < 90; x += 11) xs.push(x);
+  const ys: number[] = [];
+  for (let y = 20; y < 112; y += 11) ys.push(y);
+  return (
+    <>
+      <clipPath id="plaidClip">
+        <circle cx="50" cy="47" r="30" />
+        <ellipse cx="50" cy="83" rx="30" ry="26" />
+      </clipPath>
+      <g clipPath="url(#plaidClip)">
+        {xs.map((x) => (
+          <g key={"x" + x}>
+            <line x1={x} y1="18" x2={x} y2="110" stroke="#ffffff" strokeWidth="3" opacity="0.55" />
+            <line x1={x + 4} y1="18" x2={x + 4} y2="110" stroke="#9FB6E0" strokeWidth="1.5" opacity="0.5" />
+          </g>
+        ))}
+        {ys.map((y) => (
+          <g key={"y" + y}>
+            <line x1="6" y1={y} x2="94" y2={y} stroke="#ffffff" strokeWidth="3" opacity="0.55" />
+            <line x1="6" y1={y + 4} x2="94" y2={y + 4} stroke="#9FB6E0" strokeWidth="1.5" opacity="0.5" />
+          </g>
+        ))}
+      </g>
+    </>
+  );
+}
+
+// 별 잠옷 패턴 (본체에 클립)
+function StarPattern() {
+  const pts: [number, number][] = [
+    [26, 40], [70, 38], [34, 72], [64, 74], [50, 92], [22, 86], [78, 86], [40, 100], [60, 100],
+  ];
+  const star = (sx: number, sy: number) => {
+    let d = "";
+    for (let k = 0; k < 5; k++) {
+      const a1 = -Math.PI / 2 + (k * 2 * Math.PI) / 5;
+      const a2 = a1 + Math.PI / 5;
+      const x1 = sx + Math.cos(a1) * 3.2, y1 = sy + Math.sin(a1) * 3.2;
+      const x2 = sx + Math.cos(a2) * 1.4, y2 = sy + Math.sin(a2) * 1.4;
+      d += `${k === 0 ? "M" : "L"}${x1.toFixed(1)} ${y1.toFixed(1)} L${x2.toFixed(1)} ${y2.toFixed(1)} `;
+    }
+    return d + "Z";
+  };
+  return (
+    <>
+      <clipPath id="starClip">
+        <circle cx="50" cy="47" r="30" />
+        <ellipse cx="50" cy="83" rx="30" ry="26" />
+      </clipPath>
+      <g clipPath="url(#starClip)">
+        {pts.map(([sx, sy], i) => (
+          <path key={i} d={star(sx, sy)} fill="#E8D86A" opacity="0.8" />
+        ))}
+      </g>
+    </>
+  );
 }
 
 // 표정 — 레퍼런스의 단순 세로 오벌 눈 기반. 눈 cy57.

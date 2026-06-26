@@ -3,7 +3,12 @@
 import { Outlines, RoundedBox } from "@react-three/drei";
 import * as THREE from "three";
 import { useMemo } from "react";
-import type { Appearance, FaceStyle, HatStyle, GlassesStyle } from "@/lib/appearance";
+import type { Appearance, FaceStyle, HatStyle, GlassesStyle, CostumeStyle } from "@/lib/appearance";
+
+// 코스튬별 본체 색 (3D는 색 + 시그니처 요소로 단순화)
+const COSTUME_BODY3D: Record<Exclude<CostumeStyle, "none">, string> = {
+  witch: "#7B6BD6", plaid: "#C6D8F0", star: "#F4EDB0", fries: "#E8443C",
+};
 
 // 디깅타운 마스코트 — 후드 온지를 입은 캐릭터(디자인 가이드).
 // 발끝 y=0, 키 ~62. 정면 = +Z (부모가 heading으로 회전).
@@ -12,7 +17,8 @@ import type { Appearance, FaceStyle, HatStyle, GlassesStyle } from "@/lib/appear
 const OUT = "#2b211a";
 
 export default function BeanAvatar3D({ a }: { a: Appearance }) {
-  const body = a.outfit || "#7B5EE6";
+  const cos = a.costume && a.costume !== "none" ? a.costume : null;
+  const body = cos ? COSTUME_BODY3D[cos] : a.outfit || "#7B5EE6";
   const belly = tone(body, 26);
   const foot = tone(body, -34);
   const ear = tone(body, -8);
@@ -125,10 +131,39 @@ export default function BeanAvatar3D({ a }: { a: Appearance }) {
       <group position={[0, 7, 3]}>
         <Glasses3D kind={a.glasses} />
       </group>
-      {/* 모자 (상점 악세서리) — 후드 위 */}
-      <group position={[0, 9, 0]}>
-        <Hat3D kind={a.hat} accent={hair} />
-      </group>
+
+      {/* 마녀 — 빨간 칼라 + 마녀 모자 */}
+      {cos === "witch" && (
+        <group>
+          <mesh position={[0, 30, 2]} rotation={[Math.PI / 2, 0, 0]}>
+            <torusGeometry args={[12.8, 2.6, 14, 36]} />
+            <meshStandardMaterial color="#D8483C" roughness={0.7} />
+            <Outlines thickness={1.8} color={OUT} />
+          </mesh>
+          <group position={[0, 62, 0]} rotation={[0, 0, 0.1]}>
+            <mesh castShadow><coneGeometry args={[10, 24, 22]} /><meshStandardMaterial color="#6E5CC8" /><Outlines thickness={2} color={OUT} /></mesh>
+            <mesh position={[0, -10, 0]}><cylinderGeometry args={[17, 17, 1.6, 26]} /><meshStandardMaterial color="#5A4AAE" /></mesh>
+            <mesh position={[0, -3, 0]}><cylinderGeometry args={[10.2, 10.2, 3, 22]} /><meshStandardMaterial color="#4A3C96" /></mesh>
+          </group>
+        </group>
+      )}
+
+      {/* 감자튀김 — 머리 위 튀김 */}
+      {cos === "fries" &&
+        [[-7, 56, 0], [0, 60, 0], [7, 56, 0], [-3.5, 52, 4], [3.5, 52, 4]].map((p, i) => (
+          <mesh key={i} position={p as [number, number, number]} castShadow>
+            <boxGeometry args={[4, 18, 4]} />
+            <meshStandardMaterial color="#F4C23A" />
+            <Outlines thickness={1.4} color={OUT} />
+          </mesh>
+        ))}
+
+      {/* 모자 (코스튬 없을 때만) */}
+      {!cos && (
+        <group position={[0, 9, 0]}>
+          <Hat3D kind={a.hat} accent={hair} />
+        </group>
+      )}
     </group>
   );
 }

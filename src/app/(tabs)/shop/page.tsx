@@ -12,15 +12,18 @@ import {
   HAT_LABEL,
   GLASSES,
   GLASSES_LABEL,
+  COSTUMES,
+  COSTUME_LABEL,
   defaultAppearance,
   type Appearance,
   type HatStyle,
   type GlassesStyle,
+  type CostumeStyle,
 } from "@/lib/appearance";
 
 // Bean 악세서리 상점 — 부가적인 모자/안경을 코인으로 구매·착용.
 // (본체색/목도리/머리/표정 기본 외형은 무료 — 마이페이지 "기본 꾸미기"에서 변경)
-type Slot = "hat" | "glasses";
+type Slot = "hat" | "glasses" | "costume";
 type ShopItem = { id: string; slot: Slot; value: string; name: string; price: number };
 
 const HAT_PRICE: Record<HatStyle, number> = {
@@ -29,8 +32,14 @@ const HAT_PRICE: Record<HatStyle, number> = {
 const GLASSES_PRICE: Record<GlassesStyle, number> = {
   none: 0, round: 110, sun: 160, star: 150, heart: 130,
 };
+const COSTUME_PRICE: Record<CostumeStyle, number> = {
+  none: 0, witch: 420, plaid: 300, star: 320, fries: 380,
+};
 
 const ITEMS: ShopItem[] = [
+  ...COSTUMES.filter((c) => c !== "none").map((c) => ({
+    id: `costume_${c}`, slot: "costume" as Slot, value: c, name: COSTUME_LABEL[c], price: COSTUME_PRICE[c],
+  })),
   ...HATS.filter((h) => h !== "none").map((h) => ({
     id: `hat_${h}`, slot: "hat" as Slot, value: h, name: HAT_LABEL[h], price: HAT_PRICE[h],
   })),
@@ -40,6 +49,7 @@ const ITEMS: ShopItem[] = [
 ];
 
 const TABS: { id: Slot; label: string }[] = [
+  { id: "costume", label: "👗 코스튬" },
   { id: "hat", label: "🎩 모자" },
   { id: "glasses", label: "🕶️ 안경" },
 ];
@@ -61,7 +71,7 @@ export default function ShopPage() {
   const auraColor = GENRES[myGenre].color;
   const ap = user?.character.appearance ?? defaultAppearance();
 
-  const [tab, setTab] = useState<Slot>("hat");
+  const [tab, setTab] = useState<Slot>("costume");
   const [confirm, setConfirm] = useState<ShopItem | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 

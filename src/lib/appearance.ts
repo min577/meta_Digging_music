@@ -13,6 +13,7 @@ export type HairStyle =
 export type HatStyle = "none" | "cap" | "beanie" | "headphones" | "fedora" | "flower" | "crown" | "party";
 export type FaceStyle = "smile" | "happy" | "wink" | "cool" | "cat";
 export type GlassesStyle = "none" | "round" | "sun" | "star" | "heart";
+export type CostumeStyle = "none" | "witch" | "plaid" | "star" | "fries";
 export type AnimalType = "cat" | "rabbit" | "bear" | "dog" | "fox" | "frog" | "bird" | "hamster";
 
 export interface Appearance {
@@ -25,7 +26,17 @@ export interface Appearance {
   hat: HatStyle;
   face: FaceStyle;
   glasses: GlassesStyle;
+  costume?: CostumeStyle; // 전신 코스튬 (상점) — 있으면 본체 룩을 덮어씀
 }
+
+export const COSTUMES: CostumeStyle[] = ["none", "witch", "plaid", "star", "fries"];
+export const COSTUME_LABEL: Record<CostumeStyle, string> = {
+  none: "없음",
+  witch: "🧙 마녀",
+  plaid: "🧣 체크 잠옷",
+  star: "⭐ 별 잠옷",
+  fries: "🍟 감자튀김",
+};
 
 export const ANIMALS: AnimalType[] = ["cat", "rabbit", "bear", "dog", "fox", "frog", "bird", "hamster"];
 export const ANIMAL_LABEL: Record<AnimalType, string> = {
@@ -139,6 +150,7 @@ export function defaultAppearance(): Appearance {
     hat: "none",
     face: "smile",
     glasses: "none",
+    costume: "none",
   };
 }
 
