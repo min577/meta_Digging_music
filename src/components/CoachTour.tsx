@@ -17,8 +17,9 @@ interface Rect { top: number; left: number; width: number; height: number; }
 
 // 탭별 코치마크 튜토리얼 — 실제 요소를 스포트라이트로 짚고, 직접 조작하며 단계 진행.
 export default function CoachTour({ tourKey, steps }: { tourKey: string; steps: TourStep[] }) {
-  const seen = useAppStore((s) => s.tours[tourKey]);
+  const seen = useAppStore((s) => s.tours?.[tourKey]);
   const markTour = useAppStore((s) => s.markTour);
+  const rectRef = useRef<Rect | null>(null);
 
   const [mounted, setMounted] = useState(false);
   const [active, setActive] = useState(false);
@@ -48,15 +49,22 @@ export default function CoachTour({ tourKey, steps }: { tourKey: string; steps: 
   // 대상 요소 위치 추적 (등장 지연·리사이즈·스크롤 대응)
   useEffect(() => {
     if (!active || !step) return;
+    rectRef.current = null;
     let raf = 0;
     let tries = 0;
     let gaveUp = false;
     const measure = () => {
-      if (!step.target) { setRect(null); return; }
+      if (!step.target) { if (rectRef.current) { rectRef.current = null; setRect(null); } return; }
       const el = document.querySelector(`[data-tour="${step.target}"]`) as HTMLElement | null;
       if (el) {
         const r = el.getBoundingClientRect();
-        setRect({ top: r.top, left: r.left, width: r.width, height: r.height });
+        const nr = { top: r.top, left: r.left, width: r.width, height: r.height };
+        const p = rectRef.current;
+        // 값이 실제로 바뀐 경우에만 setState (매 프레임 리렌더 방지)
+        if (!p || Math.abs(p.top - nr.top) > 0.5 || Math.abs(p.left - nr.left) > 0.5 || Math.abs(p.width - nr.width) > 0.5 || Math.abs(p.height - nr.height) > 0.5) {
+          rectRef.current = nr;
+          setRect(nr);
+        }
         tries = 0;
       } else {
         // 요소가 아직 없으면 잠시 재시도, 그래도 없으면 이 단계 건너뜀
