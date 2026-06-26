@@ -45,10 +45,6 @@ export default function RoomCard({
           <span className="absolute top-3 right-3 chip bg-black/30 text-white">
             {MODE_LABEL[room.queueMode]}
           </span>
-          {/* 장르 태그(디자인 알약 칩) */}
-          <span className="absolute bottom-2 right-3 z-10">
-            <GenreTag genre={topGenre(room.tasteVector)} size="sm" />
-          </span>
           <div className="relative z-10 flex -space-x-3">
             {shown.map((m) => (
               <div key={m.userId} className="drop-shadow">
@@ -68,9 +64,12 @@ export default function RoomCard({
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
               <h3 className="font-bold text-ink-900 truncate">{room.title}</h3>
-              <p className="text-xs text-ink-700/50 mt-0.5">
-                {g.emoji} {g.label} · 👥 {room.members.length}/{room.capacity}
-              </p>
+              <div className="flex items-center gap-2 mt-1.5">
+                <GenreTag genre={topGenre(room.tasteVector)} size="sm" />
+                <span className="text-xs text-ink-700/50">
+                  👥 {room.members.length}/{room.capacity}
+                </span>
+              </div>
             </div>
             <div className="shrink-0 text-right">
               <div
