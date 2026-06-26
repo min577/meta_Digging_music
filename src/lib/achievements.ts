@@ -61,11 +61,16 @@ export function buildStats(
   level: number
 ): AchvStats {
   const genre: Record<string, number> = {};
-  for (const e of listenEvents) genre[e.genre] = (genre[e.genre] ?? 0) + 1;
+  for (const e of listenEvents) {
+    if (!e?.genre) continue;
+    genre[e.genre] = (genre[e.genre] ?? 0) + 1;
+  }
   const diggedGenres = new Set<string>();
   for (const d of diggs) {
-    genre[d.track.genre] = (genre[d.track.genre] ?? 0) + 1;
-    diggedGenres.add(d.track.genre);
+    const g = d?.track?.genre;
+    if (!g) continue;
+    genre[g] = (genre[g] ?? 0) + 1;
+    diggedGenres.add(g);
   }
   return { genre, diggs: diggs.length, distinct: diggedGenres.size, level };
 }

@@ -50,12 +50,14 @@ export default function ProfilePage() {
     const p = placeOf(r.place);
     return { emoji: p.emoji, name: p.name };
   };
+  // 손상 항목(track 누락 등) 제외
+  const validDiggs = useMemo(() => diggs.filter((d) => d?.track?.genre), [diggs]);
   // 디깅함에 존재하는 장르(자동 분류 칩)
   const diggGenres = useMemo(
-    () => [...new Set(diggs.map((d) => d.track.genre))],
-    [diggs]
+    () => [...new Set(validDiggs.map((d) => d.track.genre))],
+    [validDiggs]
   );
-  const shownDiggs = diggGenre === "all" ? diggs : diggs.filter((d) => d.track.genre === diggGenre);
+  const shownDiggs = diggGenre === "all" ? validDiggs : validDiggs.filter((d) => d.track.genre === diggGenre);
 
   // 로그아웃 → 온보딩부터 다시 (Supabase 세션도 정리)
   const logout = async () => {
@@ -102,6 +104,7 @@ export default function ProfilePage() {
     }
     // 디깅함도 합산 (데모에서 listenEvents가 적을 수 있어 풍성하게)
     for (const d of diggs) {
+      if (!d?.track?.artist) continue;
       const cur = map.get(d.track.artist) ?? { count: 0, genre: d.track.genre };
       cur.count += 1;
       map.set(d.track.artist, cur);
