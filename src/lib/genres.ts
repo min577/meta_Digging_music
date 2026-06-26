@@ -103,6 +103,18 @@ export const GENRES: Record<GenreId, Genre> = {
 
 export const GENRE_LIST: Genre[] = Object.values(GENRES);
 
+// 디자인 가이드 장르 태그(알약 칩) — 영문 라벨 + 글자색(밝은 배경=다크, 진한 배경=크림)
+export const GENRE_TAG: Record<GenreId, { en: string; ink: string }> = {
+  kpop: { en: "K-Pop", ink: "#3A332C" },
+  hiphop: { en: "Hip-Hop", ink: "#FBF4E9" },
+  rnb: { en: "R&B", ink: "#10331d" },
+  ballad: { en: "Ballad", ink: "#16314a" },
+  indie: { en: "Indie", ink: "#FBF4E9" },
+  pop: { en: "Pop", ink: "#FBF4E9" },
+  edm: { en: "EDM", ink: "#0e3335" },
+  citypop: { en: "City Pop", ink: "#FBF4E9" },
+};
+
 // 안전 접근자 — 구버전/알 수 없는 id면 pop으로 폴백 (런타임 크래시 방지)
 export function genre(id: string): Genre {
   return GENRES[id as GenreId] ?? GENRES.pop;

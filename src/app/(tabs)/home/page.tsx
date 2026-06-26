@@ -8,7 +8,7 @@ import RoomCard from "@/components/RoomCard";
 import MoodBuilding from "@/components/MoodBuilding";
 import CoachTour, { type TourStep } from "@/components/CoachTour";
 import { LOCATIONS, ROOMS } from "@/lib/mock";
-import { GENRES, GENRE_LIST, type GenreId } from "@/lib/genres";
+import { GENRES, GENRE_LIST, GENRE_TAG, type GenreId } from "@/lib/genres";
 import { matchPercent, topGenre } from "@/lib/taste";
 import { useAppStore } from "@/store/useAppStore";
 
@@ -148,20 +148,25 @@ export default function HomePage() {
         >
           🎯 취향 일치순
         </button>
-        {GENRE_LIST.map((g) => (
-          <button
-            key={g.id}
-            onClick={() => setFilter(g.id)}
-            className={`chip py-1.5 px-3 shrink-0 border ${
-              filter === g.id
-                ? "text-white border-transparent"
-                : "bg-cream-50 text-ink-700 border-cream-200"
-            }`}
-            style={filter === g.id ? { background: g.color } : undefined}
-          >
-            {g.emoji} {g.label}
-          </button>
-        ))}
+        {GENRE_LIST.map((g) => {
+          const on = filter === g.id;
+          return (
+            <button
+              key={g.id}
+              onClick={() => setFilter(g.id)}
+              className={`rounded-2xl py-1.5 px-3.5 shrink-0 text-sm font-extrabold tracking-tight transition ${
+                on ? "shadow-card" : "bg-cream-50 border border-cream-200"
+              }`}
+              style={
+                on
+                  ? { background: g.color, color: GENRE_TAG[g.id].ink }
+                  : { color: g.color }
+              }
+            >
+              {GENRE_TAG[g.id].en}
+            </button>
+          );
+        })}
       </div>
 
       {/* 인기 라이브 룸 */}

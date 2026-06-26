@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Avatar from "./Avatar";
 import PlaceScene from "./PlaceScene";
+import GenreTag from "./GenreTag";
 import { appearanceFromSeed } from "@/lib/appearance";
 import { GENRES } from "@/lib/genres";
 import { topGenre } from "@/lib/taste";
@@ -43,6 +44,10 @@ export default function RoomCard({
           )}
           <span className="absolute top-3 right-3 chip bg-black/30 text-white">
             {MODE_LABEL[room.queueMode]}
+          </span>
+          {/* 장르 태그(디자인 알약 칩) */}
+          <span className="absolute bottom-2 right-3 z-10">
+            <GenreTag genre={topGenre(room.tasteVector)} size="sm" />
           </span>
           <div className="relative z-10 flex -space-x-3">
             {shown.map((m) => (

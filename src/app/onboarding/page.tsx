@@ -136,12 +136,14 @@ export default function OnboardingPage() {
                   <Logo size={52} wordmark={false} />
                 </div>
                 <h1 className="text-2xl font-extrabold text-ink-900 tracking-tight">
-                  <span className="text-brand">DigTown</span>에 오신 걸 환영해요
+                  <span className="text-brand">디깅타운</span>,
+                  <br />
+                  음악으로 하나되는 이곳
                 </h1>
                 <p className="text-ink-700/60 mt-2 text-sm leading-relaxed">
-                  혼자 듣지 마세요. 같은 곡을 함께 들으며
+                  같은 곡을 함께 들으며 취향이 통하는
                   <br />
-                  취향이 통하는 사람을 발견하는 곳.
+                  사람을 발견하는 음악 디깅 메타버스.
                 </p>
               </div>
               <div className="mt-8">
