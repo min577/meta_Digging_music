@@ -318,7 +318,7 @@ export default function OnboardingPage() {
               {seeds.length >= 3 && (
                 <div className="card p-3 mt-3">
                   <p className="text-xs font-bold text-ink-700 mb-2">
-                    🎯 당신의 취향 미리보기
+                    당신의 취향 미리보기
                   </p>
                   <div className="space-y-1.5">
                     {sortedGenres(preview).map(([g, v]) => (

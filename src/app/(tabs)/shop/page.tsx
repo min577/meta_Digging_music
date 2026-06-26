@@ -92,7 +92,7 @@ export default function ShopPage() {
     if (isEquipped(i)) {
       // 착용 중인 슬롯을 다시 누르면 해제
       setAppearance({ ...ap, [i.slot]: "none" } as Appearance);
-      flash("벗었어요 👋");
+      flash("벗었어요");
       return;
     }
     if (isOwned(i)) {

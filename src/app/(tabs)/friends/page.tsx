@@ -112,7 +112,7 @@ export default function FriendsPage() {
       {/* 추천: 취향 매칭 */}
       {suggestions.length > 0 && (
         <section data-tour="friends-suggest" className="px-5 mt-4">
-          <p className="font-bold text-ink-900 mb-2">🎯 취향이 비슷한 사람</p>
+          <p className="font-bold text-ink-900 mb-2">취향이 비슷한 사람</p>
           <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1">
             {suggestions.map((s) => (
               <div key={s.userId} className="card shrink-0 w-32 p-3 text-center">

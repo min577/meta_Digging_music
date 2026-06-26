@@ -1,8 +1,31 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Component, useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { useAppStore } from "@/store/useAppStore";
+
+// 튜토리얼에서 어떤 에러가 나도 페이지 전체를 죽이지 않도록 격리.
+class TourBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+  state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  componentDidCatch(err: unknown) {
+    // eslint-disable-next-line no-console
+    console.error("[CoachTour] 비활성화됨:", err);
+  }
+  render() {
+    return this.state.failed ? null : this.props.children;
+  }
+}
+
+export default function CoachTour(props: { tourKey: string; steps: TourStep[] }) {
+  return (
+    <TourBoundary>
+      <CoachTourInner {...props} />
+    </TourBoundary>
+  );
+}
 
 export interface TourStep {
   /** 강조할 요소의 data-tour 값. 없으면 화면 중앙 카드 */
@@ -16,7 +39,7 @@ export interface TourStep {
 interface Rect { top: number; left: number; width: number; height: number; }
 
 // 탭별 코치마크 튜토리얼 — 실제 요소를 스포트라이트로 짚고, 직접 조작하며 단계 진행.
-export default function CoachTour({ tourKey, steps }: { tourKey: string; steps: TourStep[] }) {
+function CoachTourInner({ tourKey, steps }: { tourKey: string; steps: TourStep[] }) {
   const seen = useAppStore((s) => s.tours?.[tourKey]);
   const markTour = useAppStore((s) => s.markTour);
   const rectRef = useRef<Rect | null>(null);

@@ -70,7 +70,7 @@ export default function ProfileSheet({
                   className="inline-block mt-2 chip text-white font-bold py-1 px-2.5 text-xs"
                   style={{ background: g.color }}
                 >
-                  🎯 취향 {pct}% 일치
+                  취향 {pct}% 일치
                 </span>
               </div>
             </div>

@@ -2,7 +2,7 @@
 export type IconName =
   | "home" | "shop" | "friends" | "user" | "music" | "search" | "plus"
   | "back" | "trophy" | "sparkle" | "heart" | "play" | "headphones"
-  | "pin" | "coin" | "gem" | "settings" | "x" | "compass" | "build" | "chat";
+  | "pin" | "coin" | "gem" | "settings" | "x" | "compass" | "build" | "chat" | "target" | "quest";
 
 const P: Record<IconName, React.ReactNode> = {
   home: <path d="M3 11.5 12 4l9 7.5M5 10v9a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-9" />,
@@ -26,6 +26,8 @@ const P: Record<IconName, React.ReactNode> = {
   x: <path d="M6 6l12 12M18 6 6 18" />,
   compass: <><circle cx="12" cy="12" r="9" /><path d="m15.5 8.5-2 5-5 2 2-5 5-2Z" /></>,
   build: <path d="M14 4l6 6-9 9-6 1 1-6 8-8Zm-2 2 4 4" />,
+  target: <><circle cx="12" cy="12" r="8.5" /><circle cx="12" cy="12" r="4.5" /><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" /></>,
+  quest: <><path d="M5 4h11l3 3v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4Z" /><path d="M9 9h6M9 13h6M9 17h3" /></>,
 };
 
 export default function Icon({

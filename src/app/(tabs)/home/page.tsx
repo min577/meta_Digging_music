@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import TopBar from "@/components/TopBar";
 import RoomCard from "@/components/RoomCard";
 import MoodBuilding from "@/components/MoodBuilding";
+import Icon from "@/components/Icon";
 import CoachTour, { type TourStep } from "@/components/CoachTour";
 import { LOCATIONS, ROOMS } from "@/lib/mock";
 import { GENRES, GENRE_LIST, GENRE_TAG, type GenreId } from "@/lib/genres";
@@ -66,7 +67,7 @@ export default function HomePage() {
     <div>
       <CoachTour tourKey="home" steps={HOME_TOUR} />
       <TopBar
-        title={`안녕, ${user?.handle ?? "디깅러"} 👋`}
+        title={`안녕, ${user?.handle ?? "디깅러"}`}
         sub="오늘은 어떤 곡을 디깅해볼까요?"
       />
 
@@ -77,7 +78,9 @@ export default function HomePage() {
           data-tour="home-quest"
           className="mx-5 mt-2 card p-3.5 flex items-center gap-3 active:scale-[0.99] transition bg-gradient-to-r from-brand/10 to-cream-50"
         >
-          <span className="text-2xl shrink-0">🎯</span>
+          <span className="w-9 h-9 rounded-full bg-brand/15 text-brand-dark grid place-items-center shrink-0">
+            <Icon name="quest" size={18} />
+          </span>
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-2">
               <p className="font-bold text-sm text-ink-900 truncate">디깅 퀘스트 · {activeQuest.title}</p>
@@ -146,7 +149,7 @@ export default function HomePage() {
               : "bg-cream-50 text-ink-700 border-cream-200"
           }`}
         >
-          🎯 취향 일치순
+          취향 일치순
         </button>
         {GENRE_LIST.map((g) => {
           const on = filter === g.id;

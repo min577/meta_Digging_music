@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import TopBar from "@/components/TopBar";
 import Avatar from "@/components/Avatar";
+import Icon from "@/components/Icon";
 import CoachTour, { type TourStep } from "@/components/CoachTour";
 import { useAppStore, useMyTopGenre } from "@/store/useAppStore";
 import { GENRES, GENRE_LIST, genre as genreOf } from "@/lib/genres";
@@ -125,15 +126,15 @@ export default function ProfilePage() {
         <div className="card p-5 flex items-center gap-4">
           <div
             className="rounded-3xl p-2"
-            style={{ background: `${GENRES[myGenre].color}18` }}
+            style={{ background: `${genreOf(myGenre).color}18` }}
           >
-            <Avatar appearance={user.character.appearance} size={88} aura={GENRES[myGenre].color} />
+            <Avatar appearance={user.character.appearance} size={88} aura={genreOf(myGenre).color} />
           </div>
           <div className="flex-1 min-w-0">
             <p className="font-extrabold text-lg text-ink-900">{user.handle}</p>
             <p className="text-xs text-ink-700/55">
-              Lv.{user.level} · {STAGE_NAME[stage]} · {GENRES[myGenre].emoji}{" "}
-              {GENRES[myGenre].label} 디깅러
+              Lv.{user.level} · {STAGE_NAME[stage]} · {genreOf(myGenre).emoji}{" "}
+              {genreOf(myGenre).label} 디깅러
             </p>
             <div className="flex gap-2 mt-2">
               <span className="chip bg-cream-100 border border-cream-200">
@@ -278,12 +279,12 @@ export default function ProfilePage() {
                 {dist.map(([g, v]) => (
                   <div key={g} className="flex items-center gap-2">
                     <span className="text-xs w-16 text-ink-700">
-                      {GENRES[g].emoji} {GENRES[g].label}
+                      {genreOf(g).emoji} {genreOf(g).label}
                     </span>
                     <div className="flex-1 h-2.5 rounded-full bg-cream-200 overflow-hidden">
                       <div
                         className="h-full rounded-full"
-                        style={{ width: `${v * 100}%`, background: GENRES[g].color }}
+                        style={{ width: `${v * 100}%`, background: genreOf(g).color }}
                       />
                     </div>
                     <span className="text-xs text-ink-700/55 w-9 text-right">
@@ -335,9 +336,9 @@ export default function ProfilePage() {
                       key={g}
                       onClick={() => setDiggGenre(g)}
                       className={`chip py-1 px-3 shrink-0 ${diggGenre === g ? "text-white" : "bg-cream-100 text-ink-700"}`}
-                      style={diggGenre === g ? { background: GENRES[g].color } : undefined}
+                      style={diggGenre === g ? { background: genreOf(g).color } : undefined}
                     >
-                      {GENRES[g].emoji} {GENRES[g].label}
+                      {genreOf(g).emoji} {genreOf(g).label}
                     </button>
                   ))}
                 </div>
@@ -388,9 +389,9 @@ export default function ProfilePage() {
                             <div className="flex flex-wrap gap-1 mt-1.5">
                               <span
                                 className="chip py-0.5 px-1.5 text-[9px] font-bold text-white"
-                                style={{ background: GENRES[d.track.genre].color }}
+                                style={{ background: genreOf(d.track.genre).color }}
                               >
-                                {GENRES[d.track.genre].label}
+                                {genreOf(d.track.genre).label}
                               </span>
                               <span className="chip py-0.5 px-1.5 text-[9px] font-bold bg-cream-100 text-ink-700/70">
                                 {src.emoji} {src.name}
@@ -491,7 +492,7 @@ export default function ProfilePage() {
       {/* 퀘스트 바로가기 + 로그인 */}
       <section className="px-5 mt-4 space-y-2">
         <Link href="/quests" className="card p-4 flex items-center gap-3 active:scale-[0.99] transition">
-          <span className="text-2xl">🎯</span>
+          <span className="w-9 h-9 rounded-full bg-brand/12 text-brand-dark grid place-items-center"><Icon name="quest" size={18} /></span>
           <div className="flex-1">
             <p className="font-bold text-sm">디깅 퀘스트</p>
             <p className="text-xs text-ink-700/50">오늘의 미션 · 무드 선택 · 협동 미션</p>
