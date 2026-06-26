@@ -10,15 +10,15 @@ import { vectorFromTracks } from "@/lib/taste";
 import { useAppStore, useMyTopGenre } from "@/store/useAppStore";
 import type { Room, Track, QueueMode, RoomVisibility, RoomMode } from "@/lib/types";
 
-const ROOM_MODES: { id: RoomMode; label: string; desc: string }[] = [
-  { id: "party", label: "🎙 리스닝 파티", desc: "호스트가 전체 음악을 운영, 다 같이 같은 곡" },
-  { id: "free", label: "🎐 자유모드", desc: "맵을 돌아다니며 가까운 음악 존의 곡이 들림" },
+const ROOM_MODES: { id: RoomMode; icon: string; label: string; desc: string }[] = [
+  { id: "party", icon: "🎙", label: "리스닝 파티", desc: "호스트가 전체 음악을 운영, 다 같이 같은 곡" },
+  { id: "free", icon: "🎐", label: "자유모드", desc: "맵을 돌아다니며 가까운 음악 존의 곡이 들림" },
 ];
 
-const MODES: { id: QueueMode; label: string; desc: string }[] = [
-  { id: "collab", label: "🤝 협업 큐", desc: "모두 곡 제안 → 좋아요순" },
-  { id: "dj", label: "🎙 DJ", desc: "호스트만 곡 관리" },
-  { id: "radio", label: "📻 라디오", desc: "태그 기반 자동 재생" },
+const MODES: { id: QueueMode; icon: string; label: string; desc: string }[] = [
+  { id: "collab", icon: "🤝", label: "협업 큐", desc: "모두 곡 제안 → 좋아요순" },
+  { id: "dj", icon: "🎙", label: "DJ", desc: "호스트만 곡 관리" },
+  { id: "radio", icon: "📻", label: "라디오", desc: "태그 기반 자동 재생" },
 ];
 
 const VIS: { id: RoomVisibility; label: string }[] = [
@@ -118,15 +118,16 @@ export default function CreateRoomPage() {
           <button
             key={m.id}
             onClick={() => setRoomMode(m.id)}
-            className={`w-full card px-4 py-3 flex items-center justify-between transition ${
+            className={`w-full card px-4 py-3 flex items-center gap-3 text-left transition ${
               roomMode === m.id ? "ring-2 ring-brand" : ""
             }`}
           >
-            <span>
-              <span className="font-bold text-sm">{m.label}</span>
-              <span className="block text-xs text-ink-700/55">{m.desc}</span>
+            <span className="text-xl w-7 text-center shrink-0">{m.icon}</span>
+            <span className="flex-1 min-w-0">
+              <span className="block font-bold text-sm text-ink-900">{m.label}</span>
+              <span className="block text-xs text-ink-700/55 leading-snug">{m.desc}</span>
             </span>
-            {roomMode === m.id && <span className="text-brand font-bold">✓</span>}
+            <span className={`font-bold shrink-0 ${roomMode === m.id ? "text-brand" : "text-transparent"}`}>✓</span>
           </button>
         ))}
       </div>
@@ -140,15 +141,16 @@ export default function CreateRoomPage() {
               <button
                 key={m.id}
                 onClick={() => setMode(m.id)}
-                className={`w-full card px-4 py-3 flex items-center justify-between transition ${
+                className={`w-full card px-4 py-3 flex items-center gap-3 text-left transition ${
                   mode === m.id ? "ring-2 ring-brand" : ""
                 }`}
               >
-                <span>
-                  <span className="font-bold text-sm">{m.label}</span>
-                  <span className="block text-xs text-ink-700/55">{m.desc}</span>
+                <span className="text-xl w-7 text-center shrink-0">{m.icon}</span>
+                <span className="flex-1 min-w-0">
+                  <span className="block font-bold text-sm text-ink-900">{m.label}</span>
+                  <span className="block text-xs text-ink-700/55 leading-snug">{m.desc}</span>
                 </span>
-                {mode === m.id && <span className="text-brand font-bold">✓</span>}
+                <span className={`font-bold shrink-0 ${mode === m.id ? "text-brand" : "text-transparent"}`}>✓</span>
               </button>
             ))}
           </div>
