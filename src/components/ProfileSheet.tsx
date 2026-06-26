@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import Avatar from "@/components/Avatar";
+import Icon from "@/components/Icon";
 import { GENRES } from "@/lib/genres";
 import { matchPercent, sortedGenres } from "@/lib/taste";
 import { personProfile } from "@/lib/people";
@@ -67,10 +68,10 @@ export default function ProfileSheet({
                   {g.emoji} {g.label} 디깅러
                 </p>
                 <span
-                  className="inline-block mt-2 chip text-white font-bold py-1 px-2.5 text-xs"
+                  className="inline-flex items-center gap-1 mt-2 chip text-white font-bold py-1 px-2.5 text-xs"
                   style={{ background: g.color }}
                 >
-                  취향 {pct}% 일치
+                  <Icon name="target" size={12} strokeWidth={2.4} /> 취향 {pct}% 일치
                 </span>
               </div>
             </div>

@@ -67,7 +67,12 @@ export default function HomePage() {
     <div>
       <CoachTour tourKey="home" steps={HOME_TOUR} />
       <TopBar
-        title={`안녕, ${user?.handle ?? "디깅러"}`}
+        title={
+          <span className="inline-flex items-center gap-1.5">
+            안녕, {user?.handle ?? "디깅러"}
+            <Icon name="wave" size={20} className="text-brand-dark" strokeWidth={2} />
+          </span>
+        }
         sub="오늘은 어떤 곡을 디깅해볼까요?"
       />
 
@@ -149,7 +154,9 @@ export default function HomePage() {
               : "bg-cream-50 text-ink-700 border-cream-200"
           }`}
         >
-          취향 일치순
+          <span className="inline-flex items-center gap-1">
+            <Icon name="target" size={13} strokeWidth={2.2} /> 취향 일치순
+          </span>
         </button>
         {GENRE_LIST.map((g) => {
           const on = filter === g.id;

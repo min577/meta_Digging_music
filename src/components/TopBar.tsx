@@ -3,7 +3,7 @@
 import { useAppStore } from "@/store/useAppStore";
 import Icon from "./Icon";
 
-export default function TopBar({ title, sub }: { title: string; sub?: string }) {
+export default function TopBar({ title, sub }: { title: React.ReactNode; sub?: string }) {
   const user = useAppStore((s) => s.user);
   return (
     <header className="flex items-center justify-between px-5 pt-6 pb-3">

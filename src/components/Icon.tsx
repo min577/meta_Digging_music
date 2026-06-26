@@ -2,7 +2,7 @@
 export type IconName =
   | "home" | "shop" | "friends" | "user" | "music" | "search" | "plus"
   | "back" | "trophy" | "sparkle" | "heart" | "play" | "headphones"
-  | "pin" | "coin" | "gem" | "settings" | "x" | "compass" | "build" | "chat" | "target" | "quest";
+  | "pin" | "coin" | "gem" | "settings" | "x" | "compass" | "build" | "chat" | "target" | "quest" | "wave";
 
 const P: Record<IconName, React.ReactNode> = {
   home: <path d="M3 11.5 12 4l9 7.5M5 10v9a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-9" />,
@@ -28,6 +28,7 @@ const P: Record<IconName, React.ReactNode> = {
   build: <path d="M14 4l6 6-9 9-6 1 1-6 8-8Zm-2 2 4 4" />,
   target: <><circle cx="12" cy="12" r="8.5" /><circle cx="12" cy="12" r="4.5" /><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" /></>,
   quest: <><path d="M5 4h11l3 3v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4Z" /><path d="M9 9h6M9 13h6M9 17h3" /></>,
+  wave: <><path d="M7 12V7.2a1.4 1.4 0 0 1 2.8 0V11m0-1.2V5.4a1.4 1.4 0 0 1 2.8 0v5m0-1V6.2a1.4 1.4 0 0 1 2.8 0v6m0-2.6a1.4 1.4 0 0 1 2.8 0V14a6.4 6.4 0 0 1-6.4 6.4 6.4 6.4 0 0 1-5.5-3.1l-1.5-2.5a1.5 1.5 0 0 1 2.6-1.6l.9 1.4" /><path d="M17.5 4.2 18.8 3M20 6.5h1.8" /></>,
 };
 
 export default function Icon({
