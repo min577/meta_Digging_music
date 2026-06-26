@@ -9,6 +9,7 @@ import { useAppStore, useMyTopGenre } from "@/store/useAppStore";
 import { GENRES } from "@/lib/genres";
 import { tracksByGenre } from "@/lib/music";
 import { defaultAppearance } from "@/lib/appearance";
+import { DEFAULT_PRESET } from "@/lib/characters";
 import type { Track } from "@/lib/types";
 
 const WORLD_TOUR: TourStep[] = [
@@ -85,6 +86,7 @@ export default function WorldPage() {
         bodyColor={ap.outfit}
         accentColor={ap.hairColor}
         tasteColor={GENRES[myGenre].color}
+        playerSrc={`/characters/${ap.preset ?? DEFAULT_PRESET}`}
         spots={SPOTS}
         onNear={setNear}
         onDig={dig}

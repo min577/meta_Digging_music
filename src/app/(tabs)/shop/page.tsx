@@ -1,63 +1,18 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import TopBar from "@/components/TopBar";
 import Avatar from "@/components/Avatar";
 import CoachTour, { type TourStep } from "@/components/CoachTour";
 import { useAppStore, useMyTopGenre } from "@/store/useAppStore";
 import { GENRES } from "@/lib/genres";
-import {
-  HATS,
-  HAT_LABEL,
-  GLASSES,
-  GLASSES_LABEL,
-  COSTUMES,
-  COSTUME_LABEL,
-  defaultAppearance,
-  type Appearance,
-  type HatStyle,
-  type GlassesStyle,
-  type CostumeStyle,
-} from "@/lib/appearance";
-
-// Bean 악세서리 상점 — 부가적인 모자/안경을 코인으로 구매·착용.
-// (본체색/목도리/머리/표정 기본 외형은 무료 — 마이페이지 "기본 꾸미기"에서 변경)
-type Slot = "hat" | "glasses" | "costume";
-type ShopItem = { id: string; slot: Slot; value: string; name: string; price: number };
-
-const HAT_PRICE: Record<HatStyle, number> = {
-  none: 0, cap: 120, beanie: 120, headphones: 160, fedora: 150, flower: 90, crown: 300, party: 140,
-};
-const GLASSES_PRICE: Record<GlassesStyle, number> = {
-  none: 0, round: 110, sun: 160, star: 150, heart: 130,
-};
-const COSTUME_PRICE: Record<CostumeStyle, number> = {
-  none: 0, witch: 420, plaid: 300, star: 320, fries: 380,
-};
-
-const ITEMS: ShopItem[] = [
-  ...COSTUMES.filter((c) => c !== "none").map((c) => ({
-    id: `costume_${c}`, slot: "costume" as Slot, value: c, name: COSTUME_LABEL[c], price: COSTUME_PRICE[c],
-  })),
-  ...HATS.filter((h) => h !== "none").map((h) => ({
-    id: `hat_${h}`, slot: "hat" as Slot, value: h, name: HAT_LABEL[h], price: HAT_PRICE[h],
-  })),
-  ...GLASSES.filter((g) => g !== "none").map((g) => ({
-    id: `glasses_${g}`, slot: "glasses" as Slot, value: g, name: GLASSES_LABEL[g], price: GLASSES_PRICE[g],
-  })),
-];
-
-const TABS: { id: Slot; label: string }[] = [
-  { id: "costume", label: "👗 코스튬" },
-  { id: "hat", label: "🎩 모자" },
-  { id: "glasses", label: "🕶️ 안경" },
-];
+import { defaultAppearance, type Appearance } from "@/lib/appearance";
+import { COSTUME_PRESETS, type CostumePreset } from "@/lib/characters";
 
 const SHOP_TOUR: TourStep[] = [
-  { target: "shop-preview", title: "내 캐릭터 미리보기", desc: "보유 코인으로 악세서리를 사면 바로 여기 미리 입혀져요." },
-  { target: "shop-tabs", title: "모자 · 안경", desc: "카테고리를 골라 마음에 드는 아이템을 찾아 구매·착용해요.", advance: "tap" },
-  { title: "기본 꾸미기는 무료", desc: "본체색·목도리·머리·표정은 마이페이지 ‘기본 꾸미기’에서 무료로 바꿀 수 있어요." },
+  { target: "shop-preview", title: "내 캐릭터 미리보기", desc: "코스튬을 사면 바로 여기 미리 입혀져요." },
+  { target: "shop-grid", title: "코스튬", desc: "마음에 드는 코스튬을 골라 구매·착용해요. 기본 캐릭터는 마이페이지에서 무료로 바꿔요." },
 ];
 
 export default function ShopPage() {
@@ -71,43 +26,32 @@ export default function ShopPage() {
   const auraColor = GENRES[myGenre].color;
   const ap = user?.character.appearance ?? defaultAppearance();
 
-  const [tab, setTab] = useState<Slot>("costume");
-  const [confirm, setConfirm] = useState<ShopItem | null>(null);
+  const [confirm, setConfirm] = useState<CostumePreset | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
-  const items = useMemo(() => ITEMS.filter((i) => i.slot === tab), [tab]);
+  const isEquipped = (c: CostumePreset) => ap.preset === c.src;
+  const isOwned = (c: CostumePreset) => ownedItems.includes(`costume_${c.id}`) || isEquipped(c);
+  const equip = (c: CostumePreset) => setAppearance({ ...ap, preset: c.src } as Appearance);
+  const preview = (c: CostumePreset): Appearance => ({ ...ap, preset: c.src } as Appearance);
 
-  const isEquipped = (i: ShopItem) => (ap as any)[i.slot] === i.value;
-  // 구매했거나(영구보유) 이미 착용 중(업적 보상 등)이면 보유로 간주
-  const isOwned = (i: ShopItem) => ownedItems.includes(i.id) || isEquipped(i);
-  const equip = (i: ShopItem) => setAppearance({ ...ap, [i.slot]: i.value } as Appearance);
-  const preview = (i: ShopItem): Appearance => ({ ...ap, [i.slot]: i.value } as Appearance);
-
-  const flash = (msg: string, ms = 1400) => {
-    setToast(msg);
+  const flash = (m: string, ms = 1400) => {
+    setToast(m);
     setTimeout(() => setToast(null), ms);
   };
 
-  const act = (i: ShopItem) => {
-    if (isEquipped(i)) {
-      // 착용 중인 슬롯을 다시 누르면 해제
-      setAppearance({ ...ap, [i.slot]: "none" } as Appearance);
-      flash("벗었어요");
-      return;
-    }
-    if (isOwned(i)) {
-      equip(i);
+  const act = (c: CostumePreset) => {
+    if (isOwned(c)) {
+      equip(c);
       flash("착용 완료! ✨");
       return;
     }
-    setConfirm(i);
+    setConfirm(c);
   };
-
-  const buy = (i: ShopItem) => {
-    if (spend(i.price)) {
-      ownItem(i.id);
-      equip(i);
-      flash(`${i.name} 구매·착용! 🎉`, 1600);
+  const buy = (c: CostumePreset) => {
+    if (spend(c.price)) {
+      ownItem(`costume_${c.id}`);
+      equip(c);
+      flash(`${c.name} 구매·착용! 🎉`, 1600);
     } else {
       flash("코인이 부족해요 🪙", 1600);
     }
@@ -117,7 +61,7 @@ export default function ShopPage() {
   return (
     <div>
       <CoachTour tourKey="shop" steps={SHOP_TOUR} />
-      <TopBar title="상점" sub="모자·안경으로 나의 캐릭터를 꾸며보세요" />
+      <TopBar title="상점" sub="코스튬으로 나의 캐릭터를 꾸며보세요" />
 
       {/* 미리보기 + 코인 */}
       <div data-tour="shop-preview" className="px-5 flex items-center gap-4">
@@ -132,45 +76,30 @@ export default function ShopPage() {
       </div>
 
       <p className="px-5 mt-3 text-[11px] text-ink-700/50">
-        본체색·목도리·머리·표정은 <span className="font-bold text-ink-700/70">마이페이지 › 기본 꾸미기</span>에서 무료로 바꿀 수 있어요.
+        기본 캐릭터는 <span className="font-bold text-ink-700/70">마이페이지 › 캐릭터 고르기</span>에서 무료로 바꿀 수 있어요.
       </p>
 
-      {/* 슬롯 탭 */}
-      <div data-tour="shop-tabs" className="px-5 mt-3 flex gap-2 overflow-x-auto no-scrollbar">
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            className={`chip py-1.5 px-4 shrink-0 ${
-              tab === t.id ? "bg-brand text-white" : "bg-cream-100 text-ink-700"
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
-
-      {/* 그리드 */}
-      <section className="px-5 mt-3 grid grid-cols-3 gap-3 pb-4">
-        {items.map((i) => {
-          const eq = isEquipped(i);
-          const own = isOwned(i);
+      {/* 코스튬 그리드 */}
+      <section data-tour="shop-grid" className="px-5 mt-3 grid grid-cols-2 gap-3 pb-4">
+        {COSTUME_PRESETS.map((c) => {
+          const eq = isEquipped(c);
+          const own = isOwned(c);
           return (
             <button
-              key={i.id}
-              onClick={() => act(i)}
-              className={`card p-2 flex flex-col items-center transition active:scale-[0.98] ${
+              key={c.id}
+              onClick={() => act(c)}
+              className={`card p-3 flex flex-col items-center transition active:scale-[0.98] ${
                 eq ? "ring-2 ring-brand" : ""
               }`}
             >
-              <Avatar appearance={preview(i)} size={62} bob={false} />
-              <span className="text-[10px] text-ink-700/60 mt-1">{i.name}</span>
+              <Avatar appearance={preview(c)} size={84} bob={false} />
+              <span className="text-xs font-bold text-ink-800 mt-1">{c.name}</span>
               <span
-                className={`mt-1 chip py-0.5 px-2 text-[11px] font-bold ${
+                className={`mt-1.5 chip py-0.5 px-2.5 text-[11px] font-bold ${
                   eq ? "bg-brand/15 text-brand-dark" : own ? "bg-cream-200 text-ink-700" : "bg-brand text-white"
                 }`}
               >
-                {eq ? "착용 중" : own ? "착용" : `🪙 ${i.price}`}
+                {eq ? "착용 중" : own ? "착용" : `🪙 ${c.price}`}
               </span>
             </button>
           );
@@ -195,7 +124,7 @@ export default function ShopPage() {
               className="card p-6 w-full max-w-[320px] text-center"
             >
               <div className="flex justify-center">
-                <Avatar appearance={preview(confirm)} size={110} aura={auraColor} />
+                <Avatar appearance={preview(confirm)} size={120} aura={auraColor} />
               </div>
               <p className="font-extrabold text-lg mt-2">{confirm.name}</p>
               <p className="mt-2 font-bold text-brand-dark">

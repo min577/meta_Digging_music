@@ -10,14 +10,8 @@ import { useAppStore } from "@/store/useAppStore";
 import { vectorFromTracks, sortedGenres } from "@/lib/taste";
 import { GENRES } from "@/lib/genres";
 import { searchArtists, artistToSeed, type SeedArtist } from "@/lib/artists";
-import {
-  defaultAppearance,
-  HAIR_COLORS,
-  OUTFIT_COLORS,
-  FACES,
-  FACE_LABEL,
-  type Appearance,
-} from "@/lib/appearance";
+import { defaultAppearance, type Appearance } from "@/lib/appearance";
+import { FREE_PRESETS } from "@/lib/characters";
 
 const SITUATIONS = [
   "공부할 때",
@@ -39,13 +33,6 @@ const TIPS: { emoji: string; title: string; desc: string }[] = [
   { emoji: "🪙", title: "성장하기", desc: "디깅·퀘스트로 코인을 모아 상점에서 나의 캐릭터를 꾸며요. 준비됐나요?" },
 ];
 
-type Part = "body" | "scarf" | "antenna" | "face";
-const PARTS: { id: Part; label: string }[] = [
-  { id: "body", label: "본체 색" },
-  { id: "scarf", label: "목도리" },
-  { id: "antenna", label: "머리" },
-  { id: "face", label: "표정" },
-];
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -54,7 +41,6 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(0);
   const [handle, setHandle] = useState("");
   const [look, setLook] = useState<Appearance>(defaultAppearance());
-  const [part, setPart] = useState<Part>("body");
   const [situations, setSituations] = useState<string[]>([]);
   const [seeds, setSeeds] = useState<Track[]>([]);
   const [artistQ, setArtistQ] = useState("");
@@ -164,75 +150,34 @@ export default function OnboardingPage() {
           {step === 1 && (
             <div className="flex-1 flex flex-col min-h-0">
               <h2 className="text-xl font-extrabold text-ink-900">
-                나만의 캐릭터 만들기
+                나만의 캐릭터 고르기
               </h2>
               <p className="text-ink-700/60 text-sm mt-1">
-본체 색·목도리·머리·표정으로 나만의 캐릭터를 꾸며보세요.
+                마음에 드는 캐릭터를 골라보세요. (상점에서 코스튬도 입을 수 있어요)
               </p>
 
               {/* 미리보기 */}
               <div className="mt-4 flex justify-center">
-                <div className="rounded-3xl bg-cream-50 border border-cream-200 px-8 py-4 shadow-card">
+                <div className="rounded-3xl bg-cream-50 border border-cream-200 px-8 py-3 shadow-card">
                   <Avatar appearance={look} size={120} />
                 </div>
               </div>
 
-              {/* 파트 탭 */}
-              <div className="mt-4 flex gap-2 overflow-x-auto no-scrollbar">
-                {PARTS.map((p) => (
-                  <button
-                    key={p.id}
-                    onClick={() => setPart(p.id)}
-                    className={`chip py-1.5 px-3 shrink-0 ${
-                      part === p.id
-                        ? "bg-brand text-white"
-                        : "bg-cream-50 text-ink-700 border border-cream-200"
-                    }`}
-                  >
-                    {p.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* 옵션 그리드 */}
+              {/* 프리셋 그리드 */}
               <div className="mt-3 card p-3 flex-1 min-h-0 overflow-y-auto no-scrollbar">
-                {part === "body" && (
-                  <Swatches
-                    colors={OUTFIT_COLORS}
-                    value={look.outfit}
-                    onPick={(c) => set({ outfit: c })}
-                  />
-                )}
-                {part === "scarf" && (
-                  <Swatches
-                    colors={["none", ...HAIR_COLORS]}
-                    value={look.pants}
-                    onPick={(c) => set({ pants: c })}
-                  />
-                )}
-                {part === "antenna" && (
-                  <Swatches
-                    colors={HAIR_COLORS}
-                    value={look.hairColor}
-                    onPick={(c) => set({ hairColor: c })}
-                  />
-                )}
-                {part === "face" && (
-                  <div className="grid grid-cols-3 gap-2">
-                    {FACES.map((f) => (
-                      <button
-                        key={f}
-                        onClick={() => set({ face: f })}
-                        className={`rounded-xl p-1 flex flex-col items-center ${
-                          look.face === f ? "ring-2 ring-brand bg-brand/5" : ""
-                        }`}
-                      >
-                        <Avatar appearance={{ ...look, face: f }} size={52} bob={false} />
-                        <span className="text-[10px] text-ink-700/60">{FACE_LABEL[f]}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
+                <div className="grid grid-cols-4 gap-2">
+                  {FREE_PRESETS.map((p) => (
+                    <button
+                      key={p}
+                      onClick={() => set({ preset: p })}
+                      className={`rounded-2xl p-1 grid place-items-center transition active:scale-95 ${
+                        look.preset === p ? "ring-2 ring-brand bg-brand/5" : "bg-cream-50"
+                      }`}
+                    >
+                      <Avatar appearance={{ preset: p } as Appearance} size={56} bob={false} />
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           )}
@@ -409,29 +354,3 @@ export default function OnboardingPage() {
   );
 }
 
-function Swatches({
-  colors,
-  value,
-  onPick,
-}: {
-  colors: string[];
-  value: string;
-  onPick: (c: string) => void;
-}) {
-  return (
-    <div className="grid grid-cols-5 gap-3 py-1">
-      {colors.map((c) => (
-        <button
-          key={c}
-          onClick={() => onPick(c)}
-          className={`aspect-square rounded-2xl transition active:scale-95 grid place-items-center ${
-            value === c ? "ring-2 ring-brand ring-offset-2 ring-offset-cream-50" : ""
-          } ${c === "none" ? "border-2 border-dashed border-cream-300 text-ink-700/40 text-xs font-bold" : ""}`}
-          style={c === "none" ? { background: "#fff" } : { background: c }}
-        >
-          {c === "none" ? "없음" : ""}
-        </button>
-      ))}
-    </div>
-  );
-}

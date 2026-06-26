@@ -22,6 +22,7 @@ export default function MapScene2D({
   bodyColor,
   accentColor,
   tasteColor,
+  playerSrc,
   spots,
   onNear,
   onDig,
@@ -32,6 +33,8 @@ export default function MapScene2D({
   accentColor: string;
   /** 발밑 취향 오라 색 (대표 장르) */
   tasteColor?: string;
+  /** 플레이어 캐릭터 PNG 경로 (디자인 프리셋) */
+  playerSrc?: string;
   spots: Spot[];
   onNear: (s: Spot | null) => void;
   onDig: (s: Spot) => void;
@@ -39,12 +42,21 @@ export default function MapScene2D({
   targetRef?: React.RefObject<HTMLElement | null>;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const playerImg = useRef<HTMLImageElement | null>(null);
   const me = useRef({ x: PLAZA.x, y: PLAZA.y + 60, dir: 1, t: 0, walking: false, bounce: 0, vx: 0, vy: 0 });
   const keys = useRef<Set<string>>(new Set());
   const joy = useRef({ active: false, id: -1, ox: 0, oy: 0, dx: 0, dy: 0 });
   const nearRef = useRef<Spot | null>(null);
   const cb = useRef({ onNear, onDig, spots, bodyColor, accentColor, tasteColor, targetRef });
   cb.current = { onNear, onDig, spots, bodyColor, accentColor, tasteColor, targetRef };
+
+  // 플레이어 PNG 로드
+  useEffect(() => {
+    if (!playerSrc) return;
+    const img = new Image();
+    img.onload = () => { playerImg.current = img; };
+    img.src = playerSrc;
+  }, [playerSrc]);
 
   useEffect(() => {
     const moveKeys = ["w", "a", "s", "d", "arrowup", "arrowdown", "arrowleft", "arrowright"];
@@ -186,7 +198,7 @@ export default function MapScene2D({
         tEl.style.left = `${Math.round(st.x - camx)}px`;
         tEl.style.top = `${Math.round(st.y - camy)}px`;
       }
-      draw(ctx, canvas, dpr, now, st, cb.current.spots, cb.current.bodyColor, cb.current.accentColor, cb.current.tasteColor, near, joy.current);
+      draw(ctx, canvas, dpr, now, st, cb.current.spots, cb.current.bodyColor, cb.current.accentColor, cb.current.tasteColor, playerImg.current, near, joy.current);
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
@@ -249,6 +261,7 @@ function draw(
   body: string,
   accent: string,
   tasteColor: string | undefined,
+  playerImg: HTMLImageElement | null,
   near: Spot | null,
   joy: { active: boolean; ox: number; oy: number; dx: number; dy: number }
 ) {
@@ -335,7 +348,7 @@ function draw(
   }
 
   // 플레이어
-  player(ctx, st, body, accent, tasteColor, now);
+  player(ctx, st, body, accent, tasteColor, playerImg, now);
 
   ctx.restore();
 
@@ -616,6 +629,7 @@ function player(
   body: string,
   accent: string,
   tasteColor: string | undefined,
+  img: HTMLImageElement | null,
   now: number
 ) {
   const x = st.x;
@@ -640,62 +654,25 @@ function player(
   ctx.beginPath();
   ctx.ellipse(x, st.y + 19, 14, 5, 0, 0, Math.PI * 2);
   ctx.fill();
-  // 발
-  ctx.fillStyle = shade(body, -34);
-  const step = st.walking ? Math.sin(st.t) * 3 : 0;
-  ctx.beginPath();
-  ctx.ellipse(x - 6, y + 17 + step, 4, 3, 0, 0, Math.PI * 2);
-  ctx.ellipse(x + 6, y + 17 - step, 4, 3, 0, 0, Math.PI * 2);
-  ctx.fill();
-  const ex = st.dir * 0.6;
-  const hair = accent;
-  // 후드 양옆 귀(퍼프)
-  ctx.fillStyle = shade(body, -8);
-  circle(ctx, x - 12.5, y - 5, 4.4);
-  circle(ctx, x + 12.5, y - 5, 4.4);
-  // 온지 본체(하단)
+
+  // 디자인 PNG 캐릭터 (발끝을 st.y+19에 맞춤)
+  if (img && img.complete && img.naturalWidth) {
+    const dw = 46;
+    const dh = dw * (img.naturalHeight / img.naturalWidth);
+    ctx.save();
+    if (st.dir < 0) {
+      ctx.translate(x, 0);
+      ctx.scale(-1, 1);
+      ctx.drawImage(img, -dw / 2, y + 22 - dh, dw, dh);
+    } else {
+      ctx.drawImage(img, x - dw / 2, y + 22 - dh, dw, dh);
+    }
+    ctx.restore();
+    return;
+  }
+  // 폴백 — 이미지 로드 전 간단한 점
   ctx.fillStyle = body;
-  ctx.beginPath();
-  ctx.ellipse(x, y + 8, 12, 11, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.strokeStyle = "rgba(43,38,32,0.5)";
-  ctx.lineWidth = 2;
-  ctx.stroke();
-  // 후드(머리 셸)
-  ctx.fillStyle = body;
-  circle(ctx, x, y - 6, 12.5);
-  ctx.strokeStyle = "rgba(43,38,32,0.5)";
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.arc(x, y - 6, 12.5, 0, Math.PI * 2);
-  ctx.stroke();
-  // 얼굴(크림)
-  const fx = x + ex * 0.5;
-  ctx.fillStyle = "#F8E2C5";
-  ctx.beginPath();
-  ctx.ellipse(fx, y - 3, 8.6, 9, 0, 0, Math.PI * 2);
-  ctx.fill();
-  // 앞머리(다크 마운드)
-  ctx.fillStyle = hair;
-  ctx.beginPath();
-  ctx.arc(fx, y - 3, 8.6, Math.PI, Math.PI * 2, false);
-  ctx.quadraticCurveTo(fx + 4, y - 4, fx, y - 3.5);
-  ctx.quadraticCurveTo(fx - 4, y - 4, fx - 8.6, y - 3);
-  ctx.closePath();
-  ctx.fill();
-  // 눈 (세로 오벌)
-  ctx.fillStyle = "#2a2520";
-  ctx.beginPath();
-  ctx.ellipse(fx - 3.4, y, 1.9, 2.7, 0, 0, Math.PI * 2);
-  ctx.ellipse(fx + 3.4, y, 1.9, 2.7, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#fff";
-  circle(ctx, fx - 4, y - 0.8, 0.7);
-  circle(ctx, fx + 2.8, y - 0.8, 0.7);
-  // 볼터치
-  ctx.fillStyle = "rgba(255,140,170,0.45)";
-  circle(ctx, fx - 6, y + 3, 1.7);
-  circle(ctx, fx + 6, y + 3, 1.7);
+  circle(ctx, x, y, 11);
 }
 
 function trampoline(ctx: CanvasRenderingContext2D, x: number, y: number, now: number) {

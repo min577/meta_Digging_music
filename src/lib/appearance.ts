@@ -1,3 +1,5 @@
+import { DEFAULT_PRESET, presetFromSeed } from "./characters";
+
 // 아바타 페이퍼돌 외형 모델 + 선택 옵션 (동물의 숲 느낌 커스터마이징)
 
 export type HairStyle =
@@ -26,7 +28,9 @@ export interface Appearance {
   hat: HatStyle;
   face: FaceStyle;
   glasses: GlassesStyle;
-  costume?: CostumeStyle; // 전신 코스튬 (상점) — 있으면 본체 룩을 덮어씀
+  costume?: CostumeStyle; // (구) SVG 코스튬
+  /** 디자인 PNG 프리셋 파일명 (예: "group16.png") — 있으면 이 이미지를 그대로 렌더 */
+  preset?: string;
 }
 
 export const COSTUMES: CostumeStyle[] = ["none", "witch", "plaid", "star", "fries"];
@@ -151,6 +155,7 @@ export function defaultAppearance(): Appearance {
     face: "smile",
     glasses: "none",
     costume: "none",
+    preset: DEFAULT_PRESET,
   };
 }
 
@@ -171,5 +176,6 @@ export function appearanceFromSeed(seed: string): Appearance {
     hat: pick(HATS, 11),
     face: pick(FACES, 13),
     glasses: pick([...GLASSES, "none", "none"], 17) as GlassesStyle,
+    preset: presetFromSeed(seed),
   };
 }

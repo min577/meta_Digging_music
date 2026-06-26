@@ -10,7 +10,8 @@ import CoachTour, { type TourStep } from "@/components/CoachTour";
 import { useAppStore, useMyTopGenre } from "@/store/useAppStore";
 import { GENRES, GENRE_LIST, genre as genreOf } from "@/lib/genres";
 import { sortedGenres } from "@/lib/taste";
-import { FACES, FACE_LABEL, OUTFIT_COLORS, HAIR_COLORS, defaultAppearance, type Appearance } from "@/lib/appearance";
+import { defaultAppearance, type Appearance } from "@/lib/appearance";
+import { FREE_PRESETS } from "@/lib/characters";
 import { ROOMS } from "@/lib/mock";
 import { place as placeOf } from "@/lib/places";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
@@ -41,7 +42,6 @@ export default function ProfilePage() {
   // 저장 데이터에 appearance가 빠져 있어도 안전하게 (오래된 스키마 방어)
   const ap = user?.character.appearance ?? defaultAppearance();
   const [view, setView] = useState<View>("report");
-  const [part, setPart] = useState<"body" | "scarf" | "antenna" | "face">("body");
   const [diggGenre, setDiggGenre] = useState<string>("all");
 
   // 디깅 곡 출처(어느 룸/장소에서 저장했는지) 해석
@@ -152,69 +152,24 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* 기본 꾸미기 (무료) — 본체색/목도리/머리/표정 */}
+        {/* 캐릭터 선택 (무료) */}
         <div id="base-customizer" data-tour="profile-customize" className="card p-3 mt-3 scroll-mt-20">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-xs font-bold text-ink-700">🎨 기본 꾸미기 <span className="text-brand">무료</span></p>
-            <span className="text-[10px] text-ink-700/45">모자·안경은 상점에서</span>
+            <p className="text-xs font-bold text-ink-700">🎨 캐릭터 고르기 <span className="text-brand">무료</span></p>
+            <span className="text-[10px] text-ink-700/45">코스튬은 상점에서</span>
           </div>
-
-          {/* 파트 탭 */}
-          <div className="flex gap-2 overflow-x-auto no-scrollbar">
-            {([
-              ["body", "본체색"], ["scarf", "목도리"], ["antenna", "머리"], ["face", "표정"],
-            ] as const).map(([id, label]) => (
+          <div className="grid grid-cols-5 gap-2 max-h-[180px] overflow-y-auto no-scrollbar">
+            {FREE_PRESETS.map((p) => (
               <button
-                key={id}
-                onClick={() => setPart(id)}
-                className={`chip py-1 px-3 shrink-0 ${
-                  part === id ? "bg-brand text-white" : "bg-cream-100 text-ink-700"
+                key={p}
+                onClick={() => setAppearance({ ...ap, preset: p } as Appearance)}
+                className={`rounded-xl p-0.5 grid place-items-center transition active:scale-95 ${
+                  ap.preset === p ? "ring-2 ring-brand bg-brand/5" : "bg-cream-50"
                 }`}
               >
-                {label}
+                <Avatar appearance={{ preset: p } as Appearance} size={48} bob={false} />
               </button>
             ))}
-          </div>
-
-          {/* 옵션 */}
-          <div className="mt-3">
-            {part === "body" && (
-              <Swatches
-                colors={OUTFIT_COLORS}
-                value={ap.outfit}
-                onPick={(c) => setAppearance({ ...ap, outfit: c } as Appearance)}
-              />
-            )}
-            {part === "scarf" && (
-              <Swatches
-                colors={["none", ...HAIR_COLORS]}
-                value={ap.pants}
-                onPick={(c) => setAppearance({ ...ap, pants: c } as Appearance)}
-              />
-            )}
-            {part === "antenna" && (
-              <Swatches
-                colors={HAIR_COLORS}
-                value={ap.hairColor}
-                onPick={(c) => setAppearance({ ...ap, hairColor: c } as Appearance)}
-              />
-            )}
-            {part === "face" && (
-              <div className="flex gap-2 overflow-x-auto no-scrollbar">
-                {FACES.map((f) => (
-                  <button
-                    key={f}
-                    onClick={() => setAppearance({ ...ap, face: f })}
-                    className={`shrink-0 rounded-xl p-1 flex flex-col items-center ${
-                      ap.face === f ? "ring-2 ring-brand bg-brand/5" : ""
-                    }`}
-                  >
-                    <Avatar appearance={{ ...ap, face: f }} size={48} bob={false} />
-                    <span className="text-[10px] text-ink-700/60">{FACE_LABEL[f]}</span>
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
         </div>
 
@@ -545,32 +500,6 @@ function Stat({ label, value }: { label: string; value: number | string }) {
   );
 }
 
-function Swatches({
-  colors,
-  value,
-  onPick,
-}: {
-  colors: string[];
-  value: string;
-  onPick: (c: string) => void;
-}) {
-  return (
-    <div className="grid grid-cols-6 gap-2.5">
-      {colors.map((c) => (
-        <button
-          key={c}
-          onClick={() => onPick(c)}
-          className={`aspect-square rounded-xl transition active:scale-95 grid place-items-center ${
-            value === c ? "ring-2 ring-brand ring-offset-2 ring-offset-cream-50" : ""
-          } ${c === "none" ? "border-2 border-dashed border-cream-300 text-ink-700/40 text-[9px] font-bold" : ""}`}
-          style={c === "none" ? { background: "#fff" } : { background: c }}
-        >
-          {c === "none" ? "없음" : ""}
-        </button>
-      ))}
-    </div>
-  );
-}
 
 function Empty({ text }: { text: string }) {
   return (
