@@ -145,12 +145,10 @@ export default function OnboardingPage() {
           {step === 0 && (
             <div className="flex-1 flex flex-col">
               <div className="text-center mt-4">
-                <div className="flex justify-center mb-3 animate-float-slow">
-                  <Logo size={52} wordmark={false} />
+                <div className="flex justify-center mb-1 animate-float-slow">
+                  <Logo size={128} />
                 </div>
-                <h1 className="text-2xl font-extrabold text-ink-900 tracking-tight">
-                  <span className="text-brand">디깅타운</span>,
-                  <br />
+                <h1 className="text-xl font-extrabold text-ink-900 tracking-tight">
                   음악으로 하나되는 이곳
                 </h1>
                 <p className="text-ink-700/60 mt-2 text-sm leading-relaxed">

@@ -19,12 +19,9 @@ export default function RootPage() {
   return (
     <div className="phone-shell flex flex-col items-center justify-center min-h-[100dvh] gap-3">
       <div className="animate-float-slow">
-        <Logo size={56} wordmark={false} />
+        <Logo size={150} />
       </div>
-      <p className="text-ink-900 font-extrabold text-2xl tracking-tight">
-        Dig<span className="text-brand">Town</span>
-      </p>
-      <p className="text-ink-700/55 text-sm">혼자 듣지 마세요</p>
+      <p className="text-ink-700/55 text-sm">음악으로 하나되는 이곳</p>
     </div>
   );
 }
