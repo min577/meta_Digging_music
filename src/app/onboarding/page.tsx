@@ -108,7 +108,7 @@ export default function OnboardingPage() {
   const isLastTip = step === 4 && guideStep === TIPS.length - 1;
 
   return (
-    <div className="phone-shell min-h-[100dvh] flex flex-col px-5 pt-10 pb-6 bg-gradient-to-b from-cream-100 to-cream-200">
+    <div className="app-frame min-h-[100dvh] flex flex-col px-5 pt-10 pb-6 bg-gradient-to-b from-cream-100 to-cream-200">
       <div className="flex gap-2 justify-center mb-6">
         {[0, 1, 2, 3, 4].map((i) => (
           <div

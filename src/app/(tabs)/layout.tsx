@@ -8,7 +8,7 @@ export default function TabsLayout({
 }) {
   return (
     <AppGate>
-      <div className="phone-shell pb-28">{children}</div>
+      <div className="app-frame pb-28">{children}</div>
       <BottomNav />
     </AppGate>
   );

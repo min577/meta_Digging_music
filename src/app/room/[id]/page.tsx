@@ -287,7 +287,7 @@ export default function RoomPage() {
 
   return (
     <div
-      className="phone-shell min-h-[100dvh] flex flex-col md:h-[100dvh] md:min-h-0 md:overflow-hidden"
+      className="phone-shell min-h-[100dvh] flex flex-col"
       style={{ background: `linear-gradient(180deg, ${g.bg[0]}, ${g.bg[1]})` }}
     >
       <CoachTour tourKey="room" steps={ROOM_TOUR} />
@@ -438,8 +438,8 @@ export default function RoomPage() {
         })}
 
       {/* 본문: 웹(md+)에서 맵 꽉 채우고 채팅은 우측 오버레이, 모바일은 세로 스택 */}
-      <div className="md:relative md:flex-1 md:min-h-0 flex flex-col">
-      <div className="flex flex-col md:flex-1 md:min-h-0">
+      <div className="flex flex-col">
+      <div className="flex flex-col">
 
       {/* 맵 툴바 */}
       <div className="px-4 mt-2 flex items-center justify-between">
@@ -479,7 +479,7 @@ export default function RoomPage() {
       )}
 
       {/* 맵 */}
-      <div ref={mapWrapRef} data-tour="room-scene" className="relative px-4 mt-2 h-[52vh] md:h-auto md:flex-1 md:min-h-0">
+      <div ref={mapWrapRef} data-tour="room-scene" className="relative px-4 mt-2 h-[52vh]">
         {/* 같이 듣기 — 맵 위 오버레이(레이아웃 안 밀림) */}
         {mode === "free" && (lockedId || nearbyPerson) && (
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20">
@@ -554,9 +554,9 @@ export default function RoomPage() {
       </div>{/* /좌측 컬럼 */}
 
       {/* 채팅/큐 — 웹(md+)에서 우측 오버레이(맵 위에 겹침) */}
-      <div className="md:absolute md:top-2 md:right-3 md:bottom-2 md:w-[320px] md:z-30 flex flex-col">
+      <div className="flex flex-col">
       {/* 큐 / 채팅 패널 */}
-      <div data-tour="room-panel" className="bg-cream-50 rounded-t-3xl mt-2 flex flex-col flex-1 min-h-[16vh] max-h-[28vh] md:max-h-none md:h-full md:rounded-3xl md:bg-cream-50/95 md:backdrop-blur md:shadow-card">
+      <div data-tour="room-panel" className="bg-cream-50 rounded-t-3xl mt-2 flex flex-col flex-1 min-h-[16vh] max-h-[34vh]">
         <div className="flex items-center gap-2 px-4 pt-3">
           <button
             onClick={() => setTab("queue")}

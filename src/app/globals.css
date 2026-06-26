@@ -13,18 +13,36 @@ body {
 }
 
 body {
-  background: #fbf6ea;
+  /* 프레임 바깥 배경(데스크탑에서 폰이 떠 보이게) */
+  background: #e7ddca;
   color: #3e372c;
+  min-height: 100dvh;
   -webkit-font-smoothing: antialiased;
 }
 
-/* 모바일 퍼스트: 앱을 가운데 폰 프레임으로 */
-.phone-shell {
+/* 모바일 퍼스트: 앱 전체를 가운데 440px 폰 프레임으로 통일 */
+.app-frame {
   width: 100%;
-  max-width: 100%;
+  max-width: 440px;
   margin: 0 auto;
   min-height: 100dvh;
   position: relative;
+  background: #fbf6ea;
+}
+@media (min-width: 480px) {
+  .app-frame {
+    box-shadow: 0 0 0 1px rgba(62, 55, 44, 0.06), 0 24px 70px -22px rgba(62, 55, 44, 0.38);
+  }
+}
+
+/* 풀블리드(룸 등 몰입형) */
+.phone-shell {
+  width: 100%;
+  max-width: 440px;
+  margin: 0 auto;
+  min-height: 100dvh;
+  position: relative;
+  background: #fbf6ea;
 }
 
 @layer components {
