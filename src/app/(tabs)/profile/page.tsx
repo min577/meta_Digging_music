@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import TopBar from "@/components/TopBar";
 import Avatar from "@/components/Avatar";
 import Icon from "@/components/Icon";
+import ArtistThumb from "@/components/ArtistThumb";
 import CoachTour, { type TourStep } from "@/components/CoachTour";
 import { useAppStore, useMyTopGenre } from "@/store/useAppStore";
 import { GENRES, GENRE_LIST, genre as genreOf } from "@/lib/genres";
@@ -378,10 +379,10 @@ export default function ProfilePage() {
                 const topPct = Math.max(1, 30 - a.count * 3 - i);
                 return (
                   <div key={a.artist} className="card px-4 py-3 flex items-center gap-3">
-                    <span className="text-lg font-extrabold text-ink-700/40 w-6">
+                    <span className="text-lg font-extrabold text-ink-700/40 w-5 shrink-0">
                       {i + 1}
                     </span>
-                    <span className="text-lg">{GENRES[a.genre as keyof typeof GENRES]?.emoji}</span>
+                    <ArtistThumb name={a.artist} genre={a.genre} size={44} />
                     <div className="flex-1 min-w-0">
                       <p className="font-bold text-sm truncate">{a.artist}</p>
                       <p className="text-[11px] text-ink-700/50">{a.count}회 청취</p>

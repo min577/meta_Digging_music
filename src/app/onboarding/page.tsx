@@ -1,15 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Avatar from "@/components/Avatar";
 import Logo from "@/components/Logo";
+import ArtistThumb from "@/components/ArtistThumb";
 import type { Track } from "@/lib/types";
 import { useAppStore } from "@/store/useAppStore";
 import { vectorFromTracks, sortedGenres } from "@/lib/taste";
-import { GENRES, type GenreId } from "@/lib/genres";
-import { searchTracks } from "@/lib/music";
+import { GENRES } from "@/lib/genres";
 import { searchArtists, artistToSeed, type SeedArtist } from "@/lib/artists";
 import { defaultAppearance, type Appearance } from "@/lib/appearance";
 import { FREE_PRESETS } from "@/lib/characters";
@@ -36,40 +36,6 @@ const SITUATIONS = [
   "샤워할 때",
   "여행 갈 때",
 ];
-
-// 아티스트 썸네일 — iTunes 아트워크(캐시), 없으면 장르 이모지
-const thumbCache = new Map<string, string>();
-function ArtistThumb({ name, genre }: { name: string; genre: GenreId }) {
-  const [art, setArt] = useState<string | null>(thumbCache.get(name) ?? null);
-  useEffect(() => {
-    if (thumbCache.has(name)) {
-      setArt(thumbCache.get(name) || null);
-      return;
-    }
-    let active = true;
-    searchTracks(name)
-      .then((tracks) => {
-        const url = tracks.find((t) => t.artwork)?.artwork ?? "";
-        thumbCache.set(name, url);
-        if (active) setArt(url || null);
-      })
-      .catch(() => {});
-    return () => {
-      active = false;
-    };
-  }, [name]);
-  const g = GENRES[genre];
-  return (
-    <div className="w-14 h-14 rounded-full overflow-hidden grid place-items-center" style={{ background: g.color + "22" }}>
-      {art ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={art} alt="" className="w-full h-full object-cover" draggable={false} />
-      ) : (
-        <span className="text-xl">{g.emoji}</span>
-      )}
-    </div>
-  );
-}
 
 export default function OnboardingPage() {
   const router = useRouter();
