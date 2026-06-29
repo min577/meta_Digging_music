@@ -4,21 +4,22 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import MoodBuilding from "@/components/MoodBuilding";
 import TrackSearch from "@/components/TrackSearch";
+import Icon, { type IconName } from "@/components/Icon";
 import { LOCATIONS } from "@/lib/mock";
 import { GENRES } from "@/lib/genres";
 import { vectorFromTracks } from "@/lib/taste";
 import { useAppStore, useMyTopGenre } from "@/store/useAppStore";
 import type { Room, Track, QueueMode, RoomVisibility, RoomMode } from "@/lib/types";
 
-const ROOM_MODES: { id: RoomMode; icon: string; label: string; desc: string }[] = [
-  { id: "party", icon: "🎙", label: "리스닝 파티", desc: "호스트가 전체 음악을 운영, 다 같이 같은 곡" },
-  { id: "free", icon: "🎐", label: "자유모드", desc: "맵을 돌아다니며 가까운 음악 존의 곡이 들림" },
+const ROOM_MODES: { id: RoomMode; icon: IconName; label: string; desc: string }[] = [
+  { id: "party", icon: "headphones", label: "리스닝 파티", desc: "호스트가 전체 음악을 운영, 다 같이 같은 곡" },
+  { id: "free", icon: "compass", label: "자유모드", desc: "맵을 돌아다니며 가까운 음악 존의 곡이 들림" },
 ];
 
-const MODES: { id: QueueMode; icon: string; label: string; desc: string }[] = [
-  { id: "collab", icon: "🤝", label: "협업 큐", desc: "모두 곡 제안 → 좋아요순" },
-  { id: "dj", icon: "🎙", label: "DJ", desc: "호스트만 곡 관리" },
-  { id: "radio", icon: "📻", label: "라디오", desc: "태그 기반 자동 재생" },
+const MODES: { id: QueueMode; icon: IconName; label: string; desc: string }[] = [
+  { id: "collab", icon: "friends", label: "협업 큐", desc: "모두 곡 제안 → 좋아요순" },
+  { id: "dj", icon: "user", label: "DJ", desc: "호스트만 곡 관리" },
+  { id: "radio", icon: "music", label: "라디오", desc: "태그 기반 자동 재생" },
 ];
 
 const VIS: { id: RoomVisibility; label: string }[] = [
@@ -79,7 +80,7 @@ export default function CreateRoomPage() {
           onClick={() => router.back()}
           className="w-9 h-9 rounded-full bg-cream-50 border border-cream-200 grid place-items-center"
         >
-          ←
+          <Icon name="back" size={18} />
         </button>
         <h1 className="text-xl font-extrabold text-ink-900">룸 만들기</h1>
       </div>
@@ -122,7 +123,7 @@ export default function CreateRoomPage() {
               roomMode === m.id ? "ring-2 ring-brand" : ""
             }`}
           >
-            <span className="text-xl w-7 text-center shrink-0">{m.icon}</span>
+            <span className="w-7 grid place-items-center shrink-0 text-ink-700"><Icon name={m.icon} size={20} /></span>
             <span className="flex-1 min-w-0">
               <span className="block font-bold text-sm text-ink-900">{m.label}</span>
               <span className="block text-xs text-ink-700/55 leading-snug">{m.desc}</span>
@@ -145,7 +146,7 @@ export default function CreateRoomPage() {
                   mode === m.id ? "ring-2 ring-brand" : ""
                 }`}
               >
-                <span className="text-xl w-7 text-center shrink-0">{m.icon}</span>
+                <span className="w-7 grid place-items-center shrink-0 text-ink-700"><Icon name={m.icon} size={20} /></span>
                 <span className="flex-1 min-w-0">
                   <span className="block font-bold text-sm text-ink-900">{m.label}</span>
                   <span className="block text-xs text-ink-700/55 leading-snug">{m.desc}</span>
@@ -191,8 +192,8 @@ export default function CreateRoomPage() {
         </button>
       )}
 
-      <button onClick={create} className="btn-primary w-full mt-8">
-        🎧 룸 열기
+      <button onClick={create} className="btn-primary w-full mt-8 flex items-center justify-center gap-1.5">
+        <Icon name="headphones" size={16} strokeWidth={2.1} /> 룸 열기
       </button>
 
       {showSeed && (

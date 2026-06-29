@@ -632,7 +632,7 @@ function NameTag({ handle, me, track }: { handle: string; me?: boolean; track?: 
   return (
     <Html position={[0, 78, 0]} center distanceFactor={560}>
       <div className="flex flex-col items-center pointer-events-none">
-        {track && <span className="text-base animate-bob">🎵</span>}
+        {track && <span className="text-sm font-bold text-brand animate-bob">♪</span>}
         <span className={`text-[11px] font-bold px-1.5 rounded-full whitespace-nowrap ${me ? "bg-brand text-white" : "bg-black/45 text-white"}`}>
           {handle}
         </span>
