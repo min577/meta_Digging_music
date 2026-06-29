@@ -24,7 +24,7 @@ export default function AppGate({ children }: { children: React.ReactNode }) {
 
   if (!ready) {
     return (
-      <div className="phone-shell flex items-center justify-center">
+      <div className="phone-shell flex items-center justify-center min-h-[100dvh]">
         <div className="animate-bob text-brand"><Icon name="headphones" size={40} /></div>
       </div>
     );

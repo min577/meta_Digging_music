@@ -29,9 +29,7 @@ export default function RootLayout({
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"
         />
       </head>
-      <body className="font-sans">
-        <div className="device-shell">{children}</div>
-      </body>
+      <body className="font-sans">{children}</body>
     </html>
   );
 }

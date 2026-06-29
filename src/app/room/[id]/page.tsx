@@ -177,7 +177,7 @@ export default function RoomPage() {
 
   if (!room) {
     return (
-      <div className="phone-shell grid place-items-center">
+      <div className="phone-shell min-h-[100dvh] grid place-items-center">
         <div className="text-center">
           <p className="text-ink-700">룸을 찾을 수 없어요</p>
           <button onClick={() => router.push("/home")} className="btn-primary mt-4">
@@ -288,7 +288,7 @@ export default function RoomPage() {
 
   return (
     <div
-      className="phone-shell flex flex-col"
+      className="phone-shell min-h-[100dvh] flex flex-col"
       style={{ background: `linear-gradient(180deg, ${g.bg[0]}, ${g.bg[1]})` }}
     >
       <CoachTour tourKey="room" steps={ROOM_TOUR} />

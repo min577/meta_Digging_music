@@ -15,7 +15,7 @@ export default function CharacterPage() {
   const value = ap.preset ?? DEFAULT_PRESET;
 
   return (
-    <div className="phone-shell bg-cream-100 flex flex-col">
+    <div className="phone-shell min-h-[100dvh] bg-cream-100 flex flex-col">
       <header className="flex items-center gap-3 px-5 pt-6 pb-3">
         <button
           onClick={() => router.back()}
