@@ -193,7 +193,7 @@ function CoachTourInner({ tourKey, steps }: { tourKey: string; steps: TourStep[]
           {advanceHint ? (
             <span className="text-[11px] font-bold text-brand">{advanceHint}</span>
           ) : (
-            <button onClick={next} className="btn-primary py-1.5 px-4 text-sm">
+            <button onClick={next} className="btn-primary btn-sm">
               {isLast ? "완료" : "다음"}
             </button>
           )}

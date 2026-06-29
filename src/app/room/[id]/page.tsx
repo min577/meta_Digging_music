@@ -653,7 +653,7 @@ export default function RoomPage() {
               placeholder="메시지 보내기…"
               className="flex-1 card px-4 py-2.5 text-sm outline-none"
             />
-            <button onClick={sendChat} className="btn-primary px-4 py-2.5">
+            <button onClick={sendChat} className="btn-primary btn-sm">
               전송
             </button>
           </div>

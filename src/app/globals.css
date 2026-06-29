@@ -17,7 +17,11 @@ body {
   background: #e7ddca;
   color: #3e372c;
   min-height: 100dvh;
+  font-family: var(--font-pretendard);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.01em;
+  word-break: keep-all;
 }
 
 /* 모바일 퍼스트: 앱 전체를 가운데 440px 폰 프레임으로 통일 */
@@ -50,10 +54,17 @@ body {
     @apply rounded-[26px] bg-cream-50 shadow-card border border-cream-200;
   }
   .btn-primary {
-    @apply rounded-full bg-brand text-white font-bold py-3 px-6 shadow-soft transition active:scale-[0.97] hover:bg-brand-dark disabled:opacity-40 disabled:active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40;
+    @apply inline-flex items-center justify-center gap-1.5 rounded-full bg-brand text-white font-bold py-3 px-6 text-[15px] leading-none shadow-soft transition active:scale-[0.97] hover:bg-brand-dark disabled:opacity-40 disabled:active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40;
   }
   .btn-ghost {
-    @apply rounded-full bg-cream-100 text-ink-800 font-bold py-3 px-6 border border-cream-200 transition active:scale-[0.97] hover:bg-cream-200;
+    @apply inline-flex items-center justify-center gap-1.5 rounded-full bg-cream-100 text-ink-800 font-bold py-3 px-6 text-[15px] leading-none border border-cream-200 transition active:scale-[0.97] hover:bg-cream-200;
+  }
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-full bg-transparent text-ink-800 font-bold py-3 px-6 text-[15px] leading-none border border-cream-300 transition active:scale-[0.97] hover:bg-cream-100;
+  }
+  /* 사이즈 토큰 — 색 클래스 뒤에 두어 py/px/text를 덮어씀 */
+  .btn-sm {
+    @apply py-2.5 px-4 text-sm;
   }
   .chip {
     @apply rounded-full px-3 py-1 text-xs font-semibold;

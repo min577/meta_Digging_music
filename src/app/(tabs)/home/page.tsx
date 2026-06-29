@@ -114,7 +114,7 @@ export default function HomePage() {
           <Link
             href="/room/create"
             data-tour="home-create"
-            className="btn-primary py-2 px-4 text-sm font-bold flex items-center gap-1 shadow-soft active:scale-95"
+            className="btn-primary btn-sm"
           >
             <span className="text-base leading-none">＋</span> 룸 만들기
           </Link>

@@ -102,10 +102,10 @@ export default function FriendsPage() {
             추천 코드 <span className="font-bold text-brand-dark">{inviteCode}</span>
           </p>
           <div className="flex gap-2 mt-3">
-            <button onClick={copy} className="btn-primary flex-1 py-2.5 text-sm">
+            <button onClick={copy} className="btn-primary btn-sm flex-1">
               {copied ? "복사됨 ✓" : "초대 링크 복사"}
             </button>
-            <button className="btn-ghost py-2.5 text-sm">연락처</button>
+            <button className="btn-ghost btn-sm">연락처</button>
           </div>
         </div>
       </section>

@@ -166,15 +166,15 @@ export default function WorldPage() {
           {/* 보관 / 넘기기 선택 */}
           <div className="flex gap-2 mt-2.5">
             {saved ? (
-              <button onClick={() => setResult(null)} className="btn-primary flex-1 py-2">
+              <button onClick={() => setResult(null)} className="btn-primary btn-sm flex-1">
                 확인
               </button>
             ) : (
               <>
-                <button onClick={() => setResult(null)} className="btn-ghost flex-1 py-2">
+                <button onClick={() => setResult(null)} className="btn-ghost btn-sm flex-1">
                   넘기기
                 </button>
-                <button onClick={keepDig} className="btn-primary flex-1 py-2 flex items-center justify-center gap-1.5">
+                <button onClick={keepDig} className="btn-primary btn-sm flex-1">
                   <Icon name="plus" size={16} strokeWidth={2.4} /> 디깅함에 담기
                 </button>
               </>

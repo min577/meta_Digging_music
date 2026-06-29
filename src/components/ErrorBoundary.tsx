@@ -30,7 +30,7 @@ export default class ErrorBoundary extends Component<
           </pre>
           <button
             onClick={() => this.setState({ err: null })}
-            className="btn-ghost mt-3 text-sm"
+            className="btn-ghost btn-sm mt-3"
           >
             다시 시도
           </button>

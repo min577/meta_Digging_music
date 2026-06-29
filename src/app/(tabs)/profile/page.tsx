@@ -454,25 +454,27 @@ export default function ProfilePage() {
           <span className="text-ink-700/30">›</span>
         </Link>
 
-        {isSupabaseConfigured ? (
-          <button onClick={() => signInWithGoogle()} className="btn-ghost w-full">
-            Google로 로그인 (클라우드 동기화)
-          </button>
-        ) : (
-          <p className="text-center text-[11px] text-ink-700/40 mt-2">
-            데모 모드 · Supabase 키를 연결하면 클라우드 동기화가 켜져요
-          </p>
-        )}
+        <div className="space-y-2.5 mt-3">
+          {isSupabaseConfigured ? (
+            <button onClick={() => signInWithGoogle()} className="btn-outline w-full">
+              Google로 로그인 (클라우드 동기화)
+            </button>
+          ) : (
+            <p className="text-center text-[11px] text-ink-700/40">
+              데모 모드 · Supabase 키를 연결하면 클라우드 동기화가 켜져요
+            </p>
+          )}
 
-        <button
-          onClick={() => {
-            resetTours();
-            router.push("/world");
-          }}
-          className="btn-ghost w-full text-sm"
-        >
-          튜토리얼 다시 보기
-        </button>
+          <button
+            onClick={() => {
+              resetTours();
+              router.push("/world");
+            }}
+            className="btn-outline w-full"
+          >
+            튜토리얼 다시 보기
+          </button>
+        </div>
 
         <button
           onClick={logout}
