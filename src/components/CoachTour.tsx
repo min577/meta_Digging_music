@@ -151,7 +151,7 @@ function CoachTourInner({ tourKey, steps }: { tourKey: string; steps: TourStep[]
 
   const isLast = i === steps.length - 1;
   const advanceHint =
-    step.advance === "tap" ? "👆 위 항목을 눌러 진행" : step.advance === "move" ? "🕹️ 움직여서 진행" : null;
+    step.advance === "tap" ? "위 항목을 눌러 진행" : step.advance === "move" ? "움직여서 진행" : null;
 
   return createPortal(
     <div className="fixed inset-0 z-[3000]" style={{ pointerEvents: "none" }}>

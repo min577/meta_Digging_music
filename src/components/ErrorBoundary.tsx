@@ -22,8 +22,7 @@ export default class ErrorBoundary extends Component<
     if (err) {
       return (
         <div className="px-6 py-10">
-          <p className="text-2xl">🛠️</p>
-          <p className="font-extrabold text-ink-900 mt-2">이 화면에서 문제가 발생했어요</p>
+          <p className="font-extrabold text-ink-900">이 화면에서 문제가 발생했어요</p>
           <p className="text-xs text-ink-700/55 mt-1">아래 내용을 알려주시면 바로 고칠게요.</p>
           <pre className="mt-3 text-[11px] text-live whitespace-pre-wrap break-words bg-cream-100 border border-cream-200 rounded-xl p-3 max-h-[40vh] overflow-auto">
             {String(err?.message || err)}
