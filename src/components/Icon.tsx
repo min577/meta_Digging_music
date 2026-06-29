@@ -2,7 +2,7 @@
 export type IconName =
   | "home" | "shop" | "friends" | "user" | "music" | "search" | "plus"
   | "back" | "trophy" | "sparkle" | "heart" | "play" | "headphones"
-  | "pin" | "coin" | "gem" | "settings" | "x" | "compass" | "build" | "chat" | "target" | "quest" | "wave";
+  | "pin" | "coin" | "gem" | "settings" | "x" | "compass" | "build" | "chat" | "target" | "quest" | "wave" | "pause" | "camera" | "trash";
 
 const P: Record<IconName, React.ReactNode> = {
   home: <path d="M3 11.5 12 4l9 7.5M5 10v9a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-9" />,
@@ -18,6 +18,9 @@ const P: Record<IconName, React.ReactNode> = {
   sparkle: <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3Z" />,
   heart: <path d="M12 20s-7-4.3-7-9a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 4.7-7 9-7 9Z" />,
   play: <path d="M8 5v14l11-7L8 5Z" />,
+  pause: <><rect x="7" y="5" width="3.6" height="14" rx="1.4" /><rect x="13.4" y="5" width="3.6" height="14" rx="1.4" /></>,
+  camera: <><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z" /><circle cx="12" cy="13" r="3.2" /></>,
+  trash: <><path d="M5 7h14M10 7V5h4v2M6 7l1 13h10l1-13" /></>,
   headphones: <><path d="M5 14v-2a7 7 0 0 1 14 0v2" /><rect x="3.5" y="13" width="4" height="7" rx="1.5" /><rect x="16.5" y="13" width="4" height="7" rx="1.5" /></>,
   pin: <><path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11Z" /><circle cx="12" cy="10" r="2.5" /></>,
   coin: <><circle cx="12" cy="12" r="8" /><path d="M12 8v8M9.5 9.5h3.5a1.5 1.5 0 0 1 0 3H10a1.5 1.5 0 0 0 0 3h4" /></>,

@@ -9,6 +9,9 @@ export const FREE_PRESETS: string[] = [
   "23.png", "23234.png", "33.png", // 레드/오렌지/옐로우
   "2.png", "34.png", "55.png", "66.png", "group.png", "group23.png", // 헤어/헤드폰 등
   "group19.png", "group20.png", "group21.png", "group22.png", "group26.png", "group28.png", // 악세서리
+  // 디자인수정 추가 베리에이션 (컬러+헤어+악세서리 조합)
+  "c131.png", "c132.png", "c133.png", "c134.png", "c135.png", "c136.png", "c137.png",
+  "c141.png", "c142.png", "c143.png", "c144.png", "c145.png", "c146.png", "c147.png",
 ];
 
 // 상점 코스튬 (유료)
