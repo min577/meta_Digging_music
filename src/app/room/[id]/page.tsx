@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import AudioPlayer from "@/components/AudioPlayer";
+import Icon from "@/components/Icon";
 import dynamic from "next/dynamic";
 import type { MapAvatar3D, Speaker3D } from "@/components/three/RoomScene3D";
 import DecorSprite, { type DecorKind } from "@/components/DecorSprite";
@@ -13,7 +14,7 @@ const RoomScene3D = dynamic(() => import("@/components/three/RoomScene3D"), {
   ssr: false,
   loading: () => (
     <div className="w-full h-full grid place-items-center bg-cream-200 rounded-2xl text-ink-700/60">
-      🌍 3D 룸 불러오는 중…
+      3D 룸 불러오는 중…
     </div>
   ),
 });
@@ -32,11 +33,11 @@ const REACTIONS = ["❤️", "🔥", "🎶", "😭", "🕺", "👏"];
 
 const ROOM_TOUR: TourStep[] = [
   { target: "room-scene", title: "룸 둘러보기", desc: "WASD·방향키나 화면 드래그로 움직여요. 음악 존이나 다른 사람 곁으로 가면 소리가 켜지고 ‘같이 듣기’ 버튼이 떠요. 직접 움직여보세요!", advance: "move" },
-  { target: "room-nowplaying", title: "지금 나오는 곡", desc: "＋로 디깅함에 저장해요. 자유모드에선 ‘🎶 내 음악 틀기’로 내가 DJ가 될 수도 있어요." },
+  { target: "room-nowplaying", title: "지금 나오는 곡", desc: "＋로 디깅함에 저장해요. 자유모드에선 ‘내 음악 틀기’로 내가 DJ가 될 수도 있어요." },
   { target: "room-reactions", title: "반응 보내기", desc: "❤️🔥 같은 반응으로 같은 공간의 사람들과 분위기를 함께 즐겨요." },
   { target: "room-panel", title: "채팅 & 협업 큐", desc: "채팅하고, 큐에 곡을 제안해 다음에 같이 들을 곡을 함께 정해요." },
 ];
-const QUEUE_LABEL: Record<string, string> = { dj: "🎙 DJ", collab: "🤝 협업 큐", radio: "📻 라디오" };
+const QUEUE_LABEL: Record<string, string> = { dj: "DJ", collab: "협업 큐", radio: "라디오" };
 // 음악 존 배치 (월드 1400x1000 기준)
 const SPOTS = [
   { x: 380, y: 350 },
@@ -178,7 +179,7 @@ export default function RoomPage() {
     return (
       <div className="phone-shell min-h-[100dvh] grid place-items-center">
         <div className="text-center">
-          <p className="text-ink-700">룸을 찾을 수 없어요 😢</p>
+          <p className="text-ink-700">룸을 찾을 수 없어요</p>
           <button onClick={() => router.push("/home")} className="btn-primary mt-4">
             홈으로
           </button>
@@ -308,20 +309,22 @@ export default function RoomPage() {
             )}
             <p className="font-bold text-sm truncate max-w-[170px]">{room.title}</p>
           </div>
-          <p className="text-[11px] text-white/75">
-            {mode === "free" ? "🎐 자유모드" : QUEUE_LABEL[room.queueMode]} · 👥 {session.online} ·{" "}
-            {session.connected === "realtime" ? "🟢 동기화" : "🟡 데모"}
+          <p className="text-[11px] text-white/75 flex items-center gap-1">
+            <span>{mode === "free" ? "자유모드" : QUEUE_LABEL[room.queueMode]}</span> ·
+            <Icon name="friends" size={11} /> {session.online} ·
+            <span className={`w-1.5 h-1.5 rounded-full ${session.connected === "realtime" ? "bg-emerald-400" : "bg-amber-400"}`} />
+            {session.connected === "realtime" ? "동기화" : "데모"}
           </p>
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
-          <button onClick={invite} className="w-9 h-9 rounded-full bg-black/25 grid place-items-center" title="친구 초대">
-            ＋
+          <button onClick={invite} className="w-9 h-9 rounded-full bg-black/25 text-white grid place-items-center" title="친구 초대">
+            <Icon name="plus" size={18} />
           </button>
           <button
             onClick={() => setMuted((m) => !m)}
-            className="w-9 h-9 rounded-full bg-black/25 grid place-items-center"
+            className="w-9 h-9 rounded-full bg-black/25 text-white grid place-items-center"
           >
-            {muted ? "🔇" : "🔊"}
+            <Icon name={muted ? "mute" : "volume"} size={16} />
           </button>
         </div>
       </header>
@@ -345,17 +348,17 @@ export default function RoomPage() {
               <>
                 <p className="text-sm font-bold truncate text-ink-900">{track.title}</p>
                 <p className="text-[11px] text-ink-700/55 truncate">
-                  {track.artist} · {g.emoji} {g.label}
+                  {track.artist} · {g.label}
                   {mode === "free" && (
                     <span className="ml-1 text-brand-dark font-bold">
-                      {myTrack ? "🎵 내 음악 송출 중" : `🔊 ${Math.round(headerVol * 100)}%`}
+                      {myTrack ? "내 음악 송출 중" : `${Math.round(headerVol * 100)}%`}
                     </span>
                   )}
                 </p>
               </>
             ) : (
               <p className="text-sm text-ink-700/50">
-                {mode === "free" ? "음악 존으로 다가가 보세요 🎐" : "곡 불러오는 중…"}
+                {mode === "free" ? "음악 존으로 다가가 보세요" : "곡 불러오는 중…"}
               </p>
             )}
           </div>
@@ -367,20 +370,22 @@ export default function RoomPage() {
               }`}
               title="디깅함 저장"
             >
-              {hasDigg(track.id) ? "💾" : "＋"}
+              <Icon name={hasDigg(track.id) ? "music" : "plus"} size={hasDigg(track.id) ? 15 : 18} />
             </button>
           )}
           {mode === "party" && (!isDJ || amHost) && (
             <button
               onClick={session.skip}
-              className="w-9 h-9 rounded-full bg-cream-100 grid place-items-center"
+              className="w-9 h-9 rounded-full bg-cream-100 text-ink-800 grid place-items-center"
               title={isDJ ? "다음 곡 (호스트)" : "다음 곡"}
             >
-              ⏭
+              <Icon name="skip" size={16} />
             </button>
           )}
           {mode === "party" && isDJ && !amHost && (
-            <span className="chip bg-black/25 text-white text-[10px]">🎧 호스트가 선곡 중</span>
+            <span className="chip bg-black/25 text-white text-[10px] inline-flex items-center gap-1">
+              <Icon name="headphones" size={12} /> 호스트가 선곡 중
+            </span>
           )}
           {mode === "free" && (
             <button
@@ -389,7 +394,7 @@ export default function RoomPage() {
                 myTrack ? "bg-live/15 text-live" : "bg-brand text-white"
               }`}
             >
-              {myTrack ? "⏹ 내 음악 끄기" : "🎶 내 음악 틀기"}
+              {myTrack ? "내 음악 끄기" : "내 음악 틀기"}
             </button>
           )}
         </div>
@@ -444,19 +449,19 @@ export default function RoomPage() {
       {/* 맵 툴바 */}
       <div className="px-4 mt-2 flex items-center justify-between">
         <span className="text-[11px] text-white/70">
-          {editMode ? "🔨 꾸미기 중 — 맵을 탭해 배치, 소품을 탭해 삭제" : ""}
+          {editMode ? "꾸미기 중 — 맵을 탭해 배치, 소품을 탭해 삭제" : ""}
         </span>
         <div className="flex items-center gap-1.5">
-          <button onClick={captureRoom} className="chip py-1.5 px-3 font-bold bg-black/30 text-white" title="사진 촬영">
-            📷
+          <button onClick={captureRoom} className="w-8 h-8 rounded-full grid place-items-center bg-black/30 text-white" title="사진 촬영">
+            <Icon name="camera" size={15} />
           </button>
           <button
             onClick={() => setEditMode((e) => !e)}
-            className={`chip py-1.5 px-3 font-bold ${
+            className={`chip py-1.5 px-3 font-bold inline-flex items-center gap-1 ${
               editMode ? "bg-live text-white" : "bg-black/30 text-white"
             }`}
           >
-            {editMode ? "완료" : "🔨 꾸미기"}
+            {editMode ? "완료" : (<><Icon name="build" size={13} /> 꾸미기</>)}
           </button>
         </div>
       </div>
@@ -488,14 +493,14 @@ export default function RoomPage() {
                 onClick={() => setLockedId(null)}
                 className="chip bg-live text-white font-bold py-2 px-4 flex items-center gap-1.5 shadow-soft whitespace-nowrap"
               >
-                🎧 {handleForSource(lockedId)}님과 함께 듣는 중 · 연결 끊기
+                <Icon name="headphones" size={14} /> {handleForSource(lockedId)}님과 함께 듣는 중 · 연결 끊기
               </button>
             ) : (
               <button
                 onClick={() => setLockedId(nearbyPerson!.id)}
                 className="chip bg-brand text-white font-bold py-2 px-4 flex items-center gap-1.5 shadow-soft animate-bob whitespace-nowrap"
               >
-                🎧 {handleForSource(nearbyPerson!.id)}님과 같이 듣기
+                <Icon name="headphones" size={14} /> {handleForSource(nearbyPerson!.id)}님과 같이 듣기
               </button>
             )}
           </div>
@@ -560,19 +565,19 @@ export default function RoomPage() {
         <div className="flex items-center gap-2 px-4 pt-3">
           <button
             onClick={() => setTab("queue")}
-            className={`chip py-1.5 px-4 ${
+            className={`chip py-1.5 px-4 inline-flex items-center gap-1.5 ${
               tab === "queue" ? "bg-brand text-white" : "bg-cream-100 text-ink-700"
             }`}
           >
-            🤝 큐 ({session.queue.length})
+            <Icon name="music" size={13} /> 큐 ({session.queue.length})
           </button>
           <button
             onClick={() => setTab("chat")}
-            className={`chip py-1.5 px-4 ${
+            className={`chip py-1.5 px-4 inline-flex items-center gap-1.5 ${
               tab === "chat" ? "bg-brand text-white" : "bg-cream-100 text-ink-700"
             }`}
           >
-            💬 채팅
+            <Icon name="chat" size={13} /> 채팅
           </button>
           {tab === "queue" && (
             <button
@@ -615,7 +620,7 @@ export default function RoomPage() {
                         item.likedByMe ? "bg-live/15 text-live" : "bg-cream-100 text-ink-700"
                       }`}
                     >
-                      ❤️ {item.likes}
+                      <Icon name="heart" size={12} fill={item.likedByMe ? "currentColor" : "none"} /> {item.likes}
                     </button>
                   </div>
                 );
@@ -625,7 +630,7 @@ export default function RoomPage() {
             <div className="space-y-2">
               {mode === "free" && (
                 <p className="text-[11px] text-ink-700/45 text-center pb-1">
-                  맵의 🔊 음악 존에 가까이 갈수록 그 음악이 크게 들려요.
+                  맵의 음악 존에 가까이 갈수록 그 음악이 크게 들려요.
                 </p>
               )}
               {session.chat.map((m) => (
@@ -664,9 +669,9 @@ export default function RoomPage() {
             initial={{ y: 40, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-ink-900 text-cream-50 px-5 py-3 rounded-2xl shadow-soft text-sm font-bold"
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-ink-900 text-cream-50 px-5 py-3 rounded-2xl shadow-soft text-sm font-bold inline-flex items-center gap-1.5"
           >
-            💾 디깅함에 저장했어요! (+10 💎)
+            <Icon name="music" size={15} /> 디깅함에 저장했어요! (+10 <Icon name="gem" size={13} />)
           </motion.div>
         )}
       </AnimatePresence>
@@ -680,7 +685,7 @@ export default function RoomPage() {
             exit={{ opacity: 0 }}
             className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-brand text-white px-5 py-3 rounded-2xl shadow-soft text-sm font-bold"
           >
-            🔗 초대 링크 복사됨 · 친구에게 공유하세요!
+            초대 링크 복사됨 · 친구에게 공유하세요!
           </motion.div>
         )}
       </AnimatePresence>
@@ -730,7 +735,7 @@ export default function RoomPage() {
               className="w-full max-w-[440px] bg-cream-100 rounded-t-3xl p-5 max-h-[80vh]"
             >
               <div className="w-10 h-1 bg-cream-300 rounded-full mx-auto mb-4" />
-              <h3 className="font-bold text-ink-900 mb-1">내 음악 틀기 🎶</h3>
+              <h3 className="font-bold text-ink-900 mb-1">내 음악 틀기</h3>
               <p className="text-xs text-ink-700/55 mb-3">
                 고른 곡이 내 캐릭터 주변에 흘러나와요. 가까이 온 사람에게 들려요.
               </p>
