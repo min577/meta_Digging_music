@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Logo from "@/components/Logo";
+import Icon from "@/components/Icon";
 import ArtistThumb from "@/components/ArtistThumb";
 import CharacterPicker from "@/components/CharacterPicker";
 import type { Track } from "@/lib/types";
@@ -189,7 +190,7 @@ export default function OnboardingPage() {
 
               {/* 검색 */}
               <div className="mt-3 card px-4 py-2.5 flex items-center gap-2">
-                <span className="text-ink-700/40">🔍</span>
+                <Icon name="search" size={16} className="text-ink-700/40" />
                 <input
                   value={artistQ}
                   onChange={(e) => setArtistQ(e.target.value)}

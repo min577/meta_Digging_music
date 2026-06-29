@@ -4,15 +4,16 @@ import Link from "next/link";
 import Avatar from "./Avatar";
 import PlaceScene from "./PlaceScene";
 import GenreTag from "./GenreTag";
+import Icon from "./Icon";
 import { appearanceFromSeed } from "@/lib/appearance";
 import { GENRES } from "@/lib/genres";
 import { topGenre } from "@/lib/taste";
 import type { Room } from "@/lib/types";
 
 const MODE_LABEL: Record<string, string> = {
-  dj: "🎙 DJ",
-  collab: "🤝 협업 큐",
-  radio: "📻 라디오",
+  dj: "DJ",
+  collab: "협업 큐",
+  radio: "라디오",
 };
 
 export default function RoomCard({
@@ -66,8 +67,8 @@ export default function RoomCard({
               <h3 className="font-bold text-ink-900 truncate">{room.title}</h3>
               <div className="flex items-center gap-2 mt-1.5">
                 <GenreTag genre={topGenre(room.tasteVector)} size="sm" />
-                <span className="text-xs text-ink-700/50">
-                  👥 {room.members.length}/{room.capacity}
+                <span className="text-xs text-ink-700/50 inline-flex items-center gap-1">
+                  <Icon name="friends" size={13} /> {room.members.length}/{room.capacity}
                 </span>
               </div>
             </div>
@@ -81,8 +82,9 @@ export default function RoomCard({
             </div>
           </div>
           {room.currentTrack && (
-            <p className="mt-2 text-xs text-ink-700/60 truncate">
-              ♪ {room.currentTrack.track.title} — {room.currentTrack.track.artist}
+            <p className="mt-2 text-xs text-ink-700/60 truncate flex items-center gap-1">
+              <Icon name="music" size={12} className="text-brand-dark shrink-0" />
+              {room.currentTrack.track.title} — {room.currentTrack.track.artist}
             </p>
           )}
           <div className="mt-2 flex gap-1">

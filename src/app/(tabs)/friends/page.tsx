@@ -84,7 +84,7 @@ export default function FriendsPage() {
       {/* 검색 */}
       <div className="px-5">
         <div className="card px-4 py-3 flex items-center gap-2">
-          <span className="text-ink-700/40">🔍</span>
+          <Icon name="search" size={16} className="text-ink-700/40" />
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
@@ -103,9 +103,9 @@ export default function FriendsPage() {
           </p>
           <div className="flex gap-2 mt-3">
             <button onClick={copy} className="btn-primary flex-1 py-2.5 text-sm">
-              {copied ? "복사됨 ✓" : "🔗 초대 링크 복사"}
+              {copied ? "복사됨 ✓" : "초대 링크 복사"}
             </button>
-            <button className="btn-ghost py-2.5 text-sm">📇 연락처</button>
+            <button className="btn-ghost py-2.5 text-sm">연락처</button>
           </div>
         </div>
       </section>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Icon from "./Icon";
 import { searchTracks } from "@/lib/music";
 import { GENRES } from "@/lib/genres";
 import type { Track } from "@/lib/types";
@@ -37,7 +38,7 @@ export default function TrackSearch({
   return (
     <div>
       <div className="flex items-center gap-2 card px-4 py-3">
-        <span className="text-ink-700/50">🔍</span>
+        <Icon name="search" size={16} className="text-ink-700/50" />
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}

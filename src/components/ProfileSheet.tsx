@@ -104,7 +104,7 @@ export default function ProfileSheet({
             {/* 프로필 뮤직 */}
             {p.profileTrack && (
               <section>
-                <p className="text-sm font-bold text-ink-800 mb-2">🎵 프로필 뮤직</p>
+                <p className="text-sm font-bold text-ink-800 mb-2 flex items-center gap-1.5"><Icon name="music" size={15} className="text-brand-dark" /> 프로필 뮤직</p>
                 <a
                   href={p.profileTrack.previewUrl || undefined}
                   target="_blank"
@@ -121,7 +121,7 @@ export default function ProfileSheet({
                     <p className="text-sm font-bold truncate">{p.profileTrack.title}</p>
                     <p className="text-xs text-ink-700/50 truncate">{p.profileTrack.artist}</p>
                   </div>
-                  <span className="text-brand-dark">▶</span>
+                  <Icon name="play" size={16} className="text-brand-dark" fill="currentColor" />
                 </a>
               </section>
             )}
@@ -129,7 +129,7 @@ export default function ProfileSheet({
             {/* 플레이리스트 */}
             {p.playlist.length > 0 && (
               <section>
-                <p className="text-sm font-bold text-ink-800 mb-2">📜 {p.handle}님의 플레이리스트</p>
+                <p className="text-sm font-bold text-ink-800 mb-2">{p.handle}님의 플레이리스트</p>
                 <div className="space-y-2">
                   {p.playlist.map((t) => (
                     <div key={t.id} className="card px-3 py-2 flex items-center gap-3">

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import TopBar from "@/components/TopBar";
+import Icon from "@/components/Icon";
 import { useAppStore } from "@/store/useAppStore";
 import { ROOMS } from "@/lib/mock";
 import { GENRES, type GenreId } from "@/lib/genres";
@@ -86,7 +87,7 @@ export default function QuestsPage() {
           style={{ background: "linear-gradient(135deg,#6C8AE4,#9B6CE4)" }}
         >
           <p className="text-xs font-bold opacity-80">오늘의 무드 퀘스트</p>
-          <p className="text-lg font-extrabold mt-1">오늘 밤 어떤 기분? 🌙</p>
+          <p className="text-lg font-extrabold mt-1">오늘 밤 어떤 기분?</p>
           <p className="text-xs opacity-80 mt-1">
             기분을 따라가면 딱 맞는 큐레이션 룸으로 안내해요
           </p>
@@ -95,7 +96,7 @@ export default function QuestsPage() {
 
       {/* 데일리 퀘스트 */}
       <section className="px-5 mt-4">
-        <p className="font-bold text-ink-900 mb-2">📅 데일리 퀘스트</p>
+        <p className="font-bold text-ink-900 mb-2 flex items-center gap-1.5"><Icon name="quest" size={17} className="text-brand-dark" /> 데일리 퀘스트</p>
         <div className="space-y-2">
           {dailies.map((q) => {
             const done = q.progress >= q.goal;
@@ -107,8 +108,9 @@ export default function QuestsPage() {
                     <p className="font-bold text-sm">{q.title}</p>
                     <p className="text-[11px] text-ink-700/50">{q.detail}</p>
                   </div>
-                  <span className="text-[11px] text-ink-700/50 shrink-0 ml-2">
-                    🪙{q.rewardCoins} 💎{q.rewardPoints}
+                  <span className="text-[11px] text-ink-700/50 shrink-0 ml-2 inline-flex items-center gap-1">
+                    <Icon name="coin" size={12} className="text-gold" />{q.rewardCoins}
+                    <Icon name="gem" size={12} className="text-brand" />{q.rewardPoints}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 mt-2">
@@ -144,7 +146,7 @@ export default function QuestsPage() {
       {/* 협동 미션 */}
       {coop && (
         <section className="px-5 mt-4">
-          <p className="font-bold text-ink-900 mb-2">🤝 협동 미션 (방탈출)</p>
+          <p className="font-bold text-ink-900 mb-2 flex items-center gap-1.5"><Icon name="friends" size={17} className="text-brand-dark" /> 협동 미션 (방탈출)</p>
           <div className="card p-4">
             <p className="font-bold text-sm">{coop.title}</p>
             <p className="text-[11px] text-ink-700/50 mt-0.5">{coop.detail}</p>
@@ -152,19 +154,19 @@ export default function QuestsPage() {
               {Array.from({ length: coop.goal }).map((_, i) => (
                 <div
                   key={i}
-                  className={`flex-1 h-8 rounded-xl grid place-items-center text-sm ${
+                  className={`flex-1 h-8 rounded-xl grid place-items-center ${
                     i < coop.progress
                       ? "bg-live/15 text-live"
-                      : "bg-cream-100 text-ink-700/30"
+                      : "bg-cream-100 text-ink-700/25"
                   }`}
                 >
-                  {i < coop.progress ? "❤️" : "🤍"}
+                  <Icon name="heart" size={16} fill={i < coop.progress ? "currentColor" : "none"} />
                 </div>
               ))}
             </div>
-            <p className="text-[11px] text-ink-700/45 mt-2 text-center">
-              {coop.goal - coop.progress}명 더 같은 곡에 좋아요하면 보상 해금! 🪙
-              {coop.rewardCoins}
+            <p className="text-[11px] text-ink-700/45 mt-2 text-center inline-flex items-center justify-center gap-1 w-full">
+              {coop.goal - coop.progress}명 더 같은 곡에 좋아요하면 보상 해금!
+              <Icon name="coin" size={12} className="text-gold" />{coop.rewardCoins}
             </p>
           </div>
         </section>
@@ -172,7 +174,7 @@ export default function QuestsPage() {
 
       {/* 예약형 파티 (Phase 7) */}
       <section className="px-5 mt-4 mb-4">
-        <p className="font-bold text-ink-900 mb-2">⏰ 예약 리스닝 파티</p>
+        <p className="font-bold text-ink-900 mb-2">예약 리스닝 파티</p>
         <div className="space-y-2">
           {[
             { t: "오늘 밤 22:00", title: "시티팝 야간열차 디깅", g: "citypop" as GenreId, h: "yuki" },
@@ -187,7 +189,7 @@ export default function QuestsPage() {
                 </p>
               </div>
               <button className="chip bg-brand/10 text-brand-dark font-bold py-1.5 px-3">
-                🔔 알림
+                알림
               </button>
             </div>
           ))}

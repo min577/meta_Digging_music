@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Icon from "@/components/Icon";
 import { useAppStore } from "@/store/useAppStore";
 
 // 온보딩 가드: 온보딩 안 한 사용자는 /onboarding 으로 보낸다.
@@ -24,7 +25,7 @@ export default function AppGate({ children }: { children: React.ReactNode }) {
   if (!ready) {
     return (
       <div className="phone-shell flex items-center justify-center min-h-[100dvh]">
-        <div className="animate-bob text-4xl">🎧</div>
+        <div className="animate-bob text-brand"><Icon name="headphones" size={40} /></div>
       </div>
     );
   }

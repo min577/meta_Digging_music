@@ -61,7 +61,7 @@ export default function HomePage() {
     const r = roomForPlace(loc.place);
     router.push(r ? `/room/${r.id}` : "/room/create");
   };
-  const MODE_BADGE: Record<string, string> = { dj: "🎙 DJ", collab: "🤝 협업 큐", radio: "📻 라디오" };
+  const MODE_BADGE: Record<string, string> = { dj: "DJ", collab: "협업 큐", radio: "라디오" };
 
   return (
     <div>
@@ -98,8 +98,8 @@ export default function HomePage() {
                   style={{ width: `${Math.min(100, (activeQuest.progress / activeQuest.goal) * 100)}%` }}
                 />
               </div>
-              <span className="text-[10px] font-bold text-ink-700/55 shrink-0">
-                {activeQuest.progress}/{activeQuest.goal} · 🪙{activeQuest.rewardCoins}
+              <span className="text-[10px] font-bold text-ink-700/55 shrink-0 inline-flex items-center gap-0.5">
+                {activeQuest.progress}/{activeQuest.goal} · <Icon name="coin" size={11} className="text-gold" />{activeQuest.rewardCoins}
               </span>
             </div>
           </div>
@@ -134,7 +134,7 @@ export default function HomePage() {
                 <span className="mt-1 font-bold text-sm text-ink-900">{loc.name}</span>
                 {(() => {
                   const r = roomForPlace(loc.place);
-                  const label = r ? (r.roomMode === "free" ? "🎐 자유모드" : MODE_BADGE[r.queueMode]) : "✨ 새 룸";
+                  const label = r ? (r.roomMode === "free" ? "자유모드" : MODE_BADGE[r.queueMode]) : "새 룸";
                   return <span className="mt-1 chip bg-cream-100 text-ink-700 text-[10px] font-bold py-0.5 px-2">{label}</span>;
                 })()}
                 <span className="mt-1 text-[10px] font-bold text-brand">입장하기 →</span>
@@ -205,9 +205,9 @@ export default function HomePage() {
         <div className="fixed bottom-24 left-1/2 -translate-x-1/2 w-full max-w-[440px] px-5 z-30 pointer-events-none">
           <button
             onClick={() => router.push(`/room/${topRoom.room.id}`)}
-            className="btn-primary w-full pointer-events-auto shadow-soft"
+            className="btn-primary w-full pointer-events-auto shadow-soft flex items-center justify-center gap-1.5"
           >
-            🎧 디깅 시작 — {topRoom.room.title} ({topRoom.pct}%)
+            <Icon name="headphones" size={16} strokeWidth={2.1} /> 디깅 시작 — {topRoom.room.title} ({topRoom.pct}%)
           </button>
         </div>
       )}

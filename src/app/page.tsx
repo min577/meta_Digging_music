@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Icon from "@/components/Icon";
 import { useAppStore } from "@/store/useAppStore";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { signInWithGoogle } from "@/lib/profile";
@@ -31,7 +32,7 @@ export default function RootPage() {
   if (!ready) {
     return (
       <div className="phone-shell min-h-[100dvh] grid place-items-center" style={{ background: "linear-gradient(180deg,#8C7BE6,#B9ABEF)" }}>
-        <div className="animate-bob text-4xl">🎧</div>
+        <div className="animate-bob text-white"><Icon name="headphones" size={44} /></div>
       </div>
     );
   }
