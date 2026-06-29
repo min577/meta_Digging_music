@@ -165,3 +165,9 @@ body {
 .dig-cta {
   animation: digCtaIn 0.28s ease-out, digCtaBob 2.4s ease-in-out 0.28s infinite;
 }
+
+/* 시작화면 이퀄라이저 */
+@keyframes eqBar {
+  0%, 100% { transform: scaleY(0.5); }
+  50% { transform: scaleY(1); }
+}
