@@ -87,6 +87,15 @@ export default function RoomScene3D(props: Props) {
   const outdoor = placeScene(props.place).env !== "indoor";
   const touch = useRef({ dx: 0, dz: 0 });
   const jumpReq = useRef(0);
+  // 모바일(터치 기반)에서만 조이스틱/점프 노출
+  const [isTouch, setIsTouch] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(pointer: coarse)");
+    const update = () => setIsTouch(mq.matches || navigator.maxTouchPoints > 0);
+    update();
+    mq.addEventListener?.("change", update);
+    return () => mq.removeEventListener?.("change", update);
+  }, []);
   // 장소 무드를 안개에 살짝 섞어 공간마다 다른 분위기
   const mood = PLACE_MOOD[props.place]?.color ?? "#ffffff";
   const fogColor = mix(SKY[time.phase], mood, time.isNight ? 0.34 : 0.2);
@@ -129,7 +138,7 @@ export default function RoomScene3D(props: Props) {
       )}
 
       {/* 모바일 조작 (조이스틱 + 점프) */}
-      {!props.editMode && (
+      {!props.editMode && isTouch && (
         <TouchControls touch={touch} onJump={() => (jumpReq.current = performance.now())} />
       )}
     </div>
