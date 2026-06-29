@@ -75,7 +75,7 @@ export default function CreateRoomPage() {
   };
 
   return (
-    <div className="phone-shell min-h-[100dvh] px-5 pt-6 pb-10 bg-gradient-to-b from-cream-100 to-cream-200">
+    <div className="phone-shell px-5 pt-6 pb-10 bg-gradient-to-b from-cream-100 to-cream-200">
       <div className="flex items-center gap-3 mb-4">
         <button
           onClick={() => router.back()}

@@ -31,7 +31,7 @@ export default function RootPage() {
 
   if (!ready) {
     return (
-      <div className="phone-shell min-h-[100dvh] grid place-items-center" style={{ background: "linear-gradient(180deg,#8C7BE6,#B9ABEF)" }}>
+      <div className="phone-shell grid place-items-center" style={{ background: "linear-gradient(180deg,#8C7BE6,#B9ABEF)" }}>
         <div className="animate-bob text-white"><Icon name="headphones" size={44} /></div>
       </div>
     );
@@ -39,7 +39,7 @@ export default function RootPage() {
 
   return (
     <div
-      className="phone-shell min-h-[100dvh] flex flex-col relative overflow-hidden"
+      className="phone-shell flex flex-col relative overflow-hidden"
       style={{ background: "linear-gradient(180deg,#8C7BE6 0%,#A797EC 55%,#C3B7F2 100%)" }}
     >
       {/* 상단: 태그라인 + 워드마크 */}

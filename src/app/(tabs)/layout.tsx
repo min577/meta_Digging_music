@@ -9,7 +9,7 @@ export default function TabsLayout({
 }) {
   return (
     <AppGate>
-      <div className="app-frame pb-28">
+      <div className="app-frame pb-2">
         <TabBoundary>{children}</TabBoundary>
       </div>
       <BottomNav />

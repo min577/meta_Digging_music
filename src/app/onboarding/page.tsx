@@ -88,7 +88,7 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="app-frame min-h-[100dvh] flex flex-col px-5 pt-10 pb-6 bg-gradient-to-b from-cream-100 to-cream-200">
+    <div className="phone-shell flex flex-col px-5 pt-10 pb-6 bg-gradient-to-b from-cream-100 to-cream-200">
       <div className="flex gap-2 justify-center mb-6">
         {[0, 1, 2, 3].map((i) => (
           <div

@@ -51,7 +51,7 @@ export default function BottomNav() {
   if (pathname?.startsWith("/room/")) return null;
 
   return (
-    <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[440px] z-40">
+    <nav className="shrink-0 w-full z-40">
       <div className="mx-3 mb-3 rounded-[28px] bg-cream-50/95 backdrop-blur border border-cream-200 shadow-card px-2 py-2 flex justify-around">
         {TABS.map((t) => {
           const active = pathname?.startsWith(t.href);
