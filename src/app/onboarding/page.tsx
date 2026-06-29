@@ -3,16 +3,15 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import Avatar from "@/components/Avatar";
 import Logo from "@/components/Logo";
 import ArtistThumb from "@/components/ArtistThumb";
+import CharacterPicker from "@/components/CharacterPicker";
 import type { Track } from "@/lib/types";
 import { useAppStore } from "@/store/useAppStore";
 import { vectorFromTracks, sortedGenres } from "@/lib/taste";
 import { GENRES } from "@/lib/genres";
 import { searchArtists, artistToSeed, type SeedArtist } from "@/lib/artists";
 import { defaultAppearance, type Appearance } from "@/lib/appearance";
-import { FREE_PRESETS } from "@/lib/characters";
 
 const SITUATIONS = [
   "공부할 때",
@@ -140,35 +139,12 @@ export default function OnboardingPage() {
 
           {step === 1 && (
             <div className="flex-1 flex flex-col min-h-0">
-              <h2 className="text-xl font-extrabold text-ink-900">
-                나만의 캐릭터 고르기
-              </h2>
+              <h2 className="text-xl font-extrabold text-ink-900">나만의 캐릭터 고르기</h2>
               <p className="text-ink-700/60 text-sm mt-1">
                 마음에 드는 캐릭터를 골라보세요. (상점에서 코스튬도 입을 수 있어요)
               </p>
-
-              {/* 미리보기 */}
-              <div className="mt-4 flex justify-center">
-                <div className="rounded-3xl bg-cream-50 border border-cream-200 px-8 py-3 shadow-card">
-                  <Avatar appearance={look} size={120} />
-                </div>
-              </div>
-
-              {/* 프리셋 그리드 */}
-              <div className="mt-3 card p-3 flex-1 min-h-0 overflow-y-auto no-scrollbar">
-                <div className="grid grid-cols-4 gap-2">
-                  {FREE_PRESETS.map((p) => (
-                    <button
-                      key={p}
-                      onClick={() => set({ preset: p })}
-                      className={`rounded-2xl p-1 grid place-items-center transition active:scale-95 ${
-                        look.preset === p ? "ring-2 ring-brand bg-brand/5" : "bg-cream-50"
-                      }`}
-                    >
-                      <Avatar appearance={{ preset: p } as Appearance} size={56} bob={false} />
-                    </button>
-                  ))}
-                </div>
+              <div className="mt-3 flex-1 min-h-0 overflow-y-auto no-scrollbar pb-2">
+                <CharacterPicker value={look.preset ?? "group16.png"} onChange={(p) => set({ preset: p })} />
               </div>
             </div>
           )}

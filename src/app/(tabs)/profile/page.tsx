@@ -12,7 +12,6 @@ import { useAppStore, useMyTopGenre } from "@/store/useAppStore";
 import { GENRES, GENRE_LIST, genre as genreOf } from "@/lib/genres";
 import { sortedGenres } from "@/lib/taste";
 import { defaultAppearance, type Appearance } from "@/lib/appearance";
-import { FREE_PRESETS } from "@/lib/characters";
 import { ROOMS } from "@/lib/mock";
 import { place as placeOf } from "@/lib/places";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
@@ -153,26 +152,19 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* 캐릭터 선택 (무료) */}
-        <div id="base-customizer" data-tour="profile-customize" className="card p-3 mt-3 scroll-mt-20">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-xs font-bold text-ink-700">🎨 캐릭터 고르기 <span className="text-brand">무료</span></p>
-            <span className="text-[10px] text-ink-700/45">코스튬은 상점에서</span>
-          </div>
-          <div className="grid grid-cols-5 gap-2 max-h-[180px] overflow-y-auto no-scrollbar">
-            {FREE_PRESETS.map((p) => (
-              <button
-                key={p}
-                onClick={() => setAppearance({ ...ap, preset: p } as Appearance)}
-                className={`rounded-xl p-0.5 grid place-items-center transition active:scale-95 ${
-                  ap.preset === p ? "ring-2 ring-brand bg-brand/5" : "bg-cream-50"
-                }`}
-              >
-                <Avatar appearance={{ preset: p } as Appearance} size={48} bob={false} />
-              </button>
-            ))}
-          </div>
-        </div>
+        {/* 캐릭터 꾸미기 → 전용 화면 */}
+        <Link
+          href="/character"
+          data-tour="profile-customize"
+          id="base-customizer"
+          className="card p-4 mt-3 flex items-center gap-3 active:scale-[0.99] transition scroll-mt-20"
+        >
+          <span className="w-9 h-9 rounded-full bg-brand/12 text-brand-dark grid place-items-center">
+            <Icon name="user" size={18} />
+          </span>
+          <span className="flex-1 font-bold text-sm text-ink-900">캐릭터 꾸미기</span>
+          <span className="text-ink-700/30">›</span>
+        </Link>
 
         {/* 진화 */}
         <div className="card p-4 mt-3">

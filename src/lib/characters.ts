@@ -30,6 +30,17 @@ export const COSTUME_PRESETS: CostumePreset[] = [
 
 export const DEFAULT_PRESET = "group16.png";
 
+// 캐릭터 꾸미기 섹션 (컬러/헤어/악세서리) — 디자인 구조용 분류
+export const PRESET_COLORS: string[] = [
+  "group16.png", "23.png", "23234.png", "33.png", "c145.png", "c146.png", "c141.png", "c147.png",
+];
+export const PRESET_HAIRS: string[] = [
+  "group16.png", "2.png", "group17.png", "group24.png", "group27.png", "c136.png",
+];
+export const PRESET_ACCESSORIES: string[] = [
+  "group23.png", "34.png", "group20.png", "group21.png", "group22.png", "c143.png", "group26.png", "group19.png",
+];
+
 /** 핸들(닉네임) 기반 결정적 프리셋 — NPC/다른 유저용 */
 export function presetFromSeed(seed: string): string {
   let h = 0;
