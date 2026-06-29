@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import TopBar from "@/components/TopBar";
 import Avatar from "@/components/Avatar";
-import Icon from "@/components/Icon";
+import Icon, { type IconName } from "@/components/Icon";
 import ArtistThumb from "@/components/ArtistThumb";
 import CoachTour, { type TourStep } from "@/components/CoachTour";
 import { useAppStore, useMyTopGenre } from "@/store/useAppStore";
@@ -138,15 +138,14 @@ export default function ProfilePage() {
           <div className="flex-1 min-w-0">
             <p className="font-extrabold text-lg text-ink-900">{user.handle}</p>
             <p className="text-xs text-ink-700/55">
-              Lv.{user.level} · {STAGE_NAME[stage]} · {genreOf(myGenre).emoji}{" "}
-              {genreOf(myGenre).label} 디깅러
+              Lv.{user.level} · {STAGE_NAME[stage]} · {genreOf(myGenre).label} 디깅러
             </p>
             <div className="flex gap-2 mt-2">
-              <span className="chip bg-cream-100 border border-cream-200">
-                🪙 {user.coins}
+              <span className="chip bg-cream-100 border border-cream-200 inline-flex items-center gap-1">
+                <Icon name="coin" size={13} className="text-gold" /> {user.coins}
               </span>
-              <span className="chip bg-cream-100 border border-cream-200">
-                💎 {user.diggPoints}
+              <span className="chip bg-cream-100 border border-cream-200 inline-flex items-center gap-1">
+                <Icon name="gem" size={13} className="text-brand" /> {user.diggPoints}
               </span>
             </div>
           </div>
@@ -185,13 +184,15 @@ export default function ProfilePage() {
           <button
             onClick={evolve}
             disabled={!canEvolve}
-            className="btn-primary w-full mt-3 disabled:opacity-40"
+            className="btn-primary w-full mt-3 disabled:opacity-40 flex items-center justify-center gap-1.5"
           >
-            {stage >= 3
-              ? "최종 진화 완료 ✨"
-              : canEvolve
-              ? "🎵 진화하기!"
-              : `다음 진화까지 ${(stage + 1) * 150 - user.diggPoints}💎`}
+            {stage >= 3 ? (
+              "최종 진화 완료"
+            ) : canEvolve ? (
+              <><Icon name="sparkle" size={16} /> 진화하기!</>
+            ) : (
+              <>다음 진화까지 {(stage + 1) * 150 - user.diggPoints} <Icon name="gem" size={14} /></>
+            )}
           </button>
         </div>
       </section>
@@ -206,19 +207,19 @@ export default function ProfilePage() {
       {/* 탭 */}
       <div data-tour="profile-tabs" className="px-5 mt-4 flex gap-2 overflow-x-auto no-scrollbar">
         {([
-          ["achv", "🏆 업적"],
-          ["report", "📊 취향 리포트"],
-          ["diggs", "💾 디깅함"],
-          ["ranking", "🎧 아티스트 랭킹"],
-        ] as [View, string][]).map(([v, label]) => (
+          ["achv", "업적", "trophy"],
+          ["report", "취향 리포트", "target"],
+          ["diggs", "디깅함", "music"],
+          ["ranking", "아티스트 랭킹", "headphones"],
+        ] as [View, string, IconName][]).map(([v, label, icon]) => (
           <button
             key={v}
             onClick={() => setView(v)}
-            className={`chip py-1.5 px-3 shrink-0 ${
+            className={`chip py-1.5 px-3 shrink-0 inline-flex items-center gap-1.5 ${
               view === v ? "bg-brand text-white" : "bg-cream-100 text-ink-700"
             }`}
           >
-            {label}
+            <Icon name={icon} size={14} /> {label}
           </button>
         ))}
       </div>
@@ -470,7 +471,7 @@ export default function ProfilePage() {
           }}
           className="btn-ghost w-full text-sm"
         >
-          🎮 튜토리얼 다시 보기
+          튜토리얼 다시 보기
         </button>
 
         <button
