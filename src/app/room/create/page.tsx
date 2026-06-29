@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import MoodBuilding from "@/components/MoodBuilding";
 import TrackSearch from "@/components/TrackSearch";
 import Icon, { type IconName } from "@/components/Icon";
+import GenreIcon from "@/components/GenreIcon";
 import { LOCATIONS } from "@/lib/mock";
 import { GENRES } from "@/lib/genres";
 import { vectorFromTracks } from "@/lib/taste";
@@ -180,7 +181,7 @@ export default function CreateRoomPage() {
       <p className="text-sm font-bold text-ink-800 mt-5 mb-2">시드곡 (선택)</p>
       {seed ? (
         <div className="card px-3 py-2.5 flex items-center gap-3">
-          <span className="text-lg">{GENRES[seed.genre].emoji}</span>
+          <span style={{ color: GENRES[seed.genre].color }}><GenreIcon genre={seed.genre} size={20} strokeWidth={2} /></span>
           <span className="flex-1 text-sm font-semibold truncate">{seed.title}</span>
           <button onClick={() => setSeed(null)} className="text-ink-700/40 font-bold">
             ×

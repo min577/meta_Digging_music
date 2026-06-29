@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import Avatar from "@/components/Avatar";
 import Icon from "@/components/Icon";
+import GenreIcon from "@/components/GenreIcon";
 import { genre as genreOf } from "@/lib/genres";
 import { matchPercent, sortedGenres } from "@/lib/taste";
 import { personProfile } from "@/lib/people";
@@ -84,8 +85,8 @@ export default function ProfileSheet({
               <div className="space-y-1.5">
                 {sortedGenres(p.taste).map(([gid, v]) => (
                   <div key={gid} className="flex items-center gap-2">
-                    <span className="text-xs w-14 text-ink-700">
-                      {genreOf(gid).emoji} {genreOf(gid).label}
+                    <span className="text-xs w-14 text-ink-700 inline-flex items-center gap-1">
+                      <GenreIcon genre={gid as GenreId} size={12} className="shrink-0" /> {genreOf(gid).label}
                     </span>
                     <div className="flex-1 h-2 rounded-full bg-cream-200 overflow-hidden">
                       <div
@@ -133,7 +134,7 @@ export default function ProfileSheet({
                 <div className="space-y-2">
                   {p.playlist.map((t) => (
                     <div key={t.id} className="card px-3 py-2 flex items-center gap-3">
-                      <span className="text-lg shrink-0">{genreOf(t.genre).emoji}</span>
+                      <GenreIcon genre={t.genre as GenreId} size={18} className="shrink-0 text-ink-700/70" />
                       <div className="min-w-0 flex-1">
                         <p className="text-xs font-bold truncate">{t.title}</p>
                         <p className="text-[10px] text-ink-700/50 truncate">

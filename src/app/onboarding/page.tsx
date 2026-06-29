@@ -5,12 +5,13 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Logo from "@/components/Logo";
 import Icon from "@/components/Icon";
+import GenreIcon from "@/components/GenreIcon";
 import ArtistThumb from "@/components/ArtistThumb";
 import CharacterPicker from "@/components/CharacterPicker";
 import type { Track } from "@/lib/types";
 import { useAppStore } from "@/store/useAppStore";
 import { vectorFromTracks, sortedGenres } from "@/lib/taste";
-import { GENRES } from "@/lib/genres";
+import { GENRES, type GenreId } from "@/lib/genres";
 import { searchArtists, artistToSeed, type SeedArtist } from "@/lib/artists";
 import { defaultAppearance, type Appearance } from "@/lib/appearance";
 
@@ -242,8 +243,8 @@ export default function OnboardingPage() {
                   <div className="space-y-1.5">
                     {sortedGenres(preview).map(([g, v]) => (
                       <div key={g} className="flex items-center gap-2">
-                        <span className="text-xs w-14 text-ink-700">
-                          {GENRES[g].emoji} {GENRES[g].label}
+                        <span className="text-xs w-14 text-ink-700 inline-flex items-center gap-1">
+                          <GenreIcon genre={g as GenreId} size={12} className="shrink-0" /> {GENRES[g].label}
                         </span>
                         <div className="flex-1 h-2 rounded-full bg-cream-200 overflow-hidden">
                           <div

@@ -7,9 +7,10 @@ import TopBar from "@/components/TopBar";
 import Avatar from "@/components/Avatar";
 import Icon, { type IconName } from "@/components/Icon";
 import ArtistThumb from "@/components/ArtistThumb";
+import GenreIcon from "@/components/GenreIcon";
 import CoachTour, { type TourStep } from "@/components/CoachTour";
 import { useAppStore, useMyTopGenre } from "@/store/useAppStore";
-import { GENRES, GENRE_LIST, genre as genreOf } from "@/lib/genres";
+import { GENRES, GENRE_LIST, genre as genreOf, type GenreId } from "@/lib/genres";
 import { sortedGenres } from "@/lib/taste";
 import { defaultAppearance, type Appearance } from "@/lib/appearance";
 import { ROOMS } from "@/lib/mock";
@@ -232,8 +233,8 @@ export default function ProfilePage() {
               <div className="space-y-2">
                 {dist.map(([g, v]) => (
                   <div key={g} className="flex items-center gap-2">
-                    <span className="text-xs w-16 text-ink-700">
-                      {genreOf(g).emoji} {genreOf(g).label}
+                    <span className="text-xs w-16 text-ink-700 inline-flex items-center gap-1">
+                      <GenreIcon genre={g as GenreId} size={12} className="shrink-0" /> {genreOf(g).label}
                     </span>
                     <div className="flex-1 h-2.5 rounded-full bg-cream-200 overflow-hidden">
                       <div
@@ -292,7 +293,7 @@ export default function ProfilePage() {
                       className={`chip py-1 px-3 shrink-0 ${diggGenre === g ? "text-white" : "bg-cream-100 text-ink-700"}`}
                       style={diggGenre === g ? { background: genreOf(g).color } : undefined}
                     >
-                      {genreOf(g).emoji} {genreOf(g).label}
+                      <span className="inline-flex items-center gap-1"><GenreIcon genre={g as GenreId} size={12} /> {genreOf(g).label}</span>
                     </button>
                   ))}
                 </div>
@@ -326,12 +327,12 @@ export default function ProfilePage() {
                             />
                           ) : (
                             <div
-                              className="h-20 flex items-center justify-center text-3xl"
+                              className="h-20 flex items-center justify-center text-white"
                               style={{
                                 background: `linear-gradient(135deg, ${genreOf(d.track.genre).bg[0]}, ${genreOf(d.track.genre).bg[1]})`,
                               }}
                             >
-                              {genreOf(d.track.genre).emoji}
+                              <GenreIcon genre={d.track.genre as GenreId} size={30} strokeWidth={2} />
                             </div>
                           )}
                           <div className="p-2">

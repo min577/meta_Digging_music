@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import TopBar from "@/components/TopBar";
 import Icon from "@/components/Icon";
+import GenreIcon from "@/components/GenreIcon";
 import { useAppStore } from "@/store/useAppStore";
 import { ROOMS } from "@/lib/mock";
 import { GENRES, type GenreId } from "@/lib/genres";
@@ -181,7 +182,7 @@ export default function QuestsPage() {
             { t: "내일 09:00", title: "출근길 K-pop", g: "kpop" as GenreId, h: "rain" },
           ].map((p, i) => (
             <div key={i} className="card px-4 py-3 flex items-center gap-3">
-              <span className="text-2xl">{GENRES[p.g].emoji}</span>
+              <span style={{ color: GENRES[p.g].color }}><GenreIcon genre={p.g} size={24} strokeWidth={2} /></span>
               <div className="flex-1 min-w-0">
                 <p className="font-bold text-sm truncate">{p.title}</p>
                 <p className="text-[11px] text-ink-700/50">

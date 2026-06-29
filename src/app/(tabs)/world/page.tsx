@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import MapScene2D, { type Spot } from "@/components/MapScene2D";
 import PreviewPlayer from "@/components/PreviewPlayer";
 import Icon from "@/components/Icon";
+import GenreIcon from "@/components/GenreIcon";
 import CoachTour, { type TourStep } from "@/components/CoachTour";
 import { useAppStore, useMyTopGenre } from "@/store/useAppStore";
 import { GENRES } from "@/lib/genres";
@@ -146,7 +147,7 @@ export default function WorldPage() {
                 /* eslint-disable-next-line @next/next/no-img-element */
                 <img src={result.artwork} alt="" className="w-full h-full object-cover" />
               ) : (
-                <span className="text-2xl">{GENRES[result.genre].emoji}</span>
+                <span style={{ color: GENRES[result.genre].color }}><GenreIcon genre={result.genre} size={26} strokeWidth={2} /></span>
               )}
             </div>
             <div className="flex-1 min-w-0">
