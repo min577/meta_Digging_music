@@ -85,6 +85,8 @@ const SKY_HDRI: Record<string, string> = {
 export default function RoomScene3D(props: Props) {
   const time = useTimePhase();
   const outdoor = placeScene(props.place).env !== "indoor";
+  const touch = useRef({ dx: 0, dz: 0 });
+  const jumpReq = useRef(0);
   // 장소 무드를 안개에 살짝 섞어 공간마다 다른 분위기
   const mood = PLACE_MOOD[props.place]?.color ?? "#ffffff";
   const fogColor = mix(SKY[time.phase], mood, time.isNight ? 0.34 : 0.2);
@@ -106,7 +108,7 @@ export default function RoomScene3D(props: Props) {
             backgroundBlurriness={0.02}
             environmentIntensity={time.isNight ? 0.45 : 1.0}
           />
-          <Scene {...props} time={time} />
+          <Scene {...props} time={time} touch={touch} jumpReq={jumpReq} />
         </Suspense>
         <EffectComposer>
           <Bloom intensity={0.4} luminanceThreshold={0.85} luminanceSmoothing={0.2} mipmapBlur />
@@ -122,8 +124,13 @@ export default function RoomScene3D(props: Props) {
       </div>
       {props.editMode && (
         <div className="absolute top-2 right-2 chip bg-live text-white text-[10px] z-20">
-          🔨 바닥을 탭해 배치
+          바닥을 탭해 배치
         </div>
+      )}
+
+      {/* 모바일 조작 (조이스틱 + 점프) */}
+      {!props.editMode && (
+        <TouchControls touch={touch} onJump={() => (jumpReq.current = performance.now())} />
       )}
     </div>
   );
@@ -132,7 +139,9 @@ export default function RoomScene3D(props: Props) {
 function Scene({
   meAppearance, meHandle, meTrack, meGenre, place, npcs, remote = [], speakers = [],
   placed = [], editMode, lockedId, myId, chat = [], myBubble, onMove, onJump, onAudio, onPlaceAt, onRemovePlaced, time,
-}: Props & { time: TimePhase }) {
+  touch, jumpReq,
+}: Props & { time: TimePhase; touch: React.MutableRefObject<{ dx: number; dz: number }>; jumpReq: React.MutableRefObject<number> }) {
+  const lastJump = useRef(0);
   const { camera } = useThree();
   const scene = placeScene(place);
 
@@ -237,7 +246,15 @@ function Scene({
     if (k.has("s") || k.has("arrowdown")) dz += 1;
     if (k.has("a") || k.has("arrowleft")) dx -= 1;
     if (k.has("d") || k.has("arrowright")) dx += 1;
+    // 모바일 조이스틱
+    const tc = touch.current;
+    if (tc && (tc.dx || tc.dz)) { dx += tc.dx; dz += tc.dz; }
     const m = me.current;
+    // 모바일 점프 버튼
+    if (jumpReq.current > lastJump.current) {
+      lastJump.current = jumpReq.current;
+      if (!m.seated && !m.air) { m.vy = JUMP_V; m.air = true; cbR.current.onJump?.(); }
+    }
     // 같이 듣기 대상 위치 (NPC/원격 유저) — 자동 팔로우 + 이어폰 링크용
     const lk = lockedR.current;
     let lockPos: { x: number; z: number } | null = null;
@@ -937,4 +954,74 @@ function mix(a: string, b: string, t: number) {
   const g = Math.round(((pa >> 8) & 0xff) * (1 - t) + ((pb >> 8) & 0xff) * t);
   const c = Math.round((pa & 0xff) * (1 - t) + (pb & 0xff) * t);
   return `#${((r << 16) | (g << 8) | c).toString(16).padStart(6, "0")}`;
+}
+
+// 모바일 온스크린 조작 (조이스틱 + 점프)
+function TouchControls({
+  touch,
+  onJump,
+}: {
+  touch: React.MutableRefObject<{ dx: number; dz: number }>;
+  onJump: () => void;
+}) {
+  const baseRef = useRef<HTMLDivElement>(null);
+  const pid = useRef(-1);
+  const [knob, setKnob] = useState({ x: 0, y: 0 });
+  const R = 38;
+  const apply = (e: React.PointerEvent) => {
+    const el = baseRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const dx = e.clientX - (r.left + r.width / 2);
+    const dy = e.clientY - (r.top + r.height / 2);
+    const len = Math.hypot(dx, dy) || 1;
+    const mag = Math.min(R, len) / R;
+    const nx = (dx / len) * mag;
+    const ny = (dy / len) * mag;
+    setKnob({ x: nx * R, y: ny * R });
+    touch.current.dx = nx;
+    touch.current.dz = ny;
+  };
+  const down = (e: React.PointerEvent) => {
+    pid.current = e.pointerId;
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+    apply(e);
+  };
+  const move = (e: React.PointerEvent) => {
+    if (pid.current === e.pointerId) apply(e);
+  };
+  const up = (e: React.PointerEvent) => {
+    if (pid.current !== e.pointerId) return;
+    pid.current = -1;
+    setKnob({ x: 0, y: 0 });
+    touch.current.dx = 0;
+    touch.current.dz = 0;
+  };
+  return (
+    <>
+      <div
+        ref={baseRef}
+        onPointerDown={down}
+        onPointerMove={move}
+        onPointerUp={up}
+        onPointerCancel={up}
+        className="absolute bottom-5 left-5 z-20 w-24 h-24 rounded-full bg-black/20 border border-white/30 backdrop-blur-sm grid place-items-center touch-none select-none"
+        aria-label="이동 조이스틱"
+      >
+        <div
+          className="w-9 h-9 rounded-full bg-white/80 shadow pointer-events-none"
+          style={{ transform: `translate(${knob.x}px, ${knob.y}px)` }}
+        />
+      </div>
+      <button
+        onPointerDown={(e) => {
+          e.preventDefault();
+          onJump();
+        }}
+        className="absolute bottom-7 right-6 z-20 w-16 h-16 rounded-full bg-brand/85 text-white font-extrabold text-sm shadow-soft active:scale-90 touch-none select-none"
+      >
+        점프
+      </button>
+    </>
+  );
 }
