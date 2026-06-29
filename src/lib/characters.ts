@@ -22,10 +22,10 @@ export interface CostumePreset {
   price: number;
 }
 export const COSTUME_PRESETS: CostumePreset[] = [
-  { id: "witch", src: "45.png", name: "🧙 마녀", price: 420 },
-  { id: "fries", src: "59.png", name: "🍟 감자튀김", price: 380 },
-  { id: "star", src: "57.png", name: "⭐ 별 잠옷", price: 320 },
-  { id: "plaid", src: "58.png", name: "🧣 체크 잠옷", price: 300 },
+  { id: "witch", src: "45.png", name: "마녀", price: 420 },
+  { id: "fries", src: "59.png", name: "감자튀김", price: 380 },
+  { id: "star", src: "57.png", name: "별 잠옷", price: 320 },
+  { id: "plaid", src: "58.png", name: "체크 잠옷", price: 300 },
 ];
 
 export const DEFAULT_PRESET = "group16.png";

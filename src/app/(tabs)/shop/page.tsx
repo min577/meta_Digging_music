@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import TopBar from "@/components/TopBar";
 import Avatar from "@/components/Avatar";
+import Icon from "@/components/Icon";
 import CoachTour, { type TourStep } from "@/components/CoachTour";
 import { useAppStore, useMyTopGenre } from "@/store/useAppStore";
 import { GENRES } from "@/lib/genres";
@@ -42,7 +43,7 @@ export default function ShopPage() {
   const act = (c: CostumePreset) => {
     if (isOwned(c)) {
       equip(c);
-      flash("착용 완료! ✨");
+      flash("착용 완료!");
       return;
     }
     setConfirm(c);
@@ -51,9 +52,9 @@ export default function ShopPage() {
     if (spend(c.price)) {
       ownItem(`costume_${c.id}`);
       equip(c);
-      flash(`${c.name} 구매·착용! 🎉`, 1600);
+      flash(`${c.name} 구매·착용 완료!`, 1600);
     } else {
-      flash("코인이 부족해요 🪙", 1600);
+      flash("코인이 부족해요", 1600);
     }
     setConfirm(null);
   };
@@ -70,13 +71,15 @@ export default function ShopPage() {
         </div>
         <div className="flex-1">
           <p className="text-sm text-ink-700/60">보유 코인</p>
-          <p className="text-2xl font-extrabold text-ink-900">🪙 {coins}</p>
+          <p className="text-2xl font-extrabold text-ink-900 flex items-center gap-1.5">
+            <Icon name="coin" size={22} className="text-gold" /> {coins}
+          </p>
           <p className="text-[11px] text-ink-700/45 mt-1">디깅·퀘스트로 코인을 모아요</p>
         </div>
       </div>
 
       <p className="px-5 mt-3 text-[11px] text-ink-700/50">
-        기본 캐릭터는 <span className="font-bold text-ink-700/70">마이페이지 › 캐릭터 고르기</span>에서 무료로 바꿀 수 있어요.
+        기본 캐릭터는 <span className="font-bold text-ink-700/70">마이페이지 › 캐릭터 꾸미기</span>에서 무료로 바꿀 수 있어요.
       </p>
 
       {/* 코스튬 그리드 */}
@@ -95,11 +98,11 @@ export default function ShopPage() {
               <Avatar appearance={preview(c)} size={84} bob={false} />
               <span className="text-xs font-bold text-ink-800 mt-1">{c.name}</span>
               <span
-                className={`mt-1.5 chip py-0.5 px-2.5 text-[11px] font-bold ${
+                className={`mt-1.5 chip py-1 px-2.5 text-[11px] font-bold inline-flex items-center gap-1 ${
                   eq ? "bg-brand/15 text-brand-dark" : own ? "bg-cream-200 text-ink-700" : "bg-brand text-white"
                 }`}
               >
-                {eq ? "착용 중" : own ? "착용" : `🪙 ${c.price}`}
+                {eq ? "착용 중" : own ? "착용" : (<><Icon name="coin" size={12} /> {c.price}</>)}
               </span>
             </button>
           );
@@ -127,8 +130,9 @@ export default function ShopPage() {
                 <Avatar appearance={preview(confirm)} size={120} aura={auraColor} />
               </div>
               <p className="font-extrabold text-lg mt-2">{confirm.name}</p>
-              <p className="mt-2 font-bold text-brand-dark">
-                🪙 {confirm.price} <span className="text-xs text-ink-700/40">(보유 {coins})</span>
+              <p className="mt-2 font-bold text-brand-dark flex items-center justify-center gap-1.5">
+                <Icon name="coin" size={16} className="text-gold" /> {confirm.price}
+                <span className="text-xs text-ink-700/40">(보유 {coins})</span>
               </p>
               <div className="flex gap-2 mt-4">
                 <button onClick={() => setConfirm(null)} className="btn-ghost flex-1">
