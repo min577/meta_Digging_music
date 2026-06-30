@@ -10,22 +10,19 @@ import { GENRES } from "@/lib/genres";
 import { topGenre } from "@/lib/taste";
 import type { Room } from "@/lib/types";
 
-const MODE_LABEL: Record<string, string> = {
-  dj: "DJ",
-  collab: "협업 큐",
-  radio: "라디오",
-};
-
 export default function RoomCard({
   room,
   matchPct,
+  rank,
 }: {
   room: Room;
   matchPct: number;
+  rank?: number; // 인기 랭킹 순번 (있으면 #N 표시)
 }) {
   const g = GENRES[topGenre(room.tasteVector)];
   const shown = room.members.slice(0, 5);
   const extra = Math.max(0, room.members.length - shown.length);
+  const isParty = room.roomMode === "party";
 
   return (
     <Link href={`/room/${room.id}`} className="block">
@@ -38,13 +35,29 @@ export default function RoomCard({
           </div>
           {/* 하단 스크림(아바타·칩 가독성) */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/5 to-black/10" />
-          {room.isLive && (
+          {rank != null && (
+            <span className="absolute top-3 left-3 chip bg-white/90 text-ink-900 font-extrabold">
+              #{rank}
+            </span>
+          )}
+          {rank == null && room.isLive && (
             <span className="absolute top-3 left-3 chip bg-live text-white flex items-center gap-1">
               <span className="live-dot bg-white" /> LIVE
             </span>
           )}
-          <span className="absolute top-3 right-3 chip bg-black/30 text-white">
-            {MODE_LABEL[room.queueMode]}
+          {/* 모드 구분: 리스닝 파티(호스트 동기화) vs 자유 디깅(자유 이동) */}
+          <span
+            className={`absolute top-3 right-3 chip text-white flex items-center gap-1 ${
+              isParty ? "bg-live" : "bg-black/35"
+            }`}
+          >
+            {isParty ? (
+              <>
+                <span className="live-dot bg-white" /> 리스닝 파티
+              </>
+            ) : (
+              "자유 디깅"
+            )}
           </span>
           <div className="relative z-10 flex -space-x-3">
             {shown.map((m) => (

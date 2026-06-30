@@ -17,9 +17,9 @@ type Filter = "match" | GenreId;
 
 const HOME_TOUR: TourStep[] = [
   { target: "home-quest", title: "오늘의 퀘스트", desc: "여기서 진행 중인 퀘스트와 보상을 확인해요. 디깅·퀘스트로 코인을 모아요." },
-  { target: "home-mood", title: "무드 공간", desc: "한강·카페 같은 공간으로 들어가 음악을 함께 들어요. 카드를 누르면 입장!" },
+  { target: "home-mood", title: "무드 공간 (자유 디깅)", desc: "한강·카페처럼 상황·장소로 고르는 공간이에요. 들어가서 자유롭게 돌아다니며 곡을 발견해요. ‘내 상황’ 배지가 붙은 곳이 취향 맞춤!" },
   { target: "home-create", title: "룸 만들기", desc: "내 룸을 만들어 친구를 초대할 수도 있어요." },
-  { target: "home-filter", title: "취향 일치순", desc: "룸과 사람은 항상 취향 일치도 순으로 추천돼요." },
+  { target: "home-filter", title: "실시간 인기 룸", desc: "아래 룸 랭킹은 사람들이 모인 곳을 취향 일치도 순으로 보여줘요." },
 ];
 
 export default function HomePage() {
@@ -33,6 +33,21 @@ export default function HomePage() {
   // 오늘의 진행 중인 퀘스트 (없으면 첫 퀘스트)
   const activeQuest = quests.find((q) => !q.completedAt) ?? quests[0];
   const doneQuests = quests.filter((q) => q.completedAt).length;
+
+  // 온보딩 입력(상황·아티스트) 반영
+  const situations = user?.situations ?? [];
+  const favoriteArtists = user?.favoriteArtists ?? [];
+  const placeMatched = (loc: (typeof LOCATIONS)[number]) =>
+    loc.moodTags.some((t) => situations.includes(t));
+  // 무드 공간을 '내가 자주 듣는 상황'에 맞춰 우선 정렬
+  const sortedLocs = useMemo(
+    () => [...LOCATIONS].sort((a, b) => Number(placeMatched(b)) - Number(placeMatched(a))),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [situations.join(",")]
+  );
+  const matchedSituation = situations.find((s) =>
+    LOCATIONS.some((l) => l.moodTags.includes(s))
+  );
 
   // 룸 + 취향 일치도 (기본 정렬 = 취향 일치순)
   const ranked = useMemo(() => {
@@ -61,8 +76,6 @@ export default function HomePage() {
     const r = roomForPlace(loc.place);
     router.push(r ? `/room/${r.id}` : "/room/create");
   };
-  const MODE_BADGE: Record<string, string> = { dj: "DJ", collab: "협업 큐", radio: "라디오" };
-
   return (
     <div>
       <CoachTour tourKey="home" steps={HOME_TOUR} />
@@ -107,39 +120,74 @@ export default function HomePage() {
         </Link>
       )}
 
-      {/* 무드 공간 캐러셀 */}
+      {/* 온보딩 취향 반영 — 좋아한 아티스트로 분석한 취향 */}
+      {favoriteArtists.length > 0 && (
+        <div className="mx-5 mt-2 card p-3 bg-gradient-to-r from-cream-50 to-brand/5">
+          <p className="text-[11px] font-bold text-ink-700/55 flex items-center gap-1">
+            <Icon name="sparkle" size={12} className="text-brand-dark" /> 내가 고른 아티스트로 분석한 취향
+          </p>
+          <div className="mt-1.5 flex flex-wrap gap-1.5">
+            {favoriteArtists.slice(0, 5).map((a) => (
+              <span key={a} className="chip bg-cream-100 text-ink-700 text-[11px] font-bold py-0.5 px-2">
+                {a}
+              </span>
+            ))}
+          </div>
+          <p className="mt-1.5 text-[11px] text-ink-700/50">
+            아래 룸·사람 추천이 이 취향의 <span className="font-bold text-brand-dark">일치도</span> 순으로 정렬돼요.
+          </p>
+        </div>
+      )}
+
+      {/* 무드 공간 캐러셀 — 상황·장소로 고르는 '자유 디깅' 입구 */}
       <section className="mt-4" data-tour="home-mood">
         <div className="flex items-center justify-between px-5">
-          <h2 className="font-bold text-ink-900">무드 공간</h2>
+          <div className="min-w-0">
+            <h2 className="font-bold text-ink-900">무드 공간 · 자유 디깅</h2>
+            <p className="text-[11px] text-ink-700/50 mt-0.5">
+              {matchedSituation
+                ? `‘${matchedSituation}’처럼 자주 듣는 상황에 맞춰 골랐어요`
+                : "상황·장소를 골라 자유롭게 돌아다니며 디깅해요"}
+            </p>
+          </div>
           <Link
             href="/room/create"
             data-tour="home-create"
-            className="btn-primary btn-sm"
+            className="btn-primary btn-sm shrink-0"
           >
             <span className="text-base leading-none">＋</span> 룸 만들기
           </Link>
         </div>
         <div className="mt-3 overflow-hidden">
           <div className="flex gap-3 w-max marquee-track px-5 pb-1">
-            {[...LOCATIONS, ...LOCATIONS].map((loc, idx) => (
+            {[...sortedLocs, ...sortedLocs].map((loc, idx) => {
+              const matched = placeMatched(loc);
+              return (
               <button
                 key={loc.id + "_" + idx}
                 onClick={() => enterPlace(loc)}
-                className="card shrink-0 w-36 p-3 flex flex-col items-center active:scale-[0.97] transition"
+                className={`card shrink-0 w-36 p-3 flex flex-col items-center active:scale-[0.97] transition ${
+                  matched ? "ring-2 ring-brand/40" : ""
+                }`}
                 style={{
                   background: `linear-gradient(160deg, ${GENRES[loc.primaryGenre].bg[0]}22, #FFFDF7)`,
                 }}
               >
                 <MoodBuilding place={loc.place} emoji={loc.emoji} size={120} />
                 <span className="mt-1 font-bold text-sm text-ink-900">{loc.name}</span>
-                {(() => {
-                  const r = roomForPlace(loc.place);
-                  const label = r ? (r.roomMode === "free" ? "자유모드" : MODE_BADGE[r.queueMode]) : "새 룸";
-                  return <span className="mt-1 chip bg-cream-100 text-ink-700 text-[10px] font-bold py-0.5 px-2">{label}</span>;
-                })()}
+                {matched ? (
+                  <span className="mt-1 chip bg-brand text-white text-[10px] font-bold py-0.5 px-2 inline-flex items-center gap-1">
+                    <Icon name="target" size={10} strokeWidth={2.4} /> 내 상황
+                  </span>
+                ) : (
+                  <span className="mt-1 chip bg-cream-100 text-ink-700 text-[10px] font-bold py-0.5 px-2">
+                    {loc.moodTags[0] ?? "자유 디깅"}
+                  </span>
+                )}
                 <span className="mt-1 text-[10px] font-bold text-brand">입장하기 →</span>
               </button>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
@@ -179,23 +227,27 @@ export default function HomePage() {
         })}
       </div>
 
-      {/* 인기 라이브 룸 */}
+      {/* 실시간 인기 룸 — 사람들이 모인 룸을 취향 일치순으로 랭킹 */}
       <section className="mt-4 px-5">
         <div className="flex items-center justify-between">
-          <h2 className="font-bold text-ink-900">인기 라이브 룸</h2>
-          <span className="text-xs text-ink-700/45">
-            {filter === "match" ? "취향 일치순" : `${GENRES[filter as GenreId].label} 룸`}
-          </span>
+          <div>
+            <h2 className="font-bold text-ink-900 flex items-center gap-1.5">
+              <span className="live-dot bg-live" /> 실시간 인기 룸
+            </h2>
+            <p className="text-[11px] text-ink-700/50 mt-0.5">
+              지금 사람들이 모인 룸 · {filter === "match" ? "취향 일치순 랭킹" : `${GENRES[filter as GenreId].label} 룸`}
+            </p>
+          </div>
         </div>
 
         <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3.5">
           {ranked.length === 0 && (
             <p className="text-center text-ink-700/40 text-sm py-8">
-              이 무드의 라이브 룸이 아직 없어요. 직접 만들어볼까요?
+              이 무드의 룸이 아직 없어요. 직접 만들어볼까요?
             </p>
           )}
-          {ranked.map(({ room, pct }) => (
-            <RoomCard key={room.id} room={room} matchPct={pct} />
+          {ranked.map(({ room, pct }, i) => (
+            <RoomCard key={room.id} room={room} matchPct={pct} rank={filter === "match" ? i + 1 : undefined} />
           ))}
         </div>
       </section>

@@ -25,6 +25,7 @@ export default function FriendsPage() {
   const taste = user?.tasteVector ?? {};
   const [q, setQ] = useState("");
   const [copied, setCopied] = useState(false);
+  const [suggestOffset, setSuggestOffset] = useState(0);
   const [selected, setSelected] = useState<{ handle: string; topGenre: GenreId; isFriend: boolean; addable?: Friend } | null>(null);
 
   // 친구를 취향 일치도로 정렬 (1순위 = 취향, 친구는 2순위지만 목록 내부 정렬은 취향순)
@@ -39,8 +40,8 @@ export default function FriendsPage() {
     [friends, taste]
   );
 
-  // 추천: 룸에서 만난, 취향 비슷한 사람 (아직 친구 아님)
-  const suggestions = useMemo(() => {
+  // 추천 후보: 룸에서 만난, 취향 비슷한 사람 (아직 친구 아님) — 취향 일치순 전체 풀
+  const candidates = useMemo(() => {
     const friendIds = new Set(friends.map((f) => f.userId));
     const seen = new Set<string>();
     const out: Friend[] = [];
@@ -58,8 +59,17 @@ export default function FriendsPage() {
         });
       }
     }
-    return out.sort((a, b) => b.matchPct - a.matchPct).slice(0, 6);
+    return out.sort((a, b) => b.matchPct - a.matchPct);
   }, [friends, taste]);
+
+  // 새로고침으로 6명씩 다른 사람 노출 (풀을 순환)
+  const suggestions = useMemo(() => {
+    const n = candidates.length;
+    if (n === 0) return [];
+    const take = Math.min(6, n);
+    return Array.from({ length: take }, (_, i) => candidates[(suggestOffset + i) % n]);
+  }, [candidates, suggestOffset]);
+  const refreshSuggest = () => setSuggestOffset((o) => o + 6);
 
   const inviteCode = (user?.handle ?? "DIGGER").toUpperCase().slice(0, 6) + "-7Z";
   const inviteLink = `https://digtown.vercel.app/invite/${inviteCode}`;
@@ -113,9 +123,19 @@ export default function FriendsPage() {
       {/* 추천: 취향 매칭 */}
       {suggestions.length > 0 && (
         <section data-tour="friends-suggest" className="px-5 mt-4">
-          <p className="font-bold text-ink-900 mb-2 flex items-center gap-1.5">
-            <Icon name="target" size={16} strokeWidth={2.1} className="text-brand-dark" /> 취향이 비슷한 사람
-          </p>
+          <div className="flex items-center justify-between mb-2">
+            <p className="font-bold text-ink-900 flex items-center gap-1.5">
+              <Icon name="target" size={16} strokeWidth={2.1} className="text-brand-dark" /> 취향이 비슷한 사람
+            </p>
+            {candidates.length > 6 && (
+              <button
+                onClick={refreshSuggest}
+                className="chip bg-cream-100 text-ink-700 font-bold py-1 px-2.5 inline-flex items-center gap-1 active:scale-95 transition"
+              >
+                <Icon name="refresh" size={13} /> 새로고침
+              </button>
+            )}
+          </div>
           <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1">
             {suggestions.map((s) => (
               <div key={s.userId} className="card shrink-0 w-32 p-3 text-center">

@@ -4,22 +4,10 @@ import { useRef } from "react";
 import { Billboard, useTexture } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import type { Appearance } from "@/lib/appearance";
-import { DEFAULT_PRESET, COSTUME_PRESETS } from "@/lib/characters";
+import { avatarSrc, type Appearance } from "@/lib/appearance";
 
-// 디자인 PNG를 빌보드 스프라이트로 렌더 (항상 카메라를 향함). 발끝 y=0.
+// 디자인 PNG(또는 합성 dataURL)를 빌보드 스프라이트로 렌더 (항상 카메라를 향함). 발끝 y=0.
 // 걷는 방향으로 좌우 반전 + 걸을 때 흔들림으로 자연스럽게.
-const COSTUME_SRC: Record<string, string> = Object.fromEntries(
-  COSTUME_PRESETS.map((c) => [c.id, c.src])
-);
-
-function srcOf(a?: Appearance): string {
-  if (a?.preset) return `/characters/${a.preset}`;
-  if (a?.costume && a.costume !== "none" && COSTUME_SRC[a.costume]) {
-    return `/characters/${COSTUME_SRC[a.costume]}`;
-  }
-  return `/characters/${DEFAULT_PRESET}`;
-}
 
 export interface AvatarMotion {
   walking?: boolean;
@@ -36,7 +24,7 @@ export default function BeanAvatar3D({
   a: Appearance;
   move?: { current?: AvatarMotion | null };
 }) {
-  const tex = useTexture(srcOf(a));
+  const tex = useTexture(avatarSrc(a));
   tex.minFilter = THREE.LinearFilter;
   tex.magFilter = THREE.LinearFilter;
   const img = (tex as THREE.Texture).image as HTMLImageElement | undefined;

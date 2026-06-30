@@ -19,11 +19,13 @@ const RoomScene3D = dynamic(() => import("@/components/three/RoomScene3D"), {
   ),
 });
 import TrackSearch from "@/components/TrackSearch";
+import Avatar from "@/components/Avatar";
+import ProfileSheet from "@/components/ProfileSheet";
 import CoachTour, { type TourStep } from "@/components/CoachTour";
 import { useRoomSession } from "@/hooks/useRoomSession";
 import { useAppStore, useMyTopGenre } from "@/store/useAppStore";
-import { GENRES, GENRE_LIST, genre as genreOf } from "@/lib/genres";
-import { topGenre } from "@/lib/taste";
+import { GENRES, GENRE_LIST, genre as genreOf, type GenreId } from "@/lib/genres";
+import { topGenre, matchPercent } from "@/lib/taste";
 import { tracksByTerm } from "@/lib/music";
 import { place as getPlace } from "@/lib/places";
 import { appearanceFromSeed, defaultAppearance } from "@/lib/appearance";
@@ -60,6 +62,8 @@ export default function RoomPage() {
   const router = useRouter();
   const user = useAppStore((s) => s.user);
   const myGenre = useMyTopGenre();
+  const friends = useAppStore((s) => s.friends);
+  const addFriend = useAppStore((s) => s.addFriend);
   const addDigg = useAppStore((s) => s.addDigg);
   const hasDigg = useAppStore((s) => s.hasDigg);
   const logListen = useAppStore((s) => s.logListen);
@@ -93,6 +97,8 @@ export default function RoomPage() {
   const [lockedId, setLockedId] = useState<string | null>(null); // 같이 듣기 연결 대상
   const [myBubble, setMyBubble] = useState<{ text: string; at: number } | null>(null); // 머리 위 말풍선
   const [inviteCopied, setInviteCopied] = useState(false);
+  const [showMembers, setShowMembers] = useState(false);
+  const [selPerson, setSelPerson] = useState<{ handle: string; topGenre: GenreId } | null>(null);
   const listenAccum = useRef(0);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const mapWrapRef = useRef<HTMLDivElement>(null);
@@ -317,6 +323,9 @@ export default function RoomPage() {
           </p>
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
+          <button onClick={() => setShowMembers(true)} className="w-9 h-9 rounded-full bg-black/25 text-white grid place-items-center" title="이 룸의 사람들">
+            <Icon name="friends" size={16} />
+          </button>
           <button onClick={invite} className="w-9 h-9 rounded-full bg-black/25 text-white grid place-items-center" title="친구 초대">
             <Icon name="plus" size={18} />
           </button>
@@ -715,6 +724,85 @@ export default function RoomPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* 이 룸의 사람들 — 탭하면 프로필 → 친구 추가 */}
+      <AnimatePresence>
+        {showMembers && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/40 flex items-end justify-center"
+            onClick={() => setShowMembers(false)}
+          >
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 28 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-[440px] bg-cream-50 rounded-t-3xl p-5 max-h-[72vh] flex flex-col"
+            >
+              <div className="w-10 h-1 bg-cream-300 rounded-full mx-auto mb-3" />
+              <h3 className="font-extrabold text-ink-900 mb-1 flex items-center gap-1.5">
+                <Icon name="friends" size={18} className="text-brand-dark" /> 이 룸의 사람들 ({room.members.length})
+              </h3>
+              <p className="text-xs text-ink-700/55 mb-3">탭하면 취향을 보고 친구를 추가할 수 있어요.</p>
+              <div className="flex-1 overflow-y-auto no-scrollbar space-y-2">
+                {room.members.map((m) => {
+                  const isFriend = friends.some((f) => f.userId === m.userId && f.status === "accepted");
+                  const isMe = !!user && m.handle === user.handle;
+                  const pct = matchPercent(user?.tasteVector ?? {}, { [m.topGenre]: 1 });
+                  return (
+                    <button
+                      key={m.userId}
+                      onClick={() => !isMe && setSelPerson({ handle: m.handle, topGenre: m.topGenre })}
+                      className="w-full card px-3 py-2.5 flex items-center gap-3 text-left active:scale-[0.99] transition"
+                    >
+                      <Avatar appearance={appearanceFromSeed(m.handle)} size={42} bob={false} />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-sm truncate">
+                          {m.handle} {isMe && <span className="text-ink-700/40 text-xs">(나)</span>}
+                          {m.handle === room.hostHandle && (
+                            <span className="ml-1 chip bg-brand/10 text-brand-dark text-[10px] font-bold py-0 px-1.5">호스트</span>
+                          )}
+                        </p>
+                        <p className="text-[11px] text-ink-700/50">
+                          {genreOf(m.topGenre).emoji} {genreOf(m.topGenre).label} · 취향 {pct}%
+                        </p>
+                      </div>
+                      {!isMe && (
+                        <span className={`chip font-bold py-1 px-2.5 ${isFriend ? "bg-cream-200 text-ink-700/50" : "bg-brand/10 text-brand-dark"}`}>
+                          {isFriend ? "친구" : "+ 친구"}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {selPerson && (
+        <ProfileSheet
+          handle={selPerson.handle}
+          topGenre={selPerson.topGenre}
+          myTaste={user?.tasteVector ?? {}}
+          isFriend={friends.some((f) => f.handle === selPerson.handle && f.status === "accepted")}
+          onAddFriend={() =>
+            addFriend({
+              userId: `u_${selPerson.handle}`,
+              handle: selPerson.handle,
+              topGenre: selPerson.topGenre,
+              status: "pending",
+              matchPct: matchPercent(user?.tasteVector ?? {}, { [selPerson.topGenre]: 1 }),
+            })
+          }
+          onClose={() => setSelPerson(null)}
+        />
+      )}
 
       {/* 내 음악 틀기 모달 (자유모드) */}
       <AnimatePresence>

@@ -25,7 +25,8 @@ export interface UserProfile {
   coins: number;
   diggPoints: number;
   level: number;
-  situations: string[]; // 자주 듣는 상황
+  situations: string[]; // 자주 듣는 상황 (온보딩)
+  favoriteArtists?: string[]; // 좋아하는 아티스트 (온보딩 시드)
   character: CharacterState;
   createdAt: string;
 }

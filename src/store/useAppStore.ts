@@ -107,6 +107,7 @@ function freshUser(
     diggPoints: 0,
     level: 1,
     situations,
+    favoriteArtists: [...new Set(seedTracks.map((t) => t.artist))], // 온보딩 선택 아티스트
     character: { baseType: "custom", appearance, equipped: {}, evolutionStage: 0 },
     createdAt: new Date().toISOString(),
   };

@@ -138,14 +138,14 @@ function CoachTourInner({ tourKey, steps }: { tourKey: string; steps: TourStep[]
     : null;
 
   // 툴팁 위치 — 대상 아래(공간 없으면 위), 없으면 화면 중앙 하단
-  const tipW = Math.min(320, vw - 32);
+  const tipW = Math.min(348, vw - 28);
   let tipTop = vh - 220;
   let tipLeft = (vw - tipW) / 2;
   if (spot) {
     const below = spot.top + spot.height + 12;
     const aboveSpace = spot.top;
-    if (vh - below > 150 || aboveSpace < 170) tipTop = below;
-    else tipTop = Math.max(12, spot.top - 156);
+    if (vh - below > 170 || aboveSpace < 190) tipTop = below;
+    else tipTop = Math.max(12, spot.top - 180);
     tipLeft = Math.min(Math.max(12, spot.left + spot.width / 2 - tipW / 2), vw - tipW - 12);
   }
 
@@ -172,34 +172,34 @@ function CoachTourInner({ tourKey, steps }: { tourKey: string; steps: TourStep[]
 
       {/* 툴팁 카드 */}
       <div
-        className="absolute card p-4 shadow-soft"
+        className="absolute card p-5 shadow-soft"
         style={{ top: tipTop, left: tipLeft, width: tipW, pointerEvents: "auto" }}
       >
         <div className="flex items-center justify-between">
-          <span className="chip bg-brand/10 text-brand-dark text-[11px] font-bold py-0.5 px-2">
+          <span className="chip bg-brand/10 text-brand-dark text-xs font-bold py-1 px-2.5">
             튜토리얼 {i + 1}/{steps.length}
           </span>
-          <button onClick={finish} className="text-[11px] font-bold text-ink-700/45">건너뛰기</button>
+          <button onClick={finish} className="text-xs font-bold text-ink-700/45">건너뛰기</button>
         </div>
-        <p className="mt-2 font-extrabold text-ink-900">{step.title}</p>
-        <p className="mt-1 text-[13px] text-ink-700/65 leading-relaxed">{step.desc}</p>
+        <p className="mt-2.5 font-extrabold text-ink-900 text-lg leading-snug">{step.title}</p>
+        <p className="mt-1.5 text-[15px] text-ink-700/75 leading-relaxed">{step.desc}</p>
 
-        <div className="mt-3 flex items-center justify-between">
+        <div className="mt-4 flex items-center justify-between">
           <div className="flex gap-1">
             {steps.map((_, k) => (
               <span key={k} className={`h-1.5 rounded-full transition-all ${k === i ? "w-4 bg-brand" : "w-1.5 bg-cream-300"}`} />
             ))}
           </div>
           {advanceHint ? (
-            <span className="text-[11px] font-bold text-brand">{advanceHint}</span>
+            <span className="text-[13px] font-bold text-brand">{advanceHint}</span>
           ) : (
-            <button onClick={next} className="btn-primary btn-sm">
+            <button onClick={next} className="btn-primary btn-sm text-sm px-5">
               {isLast ? "완료" : "다음"}
             </button>
           )}
         </div>
         {advanceHint && (
-          <button onClick={next} className="mt-2 w-full text-[11px] font-bold text-ink-700/40">
+          <button onClick={next} className="mt-2.5 w-full text-[13px] font-bold text-ink-700/45">
             건너뛰고 다음 →
           </button>
         )}

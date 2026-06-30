@@ -9,6 +9,7 @@ import GenreIcon from "@/components/GenreIcon";
 import { useAppStore } from "@/store/useAppStore";
 import { ROOMS } from "@/lib/mock";
 import { GENRES, type GenreId } from "@/lib/genres";
+import { ACHIEVEMENTS, buildStats } from "@/lib/achievements";
 
 // 무드 선택 퀘스트(후궁선택 방식) — 분기 트리. 잎 노드는 추천 장르.
 type Node =
@@ -60,11 +61,17 @@ export default function QuestsPage() {
   const router = useRouter();
   const quests = useAppStore((s) => s.quests);
   const claimQuest = useAppStore((s) => s.claimQuest);
+  const listenEvents = useAppStore((s) => s.listenEvents);
+  const diggs = useAppStore((s) => s.diggs);
+  const level = useAppStore((s) => s.user?.level ?? 1);
   const [moodOpen, setMoodOpen] = useState(false);
   const [node, setNode] = useState<Node>(MOOD_TREE);
 
   const dailies = quests.filter((q) => q.type === "daily");
   const coop = quests.find((q) => q.type === "coop");
+
+  // 도전 과제(누적 마일스톤) — 퀘스트와 같은 화면에서 한눈에
+  const stats = buildStats(listenEvents, diggs, level);
 
   const pickRoomForGenre = (genre: GenreId) => {
     const room =
@@ -78,7 +85,7 @@ export default function QuestsPage() {
 
   return (
     <div>
-      <TopBar title="디깅 퀘스트" sub="미션을 깨고 보상을 받아요" />
+      <TopBar title="디깅 퀘스트" sub="미션·도전 과제를 깨고 보상을 받아요" />
 
       {/* 무드 선택 퀘스트 */}
       <section className="px-5">
@@ -172,6 +179,48 @@ export default function QuestsPage() {
           </div>
         </section>
       )}
+
+      {/* 도전 과제 (누적 마일스톤) — 업적을 퀘스트와 통합 */}
+      <section className="px-5 mt-4">
+        <p className="font-bold text-ink-900 mb-2 flex items-center gap-1.5">
+          <Icon name="trophy" size={17} className="text-brand-dark" /> 도전 과제
+        </p>
+        <p className="text-[11px] text-ink-700/50 mb-2">
+          음악을 듣고 디깅할수록 자동으로 달성돼요. (장기 목표)
+        </p>
+        <div className="space-y-2">
+          {ACHIEVEMENTS.map((a) => {
+            const cur = Math.min(a.goal, a.measure(stats));
+            const done = cur >= a.goal;
+            return (
+              <div key={a.id} className={`card p-4 ${done ? "" : "opacity-90"}`}>
+                <div className="flex items-center gap-3">
+                  <span className={`text-2xl ${done ? "" : "grayscale opacity-50"}`}>
+                    {done ? a.icon : "🔒"}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm">
+                      {a.title} {done && <span className="text-brand">✓</span>}
+                    </p>
+                    <p className="text-[11px] text-ink-700/50">{a.desc}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 mt-2">
+                  <div className="flex-1 h-2 rounded-full bg-cream-200 overflow-hidden">
+                    <div
+                      className="h-full bg-brand rounded-full transition-all"
+                      style={{ width: `${(cur / a.goal) * 100}%` }}
+                    />
+                  </div>
+                  <span className="text-[11px] text-ink-700/55 w-10 text-right">
+                    {cur}/{a.goal}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
 
       {/* 예약형 파티 (Phase 7) */}
       <section className="px-5 mt-4 mb-4">

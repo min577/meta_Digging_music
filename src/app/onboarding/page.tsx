@@ -49,8 +49,6 @@ export default function OnboardingPage() {
   const [seeds, setSeeds] = useState<Track[]>([]);
   const [artistQ, setArtistQ] = useState("");
 
-  const set = (patch: Partial<Appearance>) => setLook((l) => ({ ...l, ...patch }));
-
   const toggleSituation = (s: string) =>
     setSituations((prev) =>
       prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s].slice(0, 5)
@@ -146,7 +144,7 @@ export default function OnboardingPage() {
                 마음에 드는 캐릭터를 골라보세요. (상점에서 코스튬도 입을 수 있어요)
               </p>
               <div className="mt-3 flex-1 min-h-0 overflow-y-auto no-scrollbar pb-2">
-                <CharacterPicker value={look.preset ?? "group16.png"} onChange={(p) => set({ preset: p })} />
+                <CharacterPicker value={look} onChange={setLook} />
               </div>
             </div>
           )}

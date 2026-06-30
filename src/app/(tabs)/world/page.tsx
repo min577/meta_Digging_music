@@ -9,14 +9,14 @@ import CoachTour, { type TourStep } from "@/components/CoachTour";
 import { useAppStore, useMyTopGenre } from "@/store/useAppStore";
 import { GENRES } from "@/lib/genres";
 import { tracksByGenre } from "@/lib/music";
-import { defaultAppearance } from "@/lib/appearance";
-import { DEFAULT_PRESET } from "@/lib/characters";
+import { defaultAppearance, avatarSrc } from "@/lib/appearance";
 import type { Track } from "@/lib/types";
 
 const WORLD_TOUR: TourStep[] = [
-  { title: "디깅 월드에 온 걸 환영해요", desc: "캐릭터를 움직여 음악을 발견하는 공간이에요. WASD·방향키 또는 화면을 드래그해 직접 움직여보세요!", advance: "move" },
-  { target: "world-hud", title: "이동 & 방방이", desc: "자유롭게 돌아다니다 음악 스팟에 다가가면 '디깅하기' 버튼이 떠요. 방방이에선 점프!" },
-  { target: "world-bag", title: "디깅함", desc: "발견해서 담은 곡은 여기 디깅함에 쌓여요. 마이페이지에서 다시 볼 수 있어요." },
+  { title: "디깅 월드에 오신 걸 환영해요", desc: "여기서 직접 돌아다니며 새 음악을 발견하는 걸 ‘디깅’이라고 해요. 먼저 WASD·방향키나 화면 드래그로 캐릭터를 움직여볼까요?", advance: "move" },
+  { title: "음악 스팟으로 다가가 보세요", desc: "맵 곳곳에 K-팝 무대·시티팝 네온 같은 음악 스팟이 있어요. 가까이 가면 화면 아래에 ‘디깅하기’ 버튼이 떠요." },
+  { title: "디깅하기 → 들어보고 결정", desc: "‘디깅하기’를 누르면 곡이 흘러나와요. 마음에 들면 ‘디깅함에 담기’, 아니면 ‘다음 곡’으로 계속 새 곡을 넘겨봐요!" },
+  { target: "world-bag", title: "디깅함에 차곡차곡", desc: "담은 곡은 여기 디깅함에 모여요. 마이페이지에서도 다시 볼 수 있어요." },
 ];
 
 // 디깅 월드의 음악 스팟 (장르별)
@@ -40,6 +40,7 @@ export default function WorldPage() {
 
   const [near, setNear] = useState<Spot | null>(null);
   const [busy, setBusy] = useState(false);
+  const [digSpot, setDigSpot] = useState<Spot | null>(null); // 현재 디깅 중인 스팟(넘기기 연속)
   const [result, setResult] = useState<Track | null>(null);
   const [startedAt, setStartedAt] = useState(0);
   const [isNew, setIsNew] = useState(false);
@@ -68,6 +69,7 @@ export default function WorldPage() {
   const dig = async (s: Spot) => {
     if (busy) return;
     setBusy(true);
+    setDigSpot(s);
     try {
       const list = await tracksByGenre(s.genre, 14);
       const pool = list.filter((t) => t.previewUrl && !hasDigg(t.id));
@@ -97,7 +99,7 @@ export default function WorldPage() {
         bodyColor={ap.outfit}
         accentColor={ap.hairColor}
         tasteColor={GENRES[myGenre].color}
-        playerSrc={`/characters/${ap.preset ?? DEFAULT_PRESET}`}
+        playerSrc={avatarSrc(ap)}
         spots={SPOTS}
         onNear={setNear}
         onDig={dig}
@@ -138,6 +140,13 @@ export default function WorldPage() {
       {/* 디깅 결과 카드 */}
       {result && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-[90%] max-w-[380px] z-20 card p-3 shadow-card">
+          <button
+            onClick={() => setResult(null)}
+            className="absolute top-2 right-2 w-6 h-6 rounded-full bg-cream-100 text-ink-700/60 grid place-items-center active:scale-90"
+            aria-label="닫기"
+          >
+            <Icon name="x" size={13} />
+          </button>
           <div className="flex items-center gap-3">
             <div
               className="w-14 h-14 rounded-xl overflow-hidden shrink-0 grid place-items-center"
@@ -172,8 +181,12 @@ export default function WorldPage() {
               </button>
             ) : (
               <>
-                <button onClick={() => setResult(null)} className="btn-ghost btn-sm flex-1">
-                  넘기기
+                <button
+                  onClick={() => digSpot && dig(digSpot)}
+                  disabled={busy}
+                  className="btn-ghost btn-sm flex-1 inline-flex items-center justify-center gap-1"
+                >
+                  <Icon name="skip" size={15} strokeWidth={2.2} /> {busy ? "넘기는 중…" : "다음 곡"}
                 </button>
                 <button onClick={keepDig} className="btn-primary btn-sm flex-1">
                   <Icon name="plus" size={16} strokeWidth={2.4} /> 디깅함에 담기
