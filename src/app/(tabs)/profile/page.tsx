@@ -17,7 +17,6 @@ import { ROOMS } from "@/lib/mock";
 import { place as placeOf } from "@/lib/places";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { signInWithGoogle, signOut } from "@/lib/profile";
-import { ACHIEVEMENTS, buildStats, isDone } from "@/lib/achievements";
 
 type View = "report" | "diggs" | "ranking";
 
@@ -25,7 +24,7 @@ const STAGE_NAME = ["새싹", "디깅 비기너", "디깅 헤드", "디깅 마�
 
 const PROFILE_TOUR: TourStep[] = [
   { target: "profile-customize", title: "기본 꾸미기 (무료)", desc: "본체색·목도리·머리·표정을 무료로 바꿀 수 있어요. 모자·안경은 상점에서!" },
-  { target: "profile-tabs", title: "취향 리포트 & 디깅함", desc: "여기서 내 장르 분포, 저장한 곡(디깅함), 업적을 확인해요." },
+  { target: "profile-tabs", title: "취향 리포트 & 디깅함", desc: "여기서 내 장르 분포, 저장한 곡(디깅함), 아티스트 랭킹을 확인해요. 퀘스트는 ‘디깅 퀘스트’에서 한곳에 모아 봐요." },
 ];
 
 export default function ProfilePage() {
@@ -68,12 +67,6 @@ export default function ProfilePage() {
     resetAll();
   };
 
-  // 업적 통계 + 달성 수
-  const stats = useMemo(
-    () => buildStats(listenEvents, diggs, user?.level ?? 1),
-    [listenEvents, diggs, user?.level]
-  );
-  const doneCount = ACHIEVEMENTS.filter((a) => isDone(a, stats)).length;
 
   // 취향 리포트: 장르 분포
   const dist = useMemo(
@@ -194,10 +187,9 @@ export default function ProfilePage() {
       </section>
 
       {/* 통계 요약 */}
-      <section className="px-5 mt-3 grid grid-cols-3 gap-2">
+      <section className="px-5 mt-3 grid grid-cols-2 gap-2">
         <Stat label="디깅함" value={diggs.length} />
         <Stat label="청취곡" value={listenEvents.length} />
-        <Stat label="도전 과제" value={`${doneCount}/${ACHIEVEMENTS.length}`} />
       </section>
 
       {/* 탭 */}
@@ -410,7 +402,7 @@ export default function ProfilePage() {
           <span className="w-9 h-9 rounded-full bg-brand/12 text-brand-dark grid place-items-center"><Icon name="quest" size={18} /></span>
           <div className="flex-1">
             <p className="font-bold text-sm">디깅 퀘스트</p>
-            <p className="text-xs text-ink-700/50">오늘의 미션 · 도전 과제 · 무드 선택</p>
+            <p className="text-xs text-ink-700/50">오늘의 퀘스트 · 수집 퀘스트 · 무드 선택</p>
           </div>
           <span className="text-ink-700/30">›</span>
         </Link>

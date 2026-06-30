@@ -685,17 +685,19 @@ export default function RoomPage() {
         )}
       </AnimatePresence>
 
-      {/* 친구 초대 링크 복사 토스트 */}
+      {/* 친구 초대 링크 복사 토스트 — 화면 중앙 */}
       <AnimatePresence>
         {inviteCopied && (
-          <motion.div
-            initial={{ y: 40, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-brand text-white px-5 py-3 rounded-2xl shadow-soft text-sm font-bold"
-          >
-            초대 링크 복사됨 · 친구에게 공유하세요!
-          </motion.div>
+          <div className="fixed inset-0 z-50 grid place-items-center pointer-events-none">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="bg-brand text-white px-5 py-3 rounded-2xl shadow-soft text-sm font-bold"
+            >
+              초대 링크 복사됨 · 친구에게 공유하세요!
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
 

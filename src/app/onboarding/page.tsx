@@ -144,7 +144,10 @@ export default function OnboardingPage() {
                 마음에 드는 캐릭터를 골라보세요. (상점에서 코스튬도 입을 수 있어요)
               </p>
               <div className="mt-3 flex-1 min-h-0 overflow-y-auto no-scrollbar pb-2">
-                <CharacterPicker value={look} onChange={setLook} />
+                <CharacterPicker
+                  value={look.preset ?? "group16.png"}
+                  onChange={(p) => setLook((l) => ({ ...l, preset: p }))}
+                />
               </div>
             </div>
           )}

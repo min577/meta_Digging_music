@@ -1,5 +1,4 @@
 import { DEFAULT_PRESET, COSTUME_PRESETS, presetFromSeed } from "./characters";
-import { defaultParts, type AvatarParts } from "./avatarParts";
 
 // 아바타 페이퍼돌 외형 모델 + 선택 옵션 (동물의 숲 느낌 커스터마이징)
 
@@ -30,9 +29,7 @@ export interface Appearance {
   face: FaceStyle;
   glasses: GlassesStyle;
   costume?: CostumeStyle; // (구) SVG 코스튬
-  /** 조합 파츠(컬러/헤어/악세서리) — 있으면 합성 결과를 preset(dataURL)에 굽는다 */
-  parts?: AvatarParts;
-  /** 디자인 PNG 프리셋 파일명 또는 합성 dataURL — 있으면 이 이미지를 그대로 렌더 */
+  /** 디자인 PNG 프리셋 파일명 (예: "group16.png") — 있으면 이 이미지를 그대로 렌더 */
   preset?: string;
 }
 
@@ -158,8 +155,7 @@ export function defaultAppearance(): Appearance {
     face: "smile",
     glasses: "none",
     costume: "none",
-    parts: defaultParts(),
-    preset: DEFAULT_PRESET, // 기본 그레이 = group16 그대로 (커스터마이즈 시 합성 dataURL로 대체)
+    preset: DEFAULT_PRESET,
   };
 }
 
@@ -167,10 +163,11 @@ const COSTUME_SRC: Record<string, string> = Object.fromEntries(
   COSTUME_PRESETS.map((c) => [c.id, c.src])
 );
 
-/** 아바타 이미지 소스 — 합성 dataURL이면 그대로, 파일명이면 /characters/ 접두. */
+/** 아바타 이미지 소스 — 프리셋 파일명을 /characters/ 로 해석.
+ *  (구 버전에서 구워진 합성 dataURL은 기본 캐릭터로 폴백) */
 export function avatarSrc(a?: Appearance): string {
-  if (a?.preset) {
-    return a.preset.startsWith("data:") ? a.preset : `/characters/${a.preset}`;
+  if (a?.preset && !a.preset.startsWith("data:")) {
+    return `/characters/${a.preset}`;
   }
   if (a?.costume && a.costume !== "none" && COSTUME_SRC[a.costume]) {
     return `/characters/${COSTUME_SRC[a.costume]}`;

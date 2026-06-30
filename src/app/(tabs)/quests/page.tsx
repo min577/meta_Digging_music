@@ -85,7 +85,7 @@ export default function QuestsPage() {
 
   return (
     <div>
-      <TopBar title="디깅 퀘스트" sub="미션·도전 과제를 깨고 보상을 받아요" />
+      <TopBar title="디깅 퀘스트" sub="퀘스트를 깨고 보상을 받아요" />
 
       {/* 무드 선택 퀘스트 */}
       <section className="px-5">
@@ -180,13 +180,13 @@ export default function QuestsPage() {
         </section>
       )}
 
-      {/* 도전 과제 (누적 마일스톤) — 업적을 퀘스트와 통합 */}
+      {/* 수집 퀘스트 (누적 마일스톤) — 업적을 퀘스트로 통합 */}
       <section className="px-5 mt-4">
         <p className="font-bold text-ink-900 mb-2 flex items-center gap-1.5">
-          <Icon name="trophy" size={17} className="text-brand-dark" /> 도전 과제
+          <Icon name="trophy" size={17} className="text-brand-dark" /> 수집 퀘스트
         </p>
         <p className="text-[11px] text-ink-700/50 mb-2">
-          음악을 듣고 디깅할수록 자동으로 달성돼요. (장기 목표)
+          음악을 듣고 디깅할수록 자동으로 달성되는 장기 퀘스트예요.
         </p>
         <div className="space-y-2">
           {ACHIEVEMENTS.map((a) => {

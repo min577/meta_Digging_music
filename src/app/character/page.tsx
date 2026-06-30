@@ -4,13 +4,15 @@ import { useRouter } from "next/navigation";
 import CharacterPicker from "@/components/CharacterPicker";
 import Icon from "@/components/Icon";
 import { useAppStore } from "@/store/useAppStore";
-import { defaultAppearance } from "@/lib/appearance";
+import { defaultAppearance, type Appearance } from "@/lib/appearance";
+import { DEFAULT_PRESET } from "@/lib/characters";
 
 export default function CharacterPage() {
   const router = useRouter();
   const user = useAppStore((s) => s.user);
   const setAppearance = useAppStore((s) => s.setAppearance);
   const ap = user?.character.appearance ?? defaultAppearance();
+  const value = ap.preset && !ap.preset.startsWith("data:") ? ap.preset : DEFAULT_PRESET;
 
   return (
     <div className="phone-shell min-h-[100dvh] bg-cream-100 flex flex-col">
@@ -28,7 +30,10 @@ export default function CharacterPage() {
       </header>
 
       <div className="flex-1 overflow-y-auto no-scrollbar px-5 pb-6">
-        <CharacterPicker value={ap} onChange={setAppearance} />
+        <CharacterPicker
+          value={value}
+          onChange={(p) => setAppearance({ ...ap, preset: p } as Appearance)}
+        />
       </div>
 
       <div className="px-5 pb-8 pt-2">
